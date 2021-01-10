@@ -1,2 +1,2 @@
-# emutils
-Python utilities for embedded projects 
+# embutils
+Python utilities for embedded projects.  
