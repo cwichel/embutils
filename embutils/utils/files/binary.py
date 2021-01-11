@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import Union
-from embutils.utils.files.path import path_check_file
+from embutils.utils.base import path_check_file
 
 
 class BinaryFile:
