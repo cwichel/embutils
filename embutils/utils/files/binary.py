@@ -1,7 +1,16 @@
+#!/usr/bin/env python
+##
+# @file       binary.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Simple binary file implementation.
+# =============================================================================
+
 import os
 from pathlib import Path
 from typing import Union
-from embutils.utils.base import path_check_file
+from embutils.utils.common import path_check_file
 
 
 class BinaryFile:

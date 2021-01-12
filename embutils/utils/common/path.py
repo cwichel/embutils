@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       path.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Path manipulation/checking utilities.
+# =============================================================================
+
 import os
 import re
 from pathlib import Path

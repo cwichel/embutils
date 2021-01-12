@@ -1,5 +1,5 @@
 import unittest
-from embutils.utils.base import MacAddress, reverse_bytes
+from embutils.utils.common import MacAddress, reverse_bytes
 
 
 # Test Definitions ==============================

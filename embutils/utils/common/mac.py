@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       mac.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      MAC address object implementation.
+# =============================================================================
+
 import re
 from typing import List, Union
 

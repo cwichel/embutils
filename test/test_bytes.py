@@ -1,5 +1,5 @@
 import unittest
-from embutils.utils.base import bitmask, reverse_bits, reverse_bytes
+from embutils.utils.common import bitmask, reverse_bits, reverse_bytes
 
 
 # Test Definitions ==============================
@@ -8,7 +8,7 @@ class TestByte(unittest.TestCase):
     """
     def test_bitmask(self):
         """Test if the bitmasks are being generated as expected:
-            - bitmask (base): All zeroes but the bit index.
+            - bitmask (common): All zeroes but the bit index.
             - bitmask (fill): All ones from 0 to bit index.
         """
         mask_fill = bitmask(bit=7, fill=True)

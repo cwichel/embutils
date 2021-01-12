@@ -1,7 +1,16 @@
+#!/usr/bin/env python
+##
+# @file       serialized.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Simple abstraction for serialized items.
+# =============================================================================
+
 from abc import abstractmethod
 
 
-class SerialItem:
+class Serialized:
     """Serial item abstract definition.
     """
     @abstractmethod
@@ -15,7 +24,7 @@ class SerialItem:
 
     @staticmethod
     @abstractmethod
-    def deserialize(data: bytearray) -> 'SerialItem':
+    def deserialize(data: bytearray) -> 'Serialized':
         """Deserializes an item form the input bytes.
 
         Args:

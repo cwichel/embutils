@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       events.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Event handling utilities.
+# =============================================================================
+
 class EventHook:
     """Utility that allows to subscribe multiple callbacks
     to a single event. When the event is emitted the given

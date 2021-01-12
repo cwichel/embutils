@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 ##
-# -----------------------------------------------------------------------------
 # @file       bytes.py
 # @author     cwichel
-# @date       2020
+# @date       2021
 # @copyright  The MIT License (MIT)
-# @brief      Byte manipulation utilities
-# -----------------------------------------------------------------------------
+# @brief      Byte manipulation utilities.
+# =============================================================================
+
 from math import ceil
 from typing import Union
 

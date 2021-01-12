@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 ##
-# -----------------------------------------------------------------------------
 # @file       cobs.py
 # @author     cwichel
-# @date       2020
+# @date       2021
 # @copyright  The MIT License (MIT)
 # @brief      Implement the Consistent Overhead Byte Stuffing encoding.
-# -----------------------------------------------------------------------------
+# =============================================================================
+
 class COBSError(Exception):
     pass
 
