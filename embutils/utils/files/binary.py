@@ -131,7 +131,7 @@ class BinaryFile:
         with self._path.open('ab') as file:
             file_size = file.tell()
             diff_size = file_size % mod
-            new_size  = file_size + (mod - diff_size) if diff_size else 0
+            new_size  = file_size + ((mod - diff_size) if diff_size else 0)
             file.truncate(new_size)
 
     def remove(self) -> None:
