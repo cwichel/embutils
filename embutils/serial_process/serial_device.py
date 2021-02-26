@@ -8,9 +8,12 @@
 # =============================================================================
 
 import serial
-from typing import List
+import time
+from enum import IntEnum
+from embutils.utils.common import UsbID, LOG_SDK, EventHook, ThreadItem
 from serial.tools import list_ports
-from embutils.utils.common import UsbID, LOG_SDK
+from typing import List, Tuple, Union
+
 
 logger_sdk = LOG_SDK.logger
 
@@ -185,8 +188,52 @@ class SerialDevice:
             logger_sdk.debug("Port {} couldn't be opened. {}".format(self.port, ex))
             return False
 
+    def close(self) -> None:
+        """Close the serial port.
+        """
+        if self._serial.is_open:
+            logger_sdk.debug(msg='Port {} closed.'.format(self.port))
+            self.flush()
+            self._serial.close()
 
+    def flush(self) -> None:
+        """Flush the serial port buffer.
+        """
+        try:
+            if self._serial.is_open:
+                self._serial.flush()
+        except serial.SerialException:
+            pass
 
+    def write(self, data: bytearray) -> int:
+        """Writes a bytearray through the serial port.
+
+        Args:
+            data (bytearray): Bytes to be sent.
+
+        Return:
+             int: Bytes sent.
+        """
+        if self._serial.is_open:
+            return self._serial.write(data=data)
+        return 0
+
+    def read(self, size: int = 1) -> Union[None, bytearray]:
+        """Read a given number of bytes form the serial buffer. The process
+        is stopped after the timeout is reached.
+
+        Args:
+            size (int): Number oo bytes to read.
+
+        Returns:
+            Union[None, bytearray]: None if empty or disconnected. Bytearray in case of bytes received.
+        """
+        try:
+            if self._serial.is_open:
+                return self._serial.read(size=size)
+        except serial.SerialException:
+            logger_sdk.error("Port {} disconnected.".format(self.port))
+        return None
 
 
 class SerialDeviceList(List[SerialDevice]):
@@ -263,3 +310,150 @@ class SerialDeviceList(List[SerialDevice]):
             dev_list.append(new)
 
         return dev_list
+
+
+class SerialDeviceEvent(IntEnum):
+    """Serial device scanner events.
+    """
+    SD_NO_EVENT             = 0x00      # No event
+    SD_LIST_CHANGED         = 0x01      # Serial devices list has changed
+    SD_PLUGGED_SINGLE       = 0x02      # A single device was plugged
+    SD_PLUGGED_MULTI        = 0x03      # Multiple devices were plugged
+    SD_REMOVED_SINGLE       = 0x04      # A single device was unplugged
+    SD_REMOVED_MULTI        = 0x05      # Multiple devices were unplugged
+
+    @staticmethod
+    def get_event(old: SerialDeviceList, new: SerialDeviceList) -> Tuple['SerialDeviceEvent', SerialDeviceList]:
+        """Compare the two lists and return the associates scanner event and difference list.
+
+        Args:
+            old (SerialDeviceList): Current device list.
+            new (SerialDeviceList): Last scanned list.
+
+        Returns:
+            SerialDeviceEvent, SerialDeviceList: Scanner event and difference list.
+        """
+        # Get difference and define event
+        diff = old.get_changes(other=new)
+        event = SerialDeviceEvent.SD_NO_EVENT
+        if len(new) > len(old):
+            # Added devices
+            event = event.SD_PLUGGED_MULTI if (len(diff) > 1) else event.SD_PLUGGED_SINGLE
+        elif len(old) > len(new):
+            # Removed devices
+            event = event.SD_REMOVED_MULTI if (len(diff) > 1) else event.SD_REMOVED_SINGLE
+        else:
+            # Same length but different
+            event = event.SD_LIST_CHANGED
+        return event, diff
+
+
+class SerialDeviceScanner:
+    """Serial device scanner implementation.
+    This class can be used to periodically check the serial devices on the system.
+
+    The available events are:
+        1. on_scan_period: This event is emitted after every periodic scan.
+            Subscribe using callback with syntax:
+                def<callback>()
+
+        2. on_list_change: This event is emitted when a change is detected on the device list.
+            Subscribe using callback with syntax:
+                def <callback>(event: SerialDeviceEvent, devices: SerialDeviceList)
+    """
+    def __init__(self, scan_period: float = 0.5) -> None:
+        """Class constructor. Initializes the serial scanner.
+
+        Args:
+            scan_period (float): Scanner refresh period in seconds.
+        """
+        # Define device lists
+        self._dev_list = SerialDeviceList.scan()    # Devices connected
+        self._dev_change = SerialDeviceList()       # List of devices that triggered the event
+
+        # Define scan period
+        self._scan_period = scan_period
+
+        # Define events
+        self.on_scan_period = EventHook()
+        self.on_list_change = EventHook()
+
+        # Start scanner
+        self._is_active = True
+        self._thread = ThreadItem(name=self.__class__.__name__, target=self._process)
+
+    def __del__(self) -> None:
+        """Class destructor. We need to ensure that the thread is stopped.
+        """
+        self.stop()
+
+    @property
+    def is_alive(self) -> bool:
+        """Return if the thread is active.
+
+        Returns:
+            bool: True if active, false otherwise.
+        """
+        return self._thread.is_alive()
+
+    @property
+    def connected_devices(self) -> SerialDeviceList:
+        """Return the current scanned device list.
+
+        Returns:
+            SerialDeviceList: List with the scanned devices.
+        """
+        return self._dev_list
+
+    def stop(self) -> None:
+        """Stops the serial scanner thread.
+        """
+        self._is_active = False
+        while self._thread.is_alive():
+            time.sleep(0.01)
+
+    def _scan(self) -> None:
+        """This method executed on every period.
+        """
+        # Get the connected devices
+        dev_list = SerialDeviceList.scan()
+
+        # If the change callback has items, inform the differences
+        if not self.on_list_change.empty and (dev_list != self._dev_change):
+            # Get the changes and generate event
+            event, dev_diff = SerialDeviceEvent.get_event(old=self._dev_change, new=dev_list)
+            ThreadItem(
+                name='{}.{}'.format(self.__class__.__name__, 'on_list_change'),
+                target=lambda: self.on_list_change.emit(event=event, dev_diff=dev_diff)
+                )
+
+            # Update the compare list
+            self._dev_change = dev_diff
+
+        # Update the connected devices list
+        self._dev_list = dev_list
+        ThreadItem(
+            name='{}.{}'.format(self.__class__.__name__, 'on_scan_period'),
+            target=self.on_scan_period.emit
+            )
+
+    def _process(self) -> None:
+        """Serial device scanner main process.
+        The process consists in:
+            1. Read the connected devices.
+            2. Compare the new/old lists and generate the change events.
+            3. Update connected device lists.
+        """
+        # Execute the first scan
+        self._scan()
+
+        # Do this periodically
+        last_update = time.time()
+        while self._is_active:
+            # Wait until the scan period is passed...
+            if (time.time() - last_update) > self._scan_period:
+                last_update = time.time()
+                self._scan()
+
+            # Let some time pass
+            time.sleep(0.01)
