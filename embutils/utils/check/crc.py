@@ -51,10 +51,10 @@ class CRC:
         self._table = self._gen_table()
 
     def __repr__(self) -> str:
-        """Class representation string.
+        """Get the class representation string.
 
-        Returns:
-            str: Class representation.
+        Return:
+            str: Class representation string.
         """
         msg = '<{}: name={}, size={}, poly={}, crc_in={}, xor_out={}, ref_in={}, ref_out={}>'.format(
             self.__class__.__name__, self.name, self.size,

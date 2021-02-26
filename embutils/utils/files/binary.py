@@ -29,13 +29,12 @@ class BinaryFile:
         self.path = path
 
     def __repr__(self) -> str:
-        """Class representation string.
+        """Get the class representation string.
 
-        Returns:
-            str: Class representation.
+        Return:
+            str: Class representation string.
         """
-        msg = '<{}: path={}>'.format(self.__class__.__name__, self._path)
-        return msg
+        return '<{}: path={}>'.format(self.__class__.__name__, self._path)
 
     # Properties ================================
     @property

@@ -31,6 +31,14 @@ class MacAddress:
         self.byteorder = byteorder
         self.value = value
 
+    def __repr__(self) -> str:
+        """Get the class representation string.
+
+        Return:
+            str: Class representation string.
+        """
+        return '<{}: address={}>'.format(self.__class__.__name__, self.value)
+
     @property
     def value(self) -> str:
         """Return the MAC address.
