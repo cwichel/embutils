@@ -428,7 +428,7 @@ class SerialDeviceScanner:
                 )
 
             # Update the compare list
-            self._dev_change = dev_diff
+            self._dev_change = dev_list
 
         # Update the connected devices list
         self._dev_list = dev_list
