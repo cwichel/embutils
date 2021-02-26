@@ -3,14 +3,14 @@ from embutils.serial_process import SerialDeviceList, SerialDeviceEvent, SerialD
 
 
 # Example Definitions ===========================
-def on_change_handler(event: SerialDeviceEvent, change: SerialDeviceList) -> None:
+def on_change_handler(event: SerialDeviceEvent, dev_diff: SerialDeviceList) -> None:
     """Process the serial device change event.
 
     Args:
         event (SerialDeviceEvent): Serial scanner event.
-        change (SerialDeviceList): Change list.
+        dev_diff (SerialDeviceList): Change list.
     """
-    dev = '\r\n\t'.join('{}'.format(item) for item in change)
+    dev = '\r\n\t'.join('{}'.format(item) for item in dev_diff)
     msg = '{}\r\n\t{}'.format(event.__repr__(), dev)
     print(msg)
 
