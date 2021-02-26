@@ -9,7 +9,7 @@
 
 import re
 from typing import Tuple
-from .bytes import bitmask
+from embutils.utils.common.bytes import bitmask
 
 
 class UsbID(int):
