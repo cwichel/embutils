@@ -10,9 +10,9 @@
 import serial
 import time
 from enum import IntEnum
-from embutils.utils.common import UsbID, LOG_SDK, EventHook, ThreadItem
 from serial.tools import list_ports
 from typing import List, Tuple, Union
+from embutils.utils.common import UsbID, EventHook, LOG_SDK, ThreadItem
 
 
 logger_sdk = LOG_SDK.logger
@@ -74,6 +74,9 @@ class SerialDevice:
                 if dev_list:
                     self._serial.port = dev_list[0].port
                     self._id = usb_id
+
+        # Log creation
+        logger_sdk.info("Device created: port={}, id={}.".format(self.port, self.id))
 
     def __repr__(self) -> str:
         """Get the class representation string.
@@ -171,30 +174,30 @@ class SerialDevice:
         """
         # Check if port is available
         if self._serial.port is None:
-            logger_sdk.debug(msg='Port is not defined.')
+            logger_sdk.error("Can't open port because is not defined.")
             return False
 
         # Try to connect
         try:
             if self._serial.is_open:
-                logger_sdk.debug(msg='Port {} already open.'.format(self.port))
+                logger_sdk.info("Port {} already open.".format(self.port))
                 return True
             else:
-                logger_sdk.debug(msg='Opening serial device on port {}...'.format(self.port))
                 self._serial.open()
-                logger_sdk.debug(msg='Port {} opened successfully.'.format(self.port))
+                logger_sdk.info("Port {} opened.".format(self.port))
                 return True
+
         except serial.SerialException as ex:
-            logger_sdk.debug("Port {} couldn't be opened. {}".format(self.port, ex))
+            logger_sdk.error("Port {} couldn't be opened. {}".format(self.port, ex))
             return False
 
     def close(self) -> None:
         """Close the serial port.
         """
         if self._serial.is_open:
-            logger_sdk.debug(msg='Port {} closed.'.format(self.port))
             self.flush()
             self._serial.close()
+            logger_sdk.info("Port {} closed.".format(self.port))
 
     def flush(self) -> None:
         """Flush the serial port buffer.
@@ -231,9 +234,9 @@ class SerialDevice:
         try:
             if self._serial.is_open:
                 return self._serial.read(size=size)
-        except serial.SerialException:
-            logger_sdk.error("Port {} disconnected.".format(self.port))
-        return None
+        except serial.SerialException as ex:
+            logger_sdk.error("Port {} has connection issues. {}".format(self.port, ex))
+            return None
 
 
 class SerialDeviceList(List[SerialDevice]):
@@ -355,7 +358,7 @@ class SerialDeviceScanner:
     The available events are:
         1. on_scan_period: This event is emitted after every periodic scan.
             Subscribe using callback with syntax:
-                def<callback>()
+                def <callback>()
 
         2. on_list_change: This event is emitted when a change is detected on the device list.
             Subscribe using callback with syntax:
@@ -383,16 +386,16 @@ class SerialDeviceScanner:
         self._thread = ThreadItem(name=self.__class__.__name__, target=self._process)
 
     def __del__(self) -> None:
-        """Class destructor. We need to ensure that the thread is stopped.
+        """Class destructor. Stop the thread.
         """
         self.stop()
 
     @property
     def is_alive(self) -> bool:
-        """Return if the thread is active.
+        """Return if the thread is alive.
 
         Returns:
-            bool: True if active, false otherwise.
+            bool: True if alive, false otherwise.
         """
         return self._thread.is_alive()
 
@@ -411,6 +414,7 @@ class SerialDeviceScanner:
         self._is_active = False
         while self._thread.is_alive():
             time.sleep(0.01)
+        logger_sdk.info("Scanner stopped.")
 
     def _scan(self) -> None:
         """This method executed on every period.
@@ -444,6 +448,8 @@ class SerialDeviceScanner:
             2. Compare the new/old lists and generate the change events.
             3. Update connected device lists.
         """
+        logger_sdk.info("Scanner started.")
+
         # Execute the first scan
         self._scan()
 
