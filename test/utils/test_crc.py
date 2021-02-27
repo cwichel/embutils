@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       test_crc.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Test for CRC utility implementation.
+# =============================================================================
+
 import unittest
 from embutils.utils.check import CRC
 

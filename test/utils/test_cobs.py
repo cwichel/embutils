@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       test_cobs.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Test for COBS utility implementation.
+# =============================================================================
+
 import unittest
 from embutils.utils.framing import cobs_encode, cobs_decode
 

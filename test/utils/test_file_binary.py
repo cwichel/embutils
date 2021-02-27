@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       test_file_binary.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Test for binary file implementation.
+# =============================================================================
+
 import os
 import unittest
 from pathlib import Path

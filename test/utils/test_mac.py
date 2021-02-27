@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+##
+# @file       test_mac.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Test for MAC implementation.
+# =============================================================================
+
+
 import unittest
 from embutils.utils.common import MacAddress, reverse_bytes
 

@@ -1,5 +1,14 @@
+#!/usr/bin/env python
+##
+# @file       ex_serial_scan.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Usage example for the serial device scanner.
+# =============================================================================
+
 import time
-from embutils.serial_process import SerialDeviceList, SerialDeviceEvent, SerialDeviceScanner
+from embutils.serial_process.core import SerialDeviceList, SerialDeviceEvent, SerialDeviceScanner
 
 
 # Example Definitions ===========================
@@ -17,6 +26,9 @@ def on_change_handler(event: SerialDeviceEvent, dev_diff: SerialDeviceList) -> N
 
 def example_serial() -> None:
     """Example execution.
+    In this example we:
+        1. Create a serial device scanner.
+        2. Set a callback function to print changes on the connected serial devices.
     """
     # Create a serial scanner instance
     ss = SerialDeviceScanner(scan_period=0.05)
