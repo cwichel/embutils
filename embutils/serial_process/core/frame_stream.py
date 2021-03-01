@@ -8,9 +8,9 @@
 # =============================================================================
 
 import time
-from embutils.utils.common import EventHook, LOG_SDK, ThreadItem
 from embutils.serial_process.data import Frame, FrameHandler
 from embutils.serial_process.core.serial_device import SerialDevice
+from embutils.utils.common import EventHook, LOG_SDK, ThreadItem
 
 
 logger_sdk = LOG_SDK.logger
@@ -51,6 +51,9 @@ class FrameStream:
         self.on_port_reconnect = EventHook()
         self.on_port_disconnect = EventHook()
 
+        # Debug prints for received
+        self.on_frame_received += lambda frame: self._print_debug(frame=frame, received=True)
+
         # Thread related
         self._is_active = True
         self._is_paused = False
@@ -62,6 +65,51 @@ class FrameStream:
         """
         self.stop()
         del self._serial_device
+
+    @property
+    def serial_device(self) -> SerialDevice:
+        """Get the current serial device handler.
+
+        Returns:
+            SerialDevice: Handler used to interact with the serial port.
+        """
+        return self._serial_device
+
+    @serial_device.setter
+    def serial_device(self, handler: SerialDevice) -> None:
+        """Configure a new handler for the serial device.
+
+        NOTE: If the new handler has no port defined the current device
+        will be preserved.
+
+        Args:
+            handler (SerialDevice): Serial device handler.
+        """
+        self.pause()
+        if handler.port is not None:
+            self._serial_device = handler
+        self.resume()
+
+    @property
+    def frame_handler(self) -> FrameHandler:
+        """Get the current frame handler.
+
+        Returns:
+            FrameHandler: Handler used to process the received bytes into a frame.
+        """
+        return self._frame_handler
+
+    @frame_handler.setter
+    def frame_handler(self, handler: FrameHandler) -> None:
+        """Configure a new frame handler.
+
+        Args:
+            handler (FrameHandler): Frame handler.
+        """
+        self.pause()
+        if handler:
+            self._frame_handler = handler
+        self.resume()
 
     @property
     def is_alive(self) -> bool:
@@ -88,10 +136,8 @@ class FrameStream:
             frame (Frame): Frame to be sent.
         """
         if self.is_working:
-            raw = frame.raw
-            ser = frame.serialize()
-            self._serial_device.write(data=ser)
-            logger_sdk.debug("Frame sent:\r\n > Raw : {}\r\n > Ser : {}".format(raw, ser))
+            self._print_debug(frame=frame, received=False)
+            self._serial_device.write(data=frame.serialize())
 
     def resume(self) -> None:
         """Resume the data transmission.
@@ -170,3 +216,17 @@ class FrameStream:
                 logger_sdk.info("Reconnection attempt on {} failed.".format(self._serial_device))
                 time.sleep(0.5)
         return status
+
+    @staticmethod
+    def _print_debug(frame: Frame, received: bool) -> None:
+        """This function is used to print the sent/received frames on the log.
+
+        Args:
+            frame (Frame): Frame that is being sent/received.
+            received (bool): Flag to define if we are sending/receiving.
+        """
+        msg = "Frame {action}: {frame} > Raw: {raw}  >Ser: {ser}".format(
+            action='received' if received else 'sent',
+            frame=frame, raw=frame.raw(), ser=frame.serialize()
+            )
+        logger_sdk.debug(msg)

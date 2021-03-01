@@ -20,7 +20,7 @@ class TestFrame(unittest.TestCase):
         frame = SimpleFrame(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
 
         # Compare
-        assert frame_raw == frame.raw
+        assert frame_raw == frame.raw()
         assert frame_ser == frame.serialize()
 
     def test_deserialize(self):
@@ -36,7 +36,7 @@ class TestFrame(unittest.TestCase):
 
         # Compare
         assert frame_2 is not None
-        assert frame_raw == frame_2.raw
+        assert frame_raw == frame_2.raw()
 
     def test_comparison(self):
         """Check if the comparison of frames is being done correctly.

@@ -24,7 +24,7 @@ class Frame(Serialized):
         Return:
             str: Class representation string.
         """
-        return '<{}: raw={}>'.format(self.__class__.__name__, self.raw.hex())
+        return '<{}: raw={}>'.format(self.__class__.__name__, self.raw().hex())
 
     def __eq__(self, other: 'Frame'):
         """Compare two frames.
@@ -32,7 +32,7 @@ class Frame(Serialized):
         Returns:
             bool: True if equal, false otherwise.
         """
-        return self.raw == other.raw
+        return self.raw() == other.raw()
 
     def __ne__(self, other: 'Frame'):
         """Compare two frames.
@@ -42,17 +42,8 @@ class Frame(Serialized):
         """
         return not self.__eq__(other=other)
 
-    @property
-    def raw(self) -> bytearray:
-        """Frame contents as bytearray (without encoding).
-
-        Returns:
-            bytearray: Frame contents.
-        """
-        return self._raw()
-
     @abstractmethod
-    def _raw(self) -> bytearray:
+    def raw(self) -> bytearray:
         """Frame contents as bytearray (without encoding).
 
         Returns:

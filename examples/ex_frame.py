@@ -64,7 +64,7 @@ class SimpleFrame(Frame):
     def payload(self, data: bytearray) -> None:
         self._ply = data
 
-    def _raw(self) -> bytearray:
+    def raw(self) -> bytearray:
         return bytearray(
             self._base() +
             self.crc.to_bytes(length=2, byteorder='little', signed=False)
@@ -74,7 +74,7 @@ class SimpleFrame(Frame):
         return bytearray(bytes([self.source, self.destination, self.length]) + self.payload)
 
     def serialize(self) -> bytearray:
-        return cobs_encode(data=self._raw())
+        return cobs_encode(data=self.raw())
 
     @staticmethod
     def deserialize(data: bytearray) -> Union[None, 'SimpleFrame']:

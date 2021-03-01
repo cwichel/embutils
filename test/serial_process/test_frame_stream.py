@@ -1,8 +1,11 @@
 import time
 import unittest
 from embutils.serial_process.core import SerialDevice, FrameStream
-from embutils.utils.common import UsbID
+from embutils.utils.common import UsbID, LOG_SDK
 from examples.ex_frame import SimpleFrame, SimpleFrameHandler
+
+
+LOG_SDK.enable()
 
 
 # Test Definitions ==============================
