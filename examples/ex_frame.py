@@ -7,8 +7,11 @@
 # @brief      Example on frame and frame handler creation.
 # =============================================================================
 
+from enum import IntEnum
 from typing import Union
-from embutils.serial_process.data import Frame
+from embutils.serial_process.core import SerialDevice
+from embutils.serial_process.data import Frame, FrameHandler
+from embutils.utils.common import EventHook, ThreadItem
 from embutils.utils.check import CRC
 from embutils.utils.framing import cobs_encode, cobs_decode
 
@@ -88,4 +91,36 @@ class SimpleFrame(Frame):
         return None
 
 
-class FrameHandler
+class SimpleFrameHandler(FrameHandler):
+    """This class is implemented to tell the system how to read the frame from
+    the serial device.
+    """
+    def read_process(self, serial_device: SerialDevice, emitter: EventHook) -> bool:
+        # Wait until a byte is received
+        recv = serial_device.read(size=1)
+        if recv is None:
+            # Device failure / disconnection
+            return False
+        if len(recv) == 0:
+            # Data not available yet...
+            return True
+
+        # Check value
+        byte = ord(recv)
+        if byte != 0x00:
+            # Byte not stuff... frame incoming
+            raw_frame = bytearray(recv)
+
+            # Receive the rest...
+            recv = serial_device.read_until(expected=b'\x00')
+            raw_frame.extend(recv)
+            if len(raw_frame) > 1:
+                frame = SimpleFrame.deserialize(data=raw_frame)
+                if frame is not None:
+                    ThreadItem(
+                        name='{}: Frame received'.format(self.__class__.__name__),
+                        target=lambda: emitter.emit(frame=frame)
+                        )
+
+        # Process without issues
+        return True
