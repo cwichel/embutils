@@ -238,6 +238,24 @@ class SerialDevice:
             logger_sdk.error("Port {} has connection issues. {}".format(self.port, ex))
             return None
 
+    def read_until(self, expected: bytes = b'\n', size: int = None) -> Union[None, bytearray]:
+        """Read bytes until the expected sequence is found, the bytes exceed the size or a timeout
+        is triggered.
+
+        Args:
+            expected (bytes): Read target byte.
+            size (int): Read size limit.
+
+        Returns:
+            Union[None, bytearray]: None if empty or disconnected. Bytearray in case of bytes received.
+        """
+        try:
+            if self._serial.is_open:
+                return self._serial.read_until(expected=expected, size=size)
+        except serial.SerialException as ex:
+            logger_sdk.error("Port {} has connection issues. {}".format(self.port, ex))
+            return None
+
 
 class SerialDeviceList(List[SerialDevice]):
     """Serial device list implementation.

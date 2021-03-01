@@ -11,6 +11,7 @@
 # =============================================================================
 
 from abc import abstractmethod
+from embutils.serial_process.core import SerialDevice
 from embutils.utils.common import EventHook, Serialized
 
 
@@ -65,28 +66,16 @@ class FrameHandler:
 
     The idea is to use this class to define a state machine to receive the frame.
     """
-    def __init__(self):
-        """Class constructor. Initializes the frame serial handler.
-        """
-        self._bytes_buffer = bytearray()
-        self._bytes_to_read = 0
-
-    @property
-    def bytes_to_read(self) -> int:
-        """Indicate the number of bytes to be read from the serial device to
-        process the current frame reception.
-
-        Return:
-            int: Number of bytes to read.
-        """
-        return self._bytes_to_read
-
     @abstractmethod
-    def process(self, new_bytes: bytearray, emitter: EventHook) -> None:
-        """This method process the received bytes into a frame.
+    def read_process(self, serial_device: SerialDevice, emitter: EventHook) -> bool:
+        """This method implements the frame reading state machine.
 
         Args:
-            new_bytes (bytearray): Bytes to be processed.
+            serial_device (bytearray): Device to read the frame bytes.
             emitter (EventHook): Event to be raised when a frame is received.
+
+        Return:
+            bool: True if success, false on serial device disconnection or
+            reading issues.
         """
         pass

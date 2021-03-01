@@ -139,11 +139,7 @@ class FrameStream:
                 continue
 
             # Receive and process data
-            bytes_recv = self._serial_device.read(size=self._frame_handler.bytes_to_read)
-            if bytes_recv is not None:
-                # Bytes received without issues
-                self._frame_handler.process(new_bytes=bytes_recv, emitter=self.on_frame_received)
-            else:
+            if not self._frame_handler.read_process(serial_device=self._serial_device, emitter=self.on_frame_received):
                 # Device disconnected...
                 logger_sdk.info("Device disconnected: {}".format(self._serial_device))
                 ThreadItem(
