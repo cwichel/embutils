@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+##
+# @file       test_frame.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Test frame implementation.
+# =============================================================================
+
 import unittest
 from embutils.utils.check import CRC
 from embutils.utils.framing import cobs_encode

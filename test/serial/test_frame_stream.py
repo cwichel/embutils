@@ -1,6 +1,15 @@
+#!/usr/bin/env python
+##
+# @file       test_frame_stream.py
+# @author     cwichel
+# @date       2021
+# @copyright  The MIT License (MIT)
+# @brief      Test frame streaming (RX/TX).
+# =============================================================================
+
 import time
 import unittest
-from embutils.serial_process.core import SerialDevice, FrameStream
+from embutils.serial.core import SerialDevice, FrameStream
 from embutils.utils.common import UsbID, LOG_SDK
 from examples.ex_frame import SimpleFrame, SimpleFrameHandler
 
