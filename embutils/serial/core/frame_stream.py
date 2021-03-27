@@ -8,8 +8,8 @@
 # =============================================================================
 
 import time
-from embutils.serial_process.data import Frame, FrameHandler
-from embutils.serial_process.core.serial_device import SerialDevice
+from embutils.serial.data import Frame, FrameHandler
+from embutils.serial.core.serial_device import SerialDevice
 from embutils.utils.common import EventHook, LOG_SDK, ThreadItem
 
 
@@ -36,7 +36,7 @@ class FrameStream:
                 def <callback>()
     """
     def __init__(self, serial_device: SerialDevice, frame_handler: FrameHandler) -> None:
-        """Class constructor. Initialize the frame stream.
+        """Class initialization.
 
         Args:
             serial_device (SerialDevice): Used to read/write from serial.
@@ -190,13 +190,16 @@ class FrameStream:
                 logger_sdk.info("Device disconnected: {}".format(self._serial_device))
                 ThreadItem(
                     name='{}.{}'.format(self.__class__.__name__, 'on_port_disconnect'),
-                    target=self.on_port_disconnect
+                    target=self.on_port_disconnect.emit
                     )
                 if self._reconnect():
                     ThreadItem(
                         name='{}.{}'.format(self.__class__.__name__, 'on_port_reconnect'),
-                        target=self.on_port_reconnect
+                        target=self.on_port_reconnect.emit
                         )
+
+            # Give some time
+            time.sleep(0.01)
 
     def _reconnect(self) -> bool:
         """Start a reconnection attempt to the serial device.
@@ -225,8 +228,5 @@ class FrameStream:
             frame (Frame): Frame that is being sent/received.
             received (bool): Flag to define if we are sending/receiving.
         """
-        msg = "Frame {action}: {frame} > Raw: {raw}  >Ser: {ser}".format(
-            action='received' if received else 'sent',
-            frame=frame, raw=frame.raw(), ser=frame.serialize()
-            )
+        msg = "Frame {action}: {frame}".format(action='recv' if received else 'sent', frame=frame)
         logger_sdk.debug(msg)

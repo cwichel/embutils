@@ -11,20 +11,20 @@
 # =============================================================================
 
 from abc import abstractmethod
-from embutils.serial_process.core import SerialDevice
+from embutils.serial.core import SerialDevice
 from embutils.utils.common import EventHook, Serialized
 
 
 class Frame(Serialized):
     """This class define the basic structure of the frame.
     """
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Get the class representation string.
 
         Return:
             str: Class representation string.
         """
-        return '<{}: raw={}>'.format(self.__class__.__name__, self.raw().hex())
+        return '<{}: raw=0x{}>'.format(self.__class__.__name__, self.raw().hex())
 
     def __eq__(self, other: 'Frame'):
         """Compare two frames.

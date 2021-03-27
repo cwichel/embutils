@@ -31,7 +31,7 @@ class SerialDevice:
         }
 
     def __init__(self, port: str = None, usb_id: UsbID = None, settings: dict = None, looped: bool = False) -> None:
-        """Class constructor. Initializes the serial device.
+        """Class initialization.
 
         Args:
             port (str): Port in which the serial device is connected.
@@ -383,7 +383,7 @@ class SerialDeviceScanner:
                 def <callback>(event: SerialDeviceEvent, devices: SerialDeviceList)
     """
     def __init__(self, scan_period: float = 0.5) -> None:
-        """Class constructor. Initializes the serial scanner.
+        """Class initialization.
 
         Args:
             scan_period (float): Scanner refresh period in seconds.
