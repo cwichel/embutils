@@ -16,7 +16,13 @@ class ThreadItem(Thread):
     All the threads created using this class (daemons or not) can be
     monitored using the ThreadPool class.
     """
-    def __init__(self, name: str = 'Unnamed', daemon: bool = True, *args, **kwargs):
+    def __init__(self, name: str = 'Unnamed', daemon: bool = True, *args, **kwargs) -> None:
+        """Class initialization.
+
+        Args:
+            name (str): Thread name.
+            daemon (bool): Set the thread as daemon.
+        """
         super(ThreadItem, self).__init__(name=name, *args, **kwargs)
         self.setDaemon(daemon)
         self.start()
@@ -44,8 +50,8 @@ class ThreadPool(object):
             cls.__inst = super(ThreadPool, cls).__new__(cls)
         return cls.__inst
 
-    def __init__(self):
-        """Class constructor.
+    def __init__(self) -> None:
+        """Class initialization.
         """
         # Initialize
         self._lock = Lock()

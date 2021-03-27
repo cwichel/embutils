@@ -1,1 +1,1 @@
-from .binary import BinaryFile
+from .binary_file import BinaryFile

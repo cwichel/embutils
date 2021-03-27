@@ -19,7 +19,7 @@ class CRC:
                  poly: int = 0x1021, crc_init: int = 0xFFFF, xor_out: int = 0x0000,
                  rev_in: bool = False, rev_out: bool = False
                  ):
-        """Initializes the CRC calculator.
+        """Class initialization.
 
         Notes:
             - For the moment this implementation don't support CRCs with size < 8bits
@@ -164,22 +164,26 @@ class CRC:
         return self._table
 
     # API =======================================
-    def compute(self, data: bytearray):
+    def compute(self, data: bytearray, crc_init: int = None) -> int:
         """Compute the CRC of the given data.
 
         Args:
             data (bytearray): Bytes to compute the CRC over.
+            crc_init (int): Alternative initial value.
 
         Returns:
             int: CRC value.
         """
+        # Select the initial value
+        crc_init = self._crc_init if crc_init is None else crc_init
+
         # Process depending on size
         if self._size >= 8:
             # Define required constants
             shift = self._size - 8
 
             # Set the initial value and iterate through bytes
-            crc = self._crc_init
+            crc = crc_init
             for byte in data:
                 # Get the byte (reverse if necessary)
                 byte = reverse_bits(data=byte, size=8) if self._rev_in else byte
@@ -193,7 +197,7 @@ class CRC:
 
             if self._rev_in:
                 # Set the initial value and iterate through bytes
-                crc = reverse_bits(data=self._crc_init, size=self._size)
+                crc = reverse_bits(data=crc_init, size=self._size)
                 for byte in data:
                     # Get index and update CRC
                     pos = 0xFF & (crc ^ byte)
@@ -203,7 +207,7 @@ class CRC:
 
             else:
                 # Set the initial value and iterate through bytes
-                crc = self._crc_init << shift
+                crc = crc_init << shift
                 for byte in data:
                     # Get index and update CRC
                     pos = 0xFF & (crc ^ byte)

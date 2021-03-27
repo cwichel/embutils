@@ -17,7 +17,7 @@ class LoggerFormat:
 
     By default:
     """
-    pattern:    str = '{asctime:s}: {name:<8s}: {levelname:<8s}: {module:s}: {message:s}'
+    pattern:    str = '{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}'
     style:      str = '{'
 
 
@@ -27,7 +27,7 @@ class Logger:
     FMT_BASE = LoggerFormat()
 
     def __init__(self, name: str = '', fmt: LoggerFormat = None) -> None:
-        """Class constructor. Apply a basic configuration to the logger.
+        """Class initialization. Apply a basic configuration to the logger.
 
         Args:
             name (str): Logger name.

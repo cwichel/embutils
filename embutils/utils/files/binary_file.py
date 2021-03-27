@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ##
-# @file       binary.py
+# @file       binary_file.py
 # @author     cwichel
 # @date       2021
 # @copyright  The MIT License (MIT)

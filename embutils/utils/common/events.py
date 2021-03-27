@@ -16,7 +16,7 @@ class EventHook:
     the same arguments.
     """
     def __init__(self):
-        """Class constructor. Initialize the handlers list.
+        """Class initialization.
         """
         self._handlers = []
 
