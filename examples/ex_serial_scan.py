@@ -8,7 +8,7 @@
 # =============================================================================
 
 import time
-from embutils.serial_process.core import SerialDeviceList, SerialDeviceEvent, SerialDeviceScanner
+from embutils.serial.core import SerialDeviceList, SerialDeviceEvent, SerialDeviceScanner
 
 
 # Example Definitions ===========================

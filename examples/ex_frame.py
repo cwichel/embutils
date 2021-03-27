@@ -7,10 +7,9 @@
 # @brief      Example on frame and frame handler creation.
 # =============================================================================
 
-from enum import IntEnum
 from typing import Union
-from embutils.serial_process.core import SerialDevice
-from embutils.serial_process.data import Frame, FrameHandler
+from embutils.serial.core import SerialDevice
+from embutils.serial.data import Frame, FrameHandler
 from embutils.utils.common import EventHook, ThreadItem
 from embutils.utils.check import CRC
 from embutils.utils.framing import cobs_encode, cobs_decode
