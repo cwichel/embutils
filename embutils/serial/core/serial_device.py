@@ -9,10 +9,9 @@
 
 import serial
 import time
-from enum import IntEnum
 from serial.tools import list_ports
 from typing import List, Tuple, Union
-from embutils.utils.common import UsbID, EventHook, LOG_SDK, ThreadItem
+from embutils.utils.common import EventHook, IntEnumMod, LOG_SDK, ThreadItem, UsbID
 
 
 logger_sdk = LOG_SDK.logger
@@ -21,6 +20,12 @@ logger_sdk = LOG_SDK.logger
 class SerialDevice:
     """Serial device implementation.
     This class can be used to extend the Serial class capabilities.
+
+    The available events are:
+        1. on_usb_id_changed: This event is emitted when, on connection,
+            the ID of the serial USB changes.
+            Subscribe using callback with syntax:
+                def <callback>(old_id: UsbID, new_id: UsbID)
     """
     SETTINGS = {
         'baudrate': 115200,
@@ -39,9 +44,15 @@ class SerialDevice:
             settings (dict): Serial device configuration.
             looped (bool): Enable the test mode (looped serial).
         """
+        # Initialize values
+        self._id:       Union[None, UsbID]  = None
+
         # Check settings
         if not isinstance(settings, dict):
             settings = self.SETTINGS
+
+        # Events
+        self.on_usb_id_changed = EventHook()
 
         # Check if test mode
         if looped:
@@ -55,25 +66,23 @@ class SerialDevice:
             self._id = usb_id
         else:
             # No -> Configure normal
+            # Ask for port
+            if not isinstance(port, str):
+                msg = 'Serial port is required!'
+                logger_sdk.error(msg)
+                raise ValueError(msg)
+            # Get ID if needed
+            if not isinstance(usb_id, UsbID):
+                usb_id = self._get_id_from_port(port=port)
+                if usb_id is None:
+                    msg = 'Serial port is not connected!'
+                    logger_sdk.error(msg)
+                    raise ValueError(msg)
             # Prepare port
             self._serial = serial.Serial(exclusive=True)
             self._serial.apply_settings(d=settings)
-            # Configure depending on inputs
-            has_port = isinstance(port, str)
-            has_id   = isinstance(usb_id, UsbID)
-            if has_port and has_id:
-                self._serial.port = port
-                self._id = usb_id
-            elif has_port:
-                dev_list = SerialDeviceList.scan().filter(port=port)
-                if dev_list:
-                    self._serial.port = port
-                    self._id = dev_list[0].id
-            elif has_id:
-                dev_list = SerialDeviceList.scan().filter(usb_id=usb_id)
-                if dev_list:
-                    self._serial.port = dev_list[0].port
-                    self._id = usb_id
+            self.serial.port = port
+            self._id = usb_id
 
         # Log creation
         logger_sdk.info("Device created: port={}, id={}.".format(self.port, self.id))
@@ -112,15 +121,6 @@ class SerialDevice:
         """
         return self._serial.port
 
-    @port.setter
-    def port(self, port: str) -> None:
-        """Set the serial device port.
-
-        Args:
-            port (str): Serial port name.
-        """
-        self._serial.port = port
-
     @property
     def id(self) -> UsbID:
         """Serial device USB ID.
@@ -129,15 +129,6 @@ class SerialDevice:
             UsbID: USB ID.
         """
         return self._id
-
-    @id.setter
-    def id(self, usb_id: UsbID) -> None:
-        """Set the serial device USB ID.
-
-        Args:
-            usb_id (UsbID): USB ID value.
-        """
-        self._id = usb_id
 
     @property
     def timeout(self) -> float:
@@ -174,8 +165,20 @@ class SerialDevice:
         """
         # Check if port is available
         if self._serial.port is None:
-            logger_sdk.error("Can't open port because is not defined.")
             return False
+
+        # Update USB ID
+        usb_id = self._get_id_from_port(port=self._serial.port)
+        if usb_id is None:
+            logger_sdk.error("Port {} is not connected".format(self.port))
+            return False
+        elif usb_id != self._id:
+            logger_sdk.error("Port {} has changed its ID!".format(self.port))
+            ThreadItem(
+                name='{}.{}'.format(self.__class__.__name__, 'on_list_change'),
+                target=lambda: self.on_usb_id_changed.emit(old_id=self._id, new_id=usb_id)
+                )
+            self._id = usb_id
 
         # Try to connect
         try:
@@ -256,6 +259,13 @@ class SerialDevice:
             logger_sdk.error("Port {} has connection issues. {}".format(self.port, ex))
             return None
 
+    @staticmethod
+    def _get_id_from_port(port: str) -> Union[None, UsbID]:
+        dev_list = SerialDeviceList.scan().filter(port=port)
+        if dev_list:
+            return dev_list[0].id
+        return None
+
 
 class SerialDeviceList(List[SerialDevice]):
     """Serial device list implementation.
@@ -320,6 +330,7 @@ class SerialDeviceList(List[SerialDevice]):
         dev_list = SerialDeviceList()
 
         # Get devices
+        logger_sdk.info("Scanning serial devices")
         dev_scan = list_ports.comports()
         for dev in dev_scan:
             # Not consider items without ID
@@ -333,42 +344,6 @@ class SerialDeviceList(List[SerialDevice]):
         return dev_list
 
 
-class SerialDeviceEvent(IntEnum):
-    """Serial device scanner events.
-    """
-    SD_NO_EVENT             = 0x00      # No event
-    SD_LIST_CHANGED         = 0x01      # Serial devices list has changed
-    SD_PLUGGED_SINGLE       = 0x02      # A single device was plugged
-    SD_PLUGGED_MULTI        = 0x03      # Multiple devices were plugged
-    SD_REMOVED_SINGLE       = 0x04      # A single device was unplugged
-    SD_REMOVED_MULTI        = 0x05      # Multiple devices were unplugged
-
-    @staticmethod
-    def get_event(old: SerialDeviceList, new: SerialDeviceList) -> Tuple['SerialDeviceEvent', SerialDeviceList]:
-        """Compare the two lists and return the associates scanner event and difference list.
-
-        Args:
-            old (SerialDeviceList): Current device list.
-            new (SerialDeviceList): Last scanned list.
-
-        Returns:
-            SerialDeviceEvent, SerialDeviceList: Scanner event and difference list.
-        """
-        # Get difference and define event
-        diff = old.get_changes(other=new)
-        event = SerialDeviceEvent.SD_NO_EVENT
-        if len(new) > len(old):
-            # Added devices
-            event = event.SD_PLUGGED_MULTI if (len(diff) > 1) else event.SD_PLUGGED_SINGLE
-        elif len(old) > len(new):
-            # Removed devices
-            event = event.SD_REMOVED_MULTI if (len(diff) > 1) else event.SD_REMOVED_SINGLE
-        else:
-            # Same length but different
-            event = event.SD_LIST_CHANGED
-        return event, diff
-
-
 class SerialDeviceScanner:
     """Serial device scanner implementation.
     This class can be used to periodically check the serial devices on the system.
@@ -380,8 +355,43 @@ class SerialDeviceScanner:
 
         2. on_list_change: This event is emitted when a change is detected on the device list.
             Subscribe using callback with syntax:
-                def <callback>(event: SerialDeviceEvent, devices: SerialDeviceList)
+                def <callback>(event: SerialDeviceScanner.Event, devices: SerialDeviceList)
     """
+    class Event(IntEnumMod):
+        """Serial device scanner events.
+        """
+        SD_NO_EVENT             = 0x00      # No event
+        SD_LIST_CHANGED         = 0x01      # Serial devices list has changed
+        SD_PLUGGED_SINGLE       = 0x02      # A single device was plugged
+        SD_PLUGGED_MULTI        = 0x03      # Multiple devices were plugged
+        SD_REMOVED_SINGLE       = 0x04      # A single device was unplugged
+        SD_REMOVED_MULTI        = 0x05      # Multiple devices were unplugged
+
+        @staticmethod
+        def get_event(old: SerialDeviceList, new: SerialDeviceList) -> Tuple['SerialDeviceScanner.Event', SerialDeviceList]:
+            """Compare the two lists and return the associates scanner event and difference list.
+
+            Args:
+                old (SerialDeviceList): Current device list.
+                new (SerialDeviceList): Last scanned list.
+
+            Returns:
+                SerialDeviceScanner.Event, SerialDeviceList: Scanner event and difference list.
+            """
+            # Get difference and define event
+            diff = old.get_changes(other=new)
+            event = SerialDeviceScanner.Event.SD_NO_EVENT
+            if len(new) > len(old):
+                # Added devices
+                event = event.SD_PLUGGED_MULTI if (len(diff) > 1) else event.SD_PLUGGED_SINGLE
+            elif len(old) > len(new):
+                # Removed devices
+                event = event.SD_REMOVED_MULTI if (len(diff) > 1) else event.SD_REMOVED_SINGLE
+            else:
+                # Same length but different
+                event = event.SD_LIST_CHANGED
+            return event, diff
+
     def __init__(self, scan_period: float = 0.5) -> None:
         """Class initialization.
 
@@ -389,8 +399,8 @@ class SerialDeviceScanner:
             scan_period (float): Scanner refresh period in seconds.
         """
         # Define device lists
-        self._dev_list = SerialDeviceList.scan()    # Devices connected
-        self._dev_change = SerialDeviceList()       # List of devices that triggered the event
+        self._dev_list      = SerialDeviceList()    # Devices connected
+        self._dev_change    = SerialDeviceList()    # List of devices that triggered the event
 
         # Define scan period
         self._scan_period = scan_period
@@ -443,7 +453,7 @@ class SerialDeviceScanner:
         # If the change callback has items, inform the differences
         if not self.on_list_change.empty and (dev_list != self._dev_change):
             # Get the changes and generate event
-            event, dev_diff = SerialDeviceEvent.get_event(old=self._dev_change, new=dev_list)
+            event, dev_diff = self.Event.get_event(old=self._dev_change, new=dev_list)
             ThreadItem(
                 name='{}.{}'.format(self.__class__.__name__, 'on_list_change'),
                 target=lambda: self.on_list_change.emit(event=event, dev_diff=dev_diff)
@@ -467,6 +477,9 @@ class SerialDeviceScanner:
             3. Update connected device lists.
         """
         logger_sdk.info("Scanner started.")
+
+        # Initialize connected devices
+        self._dev_list = SerialDeviceList.scan()
 
         # Execute the first scan
         self._scan()

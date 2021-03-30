@@ -173,7 +173,7 @@ class FrameStream:
             2. Send the bytes to be processed by the FrameHandler.
             3. Handle disconnection status.
         """
-        logger_sdk.info("Scanner started.")
+        logger_sdk.info("Frame stream started.")
 
         # Do this periodically
         while self._is_active:

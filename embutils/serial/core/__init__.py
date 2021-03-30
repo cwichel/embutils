@@ -1,3 +1,2 @@
-from .serial_device import SerialDevice, SerialDeviceList, SerialDeviceEvent, SerialDeviceScanner
+from .serial_device import SerialDevice, SerialDeviceList, SerialDeviceScanner
 from .frame_stream import FrameStream
-from .command_interface import CommandInterface
