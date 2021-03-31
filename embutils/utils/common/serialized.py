@@ -13,6 +13,17 @@ from abc import abstractmethod
 class Serialized:
     """Serial item abstract definition.
     """
+    LENGTH = 0
+
+    @property
+    def length(self) -> int:
+        """Length of the payload contents.
+
+        Returns:
+            int: Payload length
+        """
+        return self.LENGTH
+
     @abstractmethod
     def serialize(self) -> bytearray:
         """Serialize the item to a bytearray.
