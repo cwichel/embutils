@@ -11,7 +11,7 @@ import serial
 import time
 from serial.tools import list_ports
 from typing import List, Tuple, Union
-from embutils.utils.common import EventHook, IntEnumMod, LOG_SDK, ThreadItem, UsbID
+from embutils.utils.common import time_elapsed, EventHook, IntEnumMod, LOG_SDK, ThreadItem, UsbID
 
 
 logger_sdk = LOG_SDK.logger
@@ -488,7 +488,7 @@ class SerialDeviceScanner:
         last_update = time.time()
         while self._is_active:
             # Wait until the scan period is passed...
-            if (time.time() - last_update) > self._scan_period:
+            if time_elapsed(last_update) > self._scan_period:
                 last_update = time.time()
                 self._scan()
 

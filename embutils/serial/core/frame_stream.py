@@ -23,7 +23,7 @@ class FrameStream:
     using events.
 
     The available events are:
-        1. on_frame_receive: This event is emitted when a frame is received.
+        1. on_frame_received: This event is emitted when a frame is received.
             Subscribe using callback with syntax:
                 def <callback>(frame: Frame)
 
