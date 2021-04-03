@@ -8,9 +8,10 @@
 # =============================================================================
 
 import time
-from pynput.keyboard import Key, Listener
+from pynput.keyboard import Key, KeyCode, Listener
 from embutils.utils.common.events import EventHook
 from embutils.utils.common.threading import ThreadItem
+from typing import Union
 
 
 class KeyboardInput:
@@ -38,13 +39,19 @@ class KeyboardInput:
         self._kb_thread = Listener(on_press=self._on_press, on_release=self._on_release, daemon=True)
         self._main_thread = ThreadItem(name=self.__class__.__name__, target=self._process)
 
-    def _on_press(self, key: Key) -> None:
+    def _on_press(self, key: Union[Key, KeyCode]) -> None:
         """Internal use: Emit the pressed key event.
+
+        Args:
+            key (Union[Key, KeyCode]): Pressed key info.
         """
         self.on_press.emit(key=key)
 
-    def _on_release(self, key: Key) -> None:
+    def _on_release(self, key: Union[Key, KeyCode]) -> None:
         """Internal use: Emit the key released event.
+
+        Args:
+            key (Union[Key, KeyCode]): Pressed key info.
         """
         self.on_release.emit(key=key)
 

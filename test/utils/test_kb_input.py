@@ -7,7 +7,8 @@
 # @brief      Test keyboard logging utility implementation.
 # =============================================================================
 
-from embutils.utils.common import KeyboardInput, Key
+from embutils.utils.common import KeyboardInput, Key, KeyCode
+from typing import Union
 
 
 # Test Definitions ==============================
@@ -20,7 +21,7 @@ def key_input_test() -> None:
     """
     kb = KeyboardInput()
 
-    def on_release(key: Key):
+    def on_release(key: Union[Key, KeyCode]):
         nonlocal kb
         print(key)
         if key == Key.esc:
