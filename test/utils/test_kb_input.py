@@ -7,7 +7,7 @@
 # @brief      Test keyboard logging utility implementation.
 # =============================================================================
 
-from embutils.utils.common import KeyboardInput, Key, KeyCode
+from embutils.utils.common import KeyboardLogger, Key, KeyCode
 from typing import Union
 
 
@@ -17,9 +17,10 @@ def key_input_test() -> None:
     NOTES:
         - This test is for manual operation only.
         - All the pressed keys will be shown on console.
+        - Modifying the 'app_only' flag will enable logging keys from outside the app window.
         - Pressing ESC will stop the process.
     """
-    kb = KeyboardInput()
+    kb = KeyboardLogger(app_only=True)
 
     def on_release(key: Union[Key, KeyCode]):
         nonlocal kb

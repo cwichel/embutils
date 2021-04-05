@@ -56,7 +56,8 @@ class KeyboardLogger:
         Returns:
             bool: Main window selected
         """
-        return self._app_window == window.getActiveWindow()
+        active_window = window.getActiveWindow()
+        return self._app_window == active_window
 
     def _on_press(self, key: Union[Key, KeyCode]) -> None:
         """Internal use: Emit the pressed key event.
