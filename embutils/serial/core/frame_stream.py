@@ -63,7 +63,8 @@ class FrameStream:
     def __del__(self) -> None:
         """Class destructor. Stop the thread and remove the associated serial device.
         """
-        self.stop()
+        if self._is_active:
+            self.stop()
         del self._serial_device
 
     @property
@@ -161,7 +162,7 @@ class FrameStream:
     def stop(self) -> None:
         """Stop the transmission and kill the thread.
         """
-        self._is_active = True
+        self._is_active = False
         while self._thread.is_alive():
             time.sleep(0.01)
         logger_sdk.info("Stream stopped.")
