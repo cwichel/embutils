@@ -21,13 +21,14 @@ setup(
     license='MIT',
 
     classifiers=[
-        'Programming Language :: Python :: 3.5',
+        'Development Status :: 2 - Pre-Alpha',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: Microsoft :: Windows',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-
-        'Operating System :: OS Independent'
         ],
     keywords='python embedded serial command interface utilities',
 
