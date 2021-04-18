@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# -*- coding: ascii -*-
 ##
 # @file       ex_serial_scan.py
 # @author     cwichel
@@ -7,12 +8,12 @@
 # @brief      Usage example for the serial device scanner.
 # =============================================================================
 
+from embutils.serial.core import SerialDeviceList, SerialDeviceScanner
 import time
-from embutils.serial.core import SerialDeviceList, SerialDeviceEvent, SerialDeviceScanner
 
 
 # Example Definitions ===========================
-def on_change_handler(event: SerialDeviceEvent, dev_diff: SerialDeviceList) -> None:
+def on_change_handler(event: SerialDeviceScanner.Event, dev_diff: SerialDeviceList) -> None:
     """Process the serial device change event.
 
     Args:
@@ -24,7 +25,7 @@ def on_change_handler(event: SerialDeviceEvent, dev_diff: SerialDeviceList) -> N
     print(msg)
 
 
-def example_serial() -> None:
+def test_serial_scanner() -> None:
     """Example execution.
     In this example we:
         1. Create a serial device scanner.
@@ -41,4 +42,4 @@ def example_serial() -> None:
 
 # Example Execution =============================
 if __name__ == '__main__':
-    example_serial()
+    test_serial_scanner()
