@@ -7,9 +7,12 @@
 # @brief      Test frame streaming (RX/TX).
 # =============================================================================
 
+import sys
 import unittest
 from embutils.serial.core import SerialInterface
 from embutils.utils.common import LOG_SDK
+
+sys.path.append('../../')
 from examples.ex_frame import SimpleFrame, SimpleFrameHandler
 
 

@@ -147,5 +147,3 @@ class UsbID(int):
         pid = UsbID.ID_MASK & value
         vid = UsbID.ID_MASK & (value >> 16)
         return vid, pid
-
-
