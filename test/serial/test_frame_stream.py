@@ -7,14 +7,11 @@
 # @brief      Test frame streaming (RX/TX).
 # =============================================================================
 
-import sys
 import time
 import unittest
+from embutils.examples import SimpleFrame, SimpleFrameHandler
 from embutils.serial.core import SerialDevice, FrameStream
 from embutils.utils.common import UsbID, LOG_SDK
-
-sys.path.append('../../')
-from examples.ex_frame import SimpleFrame, SimpleFrameHandler
 
 
 LOG_SDK.enable()

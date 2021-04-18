@@ -7,13 +7,10 @@
 # @brief      Test frame implementation.
 # =============================================================================
 
-import sys
 import unittest
+from embutils.examples import SimpleFrame
 from embutils.utils.check import CRC
 from embutils.utils.framing import cobs_encode
-
-sys.path.append('../../')
-from examples.ex_frame import SimpleFrame
 
 
 # Test Definitions ==============================
