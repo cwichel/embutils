@@ -1,11 +1,15 @@
-#!/usr/bin/env python
-##
-# @file       test_frame_stream.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Test frame streaming (RX/TX).
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame stream usage test.
+The frame stream is the thread where the serial device is scanned/read and
+the frame interface is used to decode a frame.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import time
 import unittest

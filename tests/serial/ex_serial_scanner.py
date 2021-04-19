@@ -1,12 +1,16 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
-##
-# @file       ex_serial_scan.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Usage example for the serial device scanner.
-# =============================================================================
+"""
+Serial scanner example/testing file.
+
+NOTE: Since the scanner requires actual devices being connected is not named for
+being executed on pytest.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from embutils.serial.core import SerialDeviceList, SerialDeviceScanner
 import time

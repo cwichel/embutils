@@ -1,11 +1,14 @@
-#!/usr/bin/env python
-##
-# @file       test_frame_interface.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Test frame streaming (RX/TX).
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame interface usage test.
+The frame interface is used to decode the serial input into a frame.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import unittest
 from embutils.examples import SimpleFrame, SimpleFrameHandler

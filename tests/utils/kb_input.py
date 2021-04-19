@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# -*- coding: ascii -*-
 ##
 # @file       test_kb_input.py
 # @author     cwichel
