@@ -13,14 +13,6 @@ from embutils.version import SDK_VERSION
 from setuptools import setup, find_packages
 
 
-# Get requirement list
-DEPENDENCIES = []
-DEPENDENCIES_TEMP = [i.strip() for i in open(file='requirements.txt', mode='r').readlines()]
-for req in DEPENDENCIES_TEMP:
-    req = req.replace('==', '>=') if ('==' in req) else req
-    DEPENDENCIES.append(req)
-
-
 # Generate setup
 setup(
     name='embutils',
@@ -54,5 +46,12 @@ setup(
 
     packages=find_packages(),
     python_requires='>=3.6',
-    install_requires=DEPENDENCIES
+    install_requires=[
+        'cryptography',
+        'pycryptodome',
+        'pycryptodomex',
+        'pynput',
+        'pyserial',
+        'pygetwindow'
+        ]
     )
