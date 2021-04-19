@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       time.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Time related functionalities.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Time handling utilities.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import time
 

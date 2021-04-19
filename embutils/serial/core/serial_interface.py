@@ -1,11 +1,18 @@
-#!/usr/bin/env python
-##
-# @file       serial_interface.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Implements a basic interface for the serial messages.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Serial interface implementation.
+This class represents the point closer to the user. Here the DEV has to
+define/use payload/commands/frame layouts to communicate with the device.
+
+NOTE: All the functions that interacts with the device (ex: read_serial_number)
+should be defined here.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import time
 from embutils.serial.data import Frame, FrameHandler

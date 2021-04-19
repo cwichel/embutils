@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       binary_file.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Simple binary file implementation.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Simple binary file editor utility.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import os
 from pathlib import Path

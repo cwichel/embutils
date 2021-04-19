@@ -1,14 +1,16 @@
-#!/usr/bin/env python
-##
-# @file       frame.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Frame base implementation.
-#
-# NOTE: The frame defines how the payload / data is being sent / encoded.
-#
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame implementation.
+This classes are used to:
+    - Define the command frame payload / serialization.
+    - Define how the serial device data should be read to deserialize a frame.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from abc import abstractmethod
 from embutils.serial.core import SerialDevice

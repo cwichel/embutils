@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       serialized.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Simple abstraction for serialized items.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Serialized object definition.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from abc import abstractmethod
 

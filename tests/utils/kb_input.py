@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# -*- coding: ascii -*-
 ##
 # @file       test_kb_input.py
 # @author     cwichel
@@ -12,7 +13,7 @@ from typing import Union
 
 
 # Test Definitions ==============================
-def key_input_test() -> None:
+def test_key_input() -> None:
     """This function implements the basic setup to use this utility.
     NOTES:
         - This test is for manual operation only.
@@ -35,4 +36,4 @@ def key_input_test() -> None:
 
 # Test Execution ================================
 if __name__ == '__main__':
-    key_input_test()
+    test_key_input()

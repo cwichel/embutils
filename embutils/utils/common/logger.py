@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       logger.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Manage SDK logs.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+SDK logger.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import logging
 from dataclasses import dataclass

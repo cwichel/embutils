@@ -1,11 +1,17 @@
-#!/usr/bin/env python
-##
-# @file       ex_frame.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Example on frame and frame handler creation.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame and frame handler implementation example.
+NOTE:
+    - The frame contains the message structure.
+    - The frame handler defines how to translate the bytes received by serial
+        into a frame object. 
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from typing import Union
 from embutils.serial.core import SerialDevice

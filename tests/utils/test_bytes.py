@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       test_bytes.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Test for byte utility implementation.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Byte-related utilities test file.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import unittest
 from embutils.utils.common import bitmask, reverse_bits, reverse_bytes

@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       kb_input.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Keyboard input handlers.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Keyboard input handling.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import pygetwindow as window
 import time

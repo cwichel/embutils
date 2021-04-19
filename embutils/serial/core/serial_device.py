@@ -1,11 +1,17 @@
-#!/usr/bin/env python
-##
-# @file       serial_device.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Serial device implementation.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Serial device implementation.
+The classes are used to:
+    - Abstract the serial device interface.
+    - Define/operate over a list of devices.
+    - Scan connected devices.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import serial
 import time

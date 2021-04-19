@@ -1,11 +1,15 @@
-#!/usr/bin/env python
-##
-# @file       frame_stream.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Implements a serial process to send/receive frames.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame stream implementation.
+The frame stream is the class used to read/write frames from/to the serial
+device.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import time
 from embutils.serial.data import Frame, FrameHandler

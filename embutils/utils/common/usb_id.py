@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       usb_id.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      USB ID implementation.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+USB device ID.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import re
 from typing import Tuple

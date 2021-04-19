@@ -1,19 +1,19 @@
-#!/usr/bin/env python
-##
-# @file       test_frame.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Test frame implementation.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame usage test.
+The frame is used to define and serialize the serial commands.
 
-import sys
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
+
 import unittest
+from embutils.examples import SimpleFrame
 from embutils.utils.check import CRC
 from embutils.utils.framing import cobs_encode
-
-sys.path.append('../../')
-from examples.ex_frame import SimpleFrame
 
 
 # Test Definitions ==============================

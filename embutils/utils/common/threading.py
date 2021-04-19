@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       threading.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Simple abstraction for threading control items.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+SDK threading utilities.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from threading import Lock, Thread
 from typing import Union

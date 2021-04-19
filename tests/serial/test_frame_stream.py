@@ -1,20 +1,20 @@
-#!/usr/bin/env python
-##
-# @file       test_frame_stream.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Test frame streaming (RX/TX).
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Frame stream usage test.
+The frame stream is a thread used to read/write frame from/to the serial device.
 
-import sys
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
+
 import time
 import unittest
+from embutils.examples import SimpleFrame, SimpleFrameHandler
 from embutils.serial.core import SerialDevice, FrameStream
 from embutils.utils.common import UsbID, LOG_SDK
-
-sys.path.append('../../')
-from examples.ex_frame import SimpleFrame, SimpleFrameHandler
 
 
 LOG_SDK.enable()
