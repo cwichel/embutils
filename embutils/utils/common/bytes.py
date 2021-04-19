@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       bytes.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Byte manipulation utilities.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Byte-related utilities.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from math import ceil
 from typing import Union

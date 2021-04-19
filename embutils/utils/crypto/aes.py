@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       aes.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Simple AES encryption/decryption utilities.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Simple AES encoding/decoding utility.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend

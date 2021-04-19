@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       enum.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Custom enumeration class alternatives.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Integer enumeration.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from enum import IntEnum
 from embutils.utils.common.logger import LOG_SDK

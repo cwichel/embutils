@@ -1,11 +1,14 @@
-#!/usr/bin/env python
-##
-# @file       events.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Event handling utilities.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Event handling.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
+
 
 class EventHook:
     """Utility that allows to subscribe multiple callbacks

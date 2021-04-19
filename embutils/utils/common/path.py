@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       path.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Path manipulation/checking utilities.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Path handling utilities.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 import os
 import re

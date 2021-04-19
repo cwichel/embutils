@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-##
-# @file       crc.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      CRCx implementation. Allows to compute CRC values with any width.
-# =============================================================================
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+CRC implementation file.
+
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
 
 from typing import List
 from embutils.utils.common.bytes import as_hex, bitmask, reverse_bits
