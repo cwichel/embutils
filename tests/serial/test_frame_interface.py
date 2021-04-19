@@ -2,7 +2,8 @@
 # -*- coding: ascii -*-
 """
 Frame interface usage test.
-The frame interface is used to decode the serial input into a frame.
+The frame interface is used to allows to mix the command IDs/definitions plus
+the frame structure to transmit (send/receive) commands over serial.
 
 @date:      2021
 @author:    Christian Wiche

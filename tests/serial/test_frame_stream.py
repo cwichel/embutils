@@ -2,8 +2,7 @@
 # -*- coding: ascii -*-
 """
 Frame stream usage test.
-The frame stream is the thread where the serial device is scanned/read and
-the frame interface is used to decode a frame.
+The frame stream is a thread used to read/write frame from/to the serial device.
 
 @date:      2021
 @author:    Christian Wiche
