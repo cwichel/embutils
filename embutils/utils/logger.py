@@ -76,7 +76,3 @@ class Logger:
             level (int): Logger level.
         """
         self._logger.setLevel(level=level)
-
-
-# Create a logger for internal use
-LOG_SDK = Logger(name='EMBUTILS')

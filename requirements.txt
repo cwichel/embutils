@@ -1,6 +1,0 @@
-cryptography==3.4.7
-pycryptodome==3.10.1
-pycryptodomex==3.10.1
-pynput==1.7.3
-pyserial==3.5
-pygetwindow==0.0.9

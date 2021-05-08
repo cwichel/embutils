@@ -16,9 +16,7 @@ NOTE:
 from typing import Union
 from embutils.serial.core import SerialDevice
 from embutils.serial.data import Frame, FrameHandler
-from embutils.utils.common import EventHook, ThreadItem
-from embutils.utils.check import CRC
-from embutils.utils.framing import cobs_encode, cobs_decode
+from embutils.utils import CRC, COBS, EventHook, ThreadItem
 
 
 class SimpleFrame(Frame):
@@ -79,11 +77,11 @@ class SimpleFrame(Frame):
         return bytearray(bytes([self.source, self.destination, self.length]) + self.payload)
 
     def serialize(self) -> bytearray:
-        return cobs_encode(data=self.raw())
+        return COBS.encode(data=self.raw())
 
     @staticmethod
     def deserialize(data: bytearray) -> Union[None, 'SimpleFrame']:
-        dec_data = cobs_decode(data=data)
+        dec_data = COBS.decode(data=data)
         data_len = dec_data[2]
         frame_crc = int.from_bytes(bytes=dec_data[-2:], byteorder='little', signed=False)
         frame = SimpleFrame(

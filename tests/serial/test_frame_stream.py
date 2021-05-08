@@ -12,9 +12,9 @@ The frame stream is a thread used to read/write frame from/to the serial device.
 
 import time
 import unittest
-from embutils.examples import SimpleFrame, SimpleFrameHandler
+from examples import SimpleFrame, SimpleFrameHandler
 from embutils.serial.core import SerialDevice, FrameStream
-from embutils.utils.common import UsbID, LOG_SDK
+from embutils.utils import UsbID, LOG_SDK
 
 
 LOG_SDK.enable()

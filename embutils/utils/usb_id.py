@@ -11,7 +11,7 @@ USB device ID.
 
 import re
 from typing import Tuple
-from embutils.utils.common.bytes import bitmask
+from embutils.utils.bytes import bitmask
 
 
 class UsbID(int):

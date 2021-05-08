@@ -14,7 +14,7 @@ device.
 import time
 from embutils.serial.data import Frame, FrameHandler
 from embutils.serial.core.serial_device import SerialDevice
-from embutils.utils.common import EventHook, LOG_SDK, ThreadItem
+from embutils.utils import EventHook, LOG_SDK, ThreadItem
 
 
 logger_sdk = LOG_SDK.logger

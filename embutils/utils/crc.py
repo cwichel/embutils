@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-CRC implementation file.
+CRCx implementation.
 
 @date:      2021
 @author:    Christian Wiche
@@ -10,7 +10,7 @@ CRC implementation file.
 """
 
 from typing import List
-from embutils.utils.common.bytes import as_hex, bitmask, reverse_bits
+from embutils.utils.bytes import as_hex, bitmask, reverse_bits
 
 
 class CRC:

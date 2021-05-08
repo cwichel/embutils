@@ -10,7 +10,7 @@ Byte-related utilities test file.
 """
 
 import unittest
-from embutils.utils.common import bitmask, reverse_bits, reverse_bytes
+from embutils.utils import bitmask, reverse_bits, reverse_bytes
 
 
 # Test Definitions ==============================

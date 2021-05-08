@@ -14,7 +14,7 @@ This classes are used to:
 
 from abc import abstractmethod
 from embutils.serial.core import SerialDevice
-from embutils.utils.common import EventHook, Serialized
+from embutils.utils import EventHook, Serialized
 
 
 class Frame(Serialized):

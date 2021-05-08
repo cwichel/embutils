@@ -15,9 +15,9 @@ The classes are used to:
 
 import serial
 import time
+from embutils.utils import time_elapsed, EventHook, IntEnumMod, LOG_SDK, ThreadItem, UsbID
 from serial.tools import list_ports
 from typing import List, Tuple, Union
-from embutils.utils.common import time_elapsed, EventHook, IntEnumMod, LOG_SDK, ThreadItem, UsbID
 
 
 logger_sdk = LOG_SDK.logger

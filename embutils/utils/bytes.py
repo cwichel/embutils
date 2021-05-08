@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Byte-related utilities.
+Byte manipulation utilities.
 
 @date:      2021
 @author:    Christian Wiche

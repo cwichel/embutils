@@ -11,13 +11,13 @@ Keyboard input handling.
 
 import pygetwindow as window
 import time
+from embutils.utils.events import EventHook
+from embutils.utils.threading import ThreadItem
 from pynput.keyboard import Key, KeyCode, Listener
-from embutils.utils.common.events import EventHook
-from embutils.utils.common.threading import ThreadItem
 from typing import Union
 
 
-class KeyboardLogger:
+class KeyLogger:
     """Simple keyboard logger implementation.
 
     NOTE: Log all the key inputs on the system

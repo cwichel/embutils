@@ -1,14 +1,15 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
-##
-# @file       test_kb_input.py
-# @author     cwichel
-# @date       2021
-# @copyright  The MIT License (MIT)
-# @brief      Test keyboard logging utility implementation.
-# =============================================================================
+"""
+Key logger usage test.
 
-from embutils.utils.common import KeyboardLogger, Key, KeyCode
+@date:      2021
+@author:    Christian Wiche
+@contact:   cwichel@gmail.com
+@license:   The MIT License (MIT)
+"""
+
+from embutils.utils import KeyLogger, Key, KeyCode
 from typing import Union
 
 
@@ -21,7 +22,7 @@ def test_key_input() -> None:
         - Modifying the 'app_only' flag will enable logging keys from outside the app window.
         - Pressing ESC will stop the process.
     """
-    kb = KeyboardLogger(app_only=True)
+    kb = KeyLogger(app_only=True)
 
     def on_release(key: Union[Key, KeyCode]):
         nonlocal kb

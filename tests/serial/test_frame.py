@@ -11,9 +11,8 @@ The frame is used to define and serialize the serial commands.
 """
 
 import unittest
-from embutils.examples import SimpleFrame
-from embutils.utils.check import CRC
-from embutils.utils.framing import cobs_encode
+from examples import SimpleFrame
+from embutils.utils import CRC, COBS
 
 
 # Test Definitions ==============================
@@ -26,7 +25,7 @@ class TestFrame(unittest.TestCase):
         # By hand
         frame_raw = bytearray([0x01, 0x02, 0x02, 0xDD, 0x07])
         frame_raw.extend(CRC().compute(data=frame_raw).to_bytes(length=2, byteorder='little', signed=False))
-        frame_ser = cobs_encode(data=frame_raw)
+        frame_ser = COBS.encode(data=frame_raw)
 
         # Frame implementation
         frame = SimpleFrame(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
@@ -41,7 +40,7 @@ class TestFrame(unittest.TestCase):
         # By hand
         frame_raw = bytearray([0x01, 0x02, 0x02, 0xDD, 0x07])
         frame_raw.extend(CRC().compute(data=frame_raw).to_bytes(length=2, byteorder='little', signed=False))
-        frame_ser = cobs_encode(data=frame_raw)
+        frame_ser = COBS.encode(data=frame_raw)
 
         # Frame creation
         frame_2 = SimpleFrame.deserialize(data=frame_ser)
