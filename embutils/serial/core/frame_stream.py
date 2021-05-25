@@ -169,6 +169,7 @@ class FrameStream:
         self._is_active = False
         while self._thread.is_alive():
             time.sleep(0.01)
+        self._serial_device.close()
         logger_sdk.info("Stream stopped.")
 
     def _process(self) -> None:
