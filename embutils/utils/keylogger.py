@@ -92,6 +92,29 @@ class KeyLogger:
         while self._is_active:
             time.sleep(0.01)
 
+    def wait_for(self, cond: Union[Key, KeyCode]) -> None:
+        """WaitS, in blocking mode, for an specific user key input.
+
+        Args:
+            cond (Union[Key, KeyCode]): Wait condition. This key will resume execution.
+        """
+        is_ready = False
+        cond     = KeyCode(char=cond) if isinstance(cond, str) else cond
+
+        def compare(key: Union[Key, KeyCode]) -> None:
+            """Callback to compare user input with condition.
+            """
+            nonlocal is_ready, cond
+            is_ready = (key == cond)
+
+        # Attach and wait for completion
+        self.on_press += compare
+        while not is_ready:
+            time.sleep(0.01)
+
+        # Detach and continue
+        self.on_press -= compare
+
     def stop(self) -> None:
         """Stop the thread process.
         """
