@@ -14,9 +14,7 @@ import os
 import sys
 import subprocess as sp
 import toml
-from git import Git, Repo
 from pathlib import Path
-from typing import Union
 
 ROOT    = Path(os.path.dirname(os.path.abspath(__file__))).parent
 VER_OPT = ['patch', 'minor', 'major', 'prepatch', 'preminor', 'premajor', 'prerelease']
