@@ -21,8 +21,8 @@ classifiers = [
     ]
 
 [tool.poetry.scripts]
-test    = 'scripts.poetry:poetry_test'
-version = 'scripts.poetry:poetry_version'
+test    = 'scripts.poetry:run_test'
+version = 'scripts.poetry:run_version'
 
 [tool.poetry.dependencies]
 python = "^3.8"
