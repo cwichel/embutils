@@ -2,7 +2,7 @@
 version = "0.1.0"
 name = "embutils"
 license = "MIT"
-readme = "README.rst"
+readme = "README.md"
 homepage = "https://github.com/cwichel/embutils"
 description = "Python utilities for embedded projects"
 authors = ["Christian Wiche <cwichel@gmail.com>"]
