@@ -3,7 +3,6 @@ from .cobs import COBS
 from .crc import CRC
 from .enum import IntEnumMod
 from .events import EventHook
-from .keylogger import KeyLogger, Key, KeyCode
 from .logger import LoggerFormat, Logger
 from .serialized import Serialized
 from .threading import ThreadItem, ThreadPool, ThreadOverflowException

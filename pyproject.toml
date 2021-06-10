@@ -13,7 +13,6 @@ keywords = [
     ]
 classifiers = [
     'License :: OSI Approved :: MIT License',
-    'Operating System :: Microsoft :: Windows',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
@@ -27,8 +26,6 @@ version = 'scripts.poetry:run_version'
 [tool.poetry.dependencies]
 python = "^3.8"
 pyserial = "^3.5"
-pynput = "^1.7.3"
-PyGetWindow = "^0.0.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
