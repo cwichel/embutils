@@ -17,7 +17,7 @@ import toml
 from pathlib import Path
 
 ROOT    = Path(os.path.dirname(os.path.abspath(__file__))).parent
-VER_OPT = ['patch', 'minor', 'major', 'prepatch', 'preminor', 'premajor', 'prerelease']
+VER_OPT = ['minor', 'major', 'patch', 'post', 'prepatch', 'preminor', 'premajor', 'prerelease']
 
 
 def run_test() -> None:
@@ -40,6 +40,14 @@ def run_version() -> None:
 
 
 def _update_version(ver: str) -> None:
+    # Check if we need to fix the version
+    if ver == 'post':
+        with open(file="pyproject.toml", mode="r") as f:
+            conf = toml.loads(f.read())
+            tmp  = conf['tool']['poetry']['version'].split('.')
+            tmp[-1] = f'post{tmp[-1]}'
+            ver  = '.'.join(tmp)
+
     # Execute poetry version command
     ret = sp.run(f'poetry version {ver}', shell=True)
     if ret.returncode != 0:
