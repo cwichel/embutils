@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Time handling utilities.
+Time utilities.
 
 @date:      2021
 @author:    Christian Wiche

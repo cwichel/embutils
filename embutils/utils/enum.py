@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Integer enumeration.
+Enumeration utilities.
 
 @date:      2021
 @author:    Christian Wiche
@@ -10,10 +10,6 @@ Integer enumeration.
 """
 
 from enum import IntEnum
-from embutils.utils.common.logger import LOG_SDK
-
-
-logger_sdk = LOG_SDK.logger
 
 
 class IntEnumMod(IntEnum):
@@ -44,9 +40,7 @@ class IntEnumMod(IntEnum):
         if cls.has_value(value=value):
             return cls(value)
         else:
-            msg = "Value 0x{:02X} is not defined.".format(value)
-            logger_sdk.error(msg)
-            raise ValueError(msg)
+            raise ValueError("Value 0x{:02X} is not defined.".format(value))
 
     @classmethod
     def has_value(cls, value: int) -> bool:

@@ -17,7 +17,7 @@ should be defined here.
 import time
 from embutils.serial.data import Frame, FrameHandler
 from embutils.serial.core import FrameStream, SerialDevice
-from embutils.utils.common import time_elapsed, EventHook, LOG_SDK, UsbID
+from embutils.utils import time_elapsed, EventHook, LOG_SDK, UsbID
 from threading import Lock
 from typing import Union
 

@@ -12,9 +12,9 @@ the frame structure to transmit (send/receive) commands over serial.
 """
 
 import unittest
-from embutils.examples import SimpleFrame, SimpleFrameHandler
+from examples import SimpleFrame, SimpleFrameHandler
 from embutils.serial.core import SerialInterface
-from embutils.utils.common import LOG_SDK
+from embutils.utils import LOG_SDK
 
 
 LOG_SDK.enable()

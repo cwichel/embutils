@@ -10,7 +10,7 @@ CRC implementation testing.
 """
 
 import unittest
-from embutils.utils.check import CRC
+from embutils.utils import CRC
 
 
 # Test Definitions ==============================

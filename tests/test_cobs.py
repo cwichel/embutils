@@ -10,7 +10,7 @@ COBS implementation testing.
 """
 
 import unittest
-from embutils.utils.framing import cobs_encode, cobs_decode
+from embutils.utils import COBS
 
 
 # Test Definitions ==============================
@@ -79,8 +79,8 @@ class TestByte(unittest.TestCase):
             bool: Test result. True if success, false otherwise.
         """
         # Encode / decode the data
-        encode = cobs_encode(data=data)
-        decode = cobs_decode(data=encode)
+        encode = COBS.encode(data=data)
+        decode = COBS.decode(data=encode)
 
         # Perform the test
         return data == decode
