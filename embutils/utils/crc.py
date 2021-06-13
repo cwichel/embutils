@@ -58,11 +58,9 @@ class CRC:
         Return:
             str: Class representation string.
         """
-        msg = '<{}: name={}, size={}, poly={}, crc_in={}, xor_out={}, ref_in={}, ref_out={}>'.format(
-            self.__class__.__name__, self.name, self.size,
-            self.poly_hex, self.crc_init_hex, self.xor_out_hex,
-            self.reverse_in, self.reverse_out
-            )
+        msg = f'{self.__class__.__name__}(name={self.name}, size={self.size}, ' +\
+              f'poly={self.poly_hex}, crc_in={self.crc_init_hex}, xor_out={self.xor_out_hex}, ' +\
+              f'ref_in={self.reverse_in}, ref_out={self.reverse_out})'
         return msg
 
     # Properties ================================
