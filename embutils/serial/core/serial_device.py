@@ -99,7 +99,7 @@ class SerialDevice:
         Return:
             str: Class representation string.
         """
-        return '<{}: port={}, usb_id={}>'.format(self.__class__.__name__, self.port, self.id)
+        return f'{self.__class__.__name__}(port={self.port}, usb_id={self.id})'
 
     def __eq__(self, other: 'SerialDevice') -> bool:
         """Compare two serial devices.

@@ -21,11 +21,15 @@ class IntEnumMod(IntEnum):
         Return:
             str: Class representation string.
         """
-        return '<{name}: {cmd_name}(0x{cmd_value:X})>'.format(
-            name=self.__class__.__name__,
-            cmd_name=self.name,
-            cmd_value=self.value
-            )
+        return f'{self.__class__.__name__}({self.__str__()})'
+
+    def __str__(self) -> str:
+        """Get the value as string.
+
+        Return:
+            str: Enum value as string.
+        """
+        return f'{self.name}(0x{self.value:X})'
 
     @classmethod
     def from_int(cls, value: int) -> 'IntEnumMod':

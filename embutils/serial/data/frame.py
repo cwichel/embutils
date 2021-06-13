@@ -26,7 +26,7 @@ class Frame(Serialized):
         Return:
             str: Class representation string.
         """
-        return '<{}: raw=0x{}>'.format(self.__class__.__name__, self.raw().hex())
+        return f'{self.__class__.__name__}(raw=0x{self.raw().hex()})'
 
     def __eq__(self, other: 'Frame'):
         """Compare two frames.
