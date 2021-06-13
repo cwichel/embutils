@@ -47,7 +47,7 @@ class UsbID(int):
         Return:
             str: Class representation string.
         """
-        return '<{}: vid=0x{:04X}, pid=0x{:04X}>'.format(self.__class__.__name__, self._vid, self._pid)
+        return f'{self.__class__.__name__}(vid=0x{self.vid:04X}, pid=0x{self.pid:04X})'
 
     def __str__(self) -> str:
         """Get the class as a string.
