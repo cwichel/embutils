@@ -21,7 +21,7 @@ classifiers = [
 
 [tool.poetry.scripts]
 test    = 'scripts.poetry:run_test'
-docu    = 'scripts.poetry:run_docu'
+docs    = 'scripts.poetry:run_docs'
 html    = 'scripts.poetry:run_html'
 version = 'scripts.poetry:run_version'
 
