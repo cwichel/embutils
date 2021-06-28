@@ -4,6 +4,9 @@
 # Jetbrains
 .idea/
 
+# Poetry
+poetry.lock 
+
 # Project
 .[Oo]ut/
 *.json
