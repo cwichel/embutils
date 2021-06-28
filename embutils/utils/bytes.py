@@ -3,89 +3,58 @@
 """
 Byte manipulation utilities.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
-
-from math import ceil
-from typing import Union
 
 
 def bitmask(bit: int, fill: bool = False) -> int:
-    """Return a bitmask.
+    """
+    Returns a bitmask for the given bit length.
 
-    Args:
-        bit (int): Bit position.
-        fill (bool): Fill all the mask with ones.
+    :param int bit:     Bit length.
+    :param bool fill:   If true, fill the mask with ones.
 
-    Return:
-        int: bitmask.
+    :returns: bitmask.
+    :rtype: int
     """
     mask = (1 << bit)
     return (((mask - 1) << 1) | 1) if fill else mask
 
 
-def reverse_bits(data: int, size: int = 8) -> int:
-    """Reverse the bits of the input data.
-    Ex: b10000010 -> b01000001
-
-    Args:
-        data (int): Input byte.
-        size (int): The size of the output in bits.
-
-    Return:
-        int: Reverser value.
+def reverse_bits(value: int, size: int = None) -> int:
     """
-    data &= bitmask(bit=size - 1, fill=True)
-    aux = '{data:0{size:d}b}'.format(data=data, size=size)
+    Reverse the bits of the input value.
+
+    :param int value:   Value to be reversed.
+    :param int size:    Size of the input in bits. By default it computes the minimum number of bits.
+
+    :returns: Reversed value.
+    :rtype: int
+    """
+    if not size:
+        size = value.bit_length()
+
+    val = value & bitmask(bit=(size - 1), fill=True)
+    aux = f'{val:0{size:d}b}'
     return int(aux[::-1], base=2)
 
 
-def reverse_bytes(data: bytearray) -> bytearray:
-    """Return the reversed byte array
-
-    Args:
-        data (bytearray): Bytes to be reversed.
-
-    Return:
-         bytearray: Reversed bytes.
+def reverse_bytes(value: int, size: int = None) -> int:
     """
-    return data[::-1]
+    Reverse the bytes of the input value.
 
+    :param int value:   Value to be reversed.
+    :param int size:    Size of the input in bytes. By default it computes the minimum number of bytes.
 
-def as_bin(data: int, size: int = 8) -> str:
-    """Return the input data as a BIN string.
-
-    Note: The output will be truncated by the size.
-
-    Args:
-        data (int): Input value.
-        size (int): Size in bits.
-
-    Return:
-        str: Binary string.
+    :returns: Reversed value.
+    :rtype: int
     """
-    data &= bitmask(bit=size - 1, fill=True)
-    return '0b{value:0{size:d}b}'.format(value=data, size=size)
+    if not size:
+        size = (value.bit_length() + 7) // 8 
 
-
-def as_hex(data: Union[int, bytearray], size: int = 8) -> str:
-    """Return the input data as a HEX string.
-
-    Note: The output will be truncated by the size.
-
-    Args:
-        data (int): Input value.
-        size (int): Size in bits.
-
-    Return:
-        str: Binary string.
-    """
-    if isinstance(data, bytearray):
-        return '0x' + ''.join(['{byte:02X}'.format(byte=byte) for byte in data])
-
-    else:
-        data &= bitmask(bit=(size - 1), fill=True)
-        return '0x{value:0{size:d}X}'.format(value=data, size=ceil(size / 4))
+    val = value & bitmask(bit=((8 * size) - 1), fill=True)
+    aux = val.to_bytes(length=size, byteorder='big')
+    return int.from_bytes(bytes=aux[::-1], byteorder='big')

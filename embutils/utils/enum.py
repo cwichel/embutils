@@ -3,57 +3,63 @@
 """
 Enumeration utilities.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 from enum import IntEnum
 
 
 class IntEnumMod(IntEnum):
-    """Modified IntEnum class.
+    """
+    Modified integer enumeration class. This class extends the functionalities
+    of the base enumeration definition.
     """
     def __repr__(self) -> str:
-        """Get the class representation string.
+        """
+        Representation string.
 
-        Return:
-            str: Class representation string.
+        :returns: Representation string.
+        :rtype: str
         """
         return f'{self.__class__.__name__}({self.__str__()})'
 
     def __str__(self) -> str:
-        """Get the value as string.
+        """
+        Class object as string.
 
-        Return:
-            str: Enum value as string.
+        :returns: Object value string.
+        :rtype: str
         """
         return f'{self.name}(0x{self.value:X})'
 
     @classmethod
     def from_int(cls, value: int) -> 'IntEnumMod':
-        """If available, convert the input to a enum object.
+        """
+        Converts, if possible, the input value to an enum object.
 
-        Args:
-            value (int): Item to be converted.
+        :param int value: Value to be converted.
 
-        Returns:
-            IntEnumMod: Enumeration object.
+        :returns: Enumeration object.
+        :rtype: IntEnumMod
+
+        :raises ValueError: Value is not contained on the enum.
         """
         if cls.has_value(value=value):
             return cls(value)
         else:
-            raise ValueError("Value 0x{:02X} is not defined.".format(value))
+            raise ValueError(f'Value 0x{value:02X} is not defined.')
 
     @classmethod
     def has_value(cls, value: int) -> bool:
-        """Get if the given value exists on the class.
+        """
+        Checks if the input value exist on the enum definition.
 
-        Args:
-            value (int): Item to check.
+        :param int value: Value to be checked.
 
-        Returns:
-            bool: True if exists, false otherwise.
+        :returns: True if exists, false otherwise.
+        :rtype: bool
         """
         return value in cls._value2member_map_

@@ -1,34 +1,38 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-COBS encoding utility.
+COBS encoding/decoding implementation.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 
 class COBS:
+    """
+    Consistent Overhead Byte Stuffing (COBS) encoding/decoding utilities.
+    """
     class DecodeException(Exception):
-        """COBS decoding exception.
+        """
+        COBS decoding exception.
         """
         pass
 
     @staticmethod
     def encode(data: bytearray = bytearray()) -> bytearray:
-        """Encode a byte array using Consistent Overhead Byte Stuffing (COBS).
+        """
+        Encode a byte array using Consistent Overhead Byte Stuffing (COBS).
 
-        Note:
-            - Empty arrays will be encoded to "0x01".
-            - The final byte "0x00" is not added.
+        .. note::
+            * Encoding guarantees non-zero bytes on the output array.
+            * An empty string is encoded to [0x01]
 
-        Args:
-            data (bytearray): Bytes to be encoded.
+        :param bytearray data: Bytes to be encoded.
 
-        Returns:
-            bytearray: Encoded message.
+        :returns: Encoded byte array.
+        :rtype: bytearray
         """
         # Verify that we have bytes to encode...
         if len(data) == 0:
@@ -80,16 +84,16 @@ class COBS:
 
     @staticmethod
     def decode(data: bytearray) -> bytearray:
-        """Decode a byte array using Consistent Overhead Byte Stuffing (COBS).
+        """
+        Decodes a byte array that was encoded using Consistent Overhead Byte
+        Stuffing (COBS).
 
-        Note:
-            - The input dont need to include the last "0x00" byte.
+        :param bytearray data: Bytes to be decoded.
 
-        Args:
-            data (bytearray): Bytes to be decoded.
+        :returns: Decoded byte array.
+        :rtype: bytearray
 
-        Returns:
-            bytearray: Decoded message.
+        :raises COBS.DecodeException: Encoded data is invalid.
         """
         # Verify that he have enough bytes
         if len(data) == 0:

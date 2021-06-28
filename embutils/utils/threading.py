@@ -3,122 +3,163 @@
 """
 SDK threading utilities.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 from threading import Lock, Thread
-from typing import Union
+from typing import List, Union
+from functools import wraps
 
 
-class ThreadItem(Thread):
-    """Thread implementation.
-    All the threads created using this class (daemons or not) can be
-    monitored using the ThreadPool class.
+def synchronous(lock_name: str) -> callable:
     """
-    def __init__(self, name: str = 'Unnamed', daemon: bool = True, *args, **kwargs) -> None:
-        """Class initialization.
+    Decorator that can be used in a class to wrap a function or action with a
+    lock.
 
-        Args:
-            name (str): Thread name.
-            daemon (bool): Set the thread as daemon.
-        """
-        super(ThreadItem, self).__init__(name=name, *args, **kwargs)
-        self.setDaemon(daemon)
-        self.start()
+    :param str lock_name: Name of the lock attribute.
 
-    def run(self) -> None:
-        """Run the thread process.
+    :returns: Callable with the lock wrapped function.
+    :rtype: callable
+    """
+    def _wrapper(func: callable) -> callable:
         """
-        ThreadPool().add(thread=self)
-        super().run()
-        ThreadPool().remove(thread=self)
+        Wraps the decorated function to apply the lock.
+        """
+        @wraps(func)
+        def _synchronizer(self, *args, **kwargs):
+            """
+            Applies the lock over the given function.
+            """
+            _lock = self.__getattribute__(lock_name)
+            with _lock:
+                return func(self, *args, **kwargs)
+        return _synchronizer
+    return _wrapper
 
 
 class ThreadPool(object):
-    """Simple thread pool implementation.
-    This class is implemented as a singleton.
     """
-    MAX_THREADS:    int = 100
+    Thread pool implementation for ThreadItem instances.
 
-    __inst:         Union[None, 'ThreadPool'] = None
+    .. note::
+        * This class is implemented as a singleton.
+    """
 
-    def __new__(cls):
-        """Singleton creation.
+    __inst: Union[None, 'ThreadPool'] = None
+    __init: bool = False
+
+    def __new__(cls) -> 'ThreadPool':
+        """
+        Creates the singleton instance.
+
+        :returns: singleton.
+        :rtype: ThreadPool
         """
         if cls.__inst is None:
             cls.__inst = super(ThreadPool, cls).__new__(cls)
+            cls.__init = False
         return cls.__inst
 
     def __init__(self) -> None:
-        """Class initialization.
         """
+        This class don't require any input from the user to be initialized.
+        """
+        # Only do this once
+        if self.__init:
+            return
+        self.__init = True
+
         # Initialize
-        self._lock = Lock()
-        self._total = 0
-        self._details = dict()
+        self._lock:     Lock = Lock()
+        self._threads:  List[Thread] = []
 
     @property
-    def total(self) -> int:
-        """Return the number of threads being executed.
-
-        Return:
-            int: Number of threads.
+    @synchronous(lock_name='_lock')
+    def count(self) -> int:
         """
-        with self._lock:
-            return self._total
+        Number of threads registered in the pool.
+
+        :returns: Thread count.
+        :rtype: int
+        """
+        return len(self._threads)
 
     @property
-    def details(self) -> list:
-        """Return a list with the quantity and type of the
-        threads running.
-
-        Return:
-            list: Type/quantity of threads running.
+    @synchronous(lock_name='_lock')
+    def active(self) -> int:
         """
-        with self._lock:
-            fmt = '{{key:<{size}s}}: {{val:d}}'.format(size=max([len(key) for key in list(self._details.keys())]))
-            return [fmt.format(key=key, val=val) for key, val in self._details.items()]
+        Number of active threads in the pool.
 
+        :returns: Active thread count.
+        :rtype: int
+        """
+        return sum([1 if t.is_alive() else 0 for t in self._threads])
+
+    @synchronous(lock_name='_lock')
     def add(self, thread: Thread) -> None:
-        """Add a thread to the running pool.
-
-        Args:
-            thread (Thread): Thread to be added.
         """
-        with self._lock:
-            # Check the number of threads...
-            self._total += 1
-            if self._total > self.MAX_THREADS:
-                raise ThreadOverflowException()
+        Add a thread to the pool.
 
-            # All Ok. Add thread.
-            if thread.name in self._details:
-                self._details[thread.name] += 1
-            else:
-                self._details[thread.name] = 1
+        :param Thread thread: Thread to be added into the pool.
+        """
+        self._threads.append(thread)
 
+    @synchronous(lock_name='_lock')
     def remove(self, thread: Thread) -> None:
-        """Remove a thread from the running pool.
-
-        Args:
-            thread (Thread): Thread to be removed.
         """
-        with self._lock:
-            self._total -= 1
-            if thread.name in self._details:
-                self._details[thread.name] -= 1
-                if self._details[thread.name] == 0:
-                    self._details.pop(thread.name)
+        Remove a thread from the pool (if available).
+
+        :param Thread thread: Thread to be removed from the pool.
+        """
+        if thread in self._threads:
+            idx = self._threads.index(thread)
+            self._threads.pop(idx)
 
 
-class ThreadOverflowException(Exception):
-    """Thread overflow exception.
+class ThreadItem(Thread):
     """
-    def __init__(self):
-        super().__init__(
-            'Maximum number of threads exceeded ({})'.format(ThreadPool().MAX_THREADS) +
-            '\nThread details:\n\t' + '\n\t'.join(ThreadPool().details) + '\n'
-            )
+    Thread item implementation. All the threads created using this class (daemons
+    or not) can be monitored using the ThreadPool class.
+    """
+    def __init__(self, name: str = 'Unnamed', daemon: bool = True, auto_remove: bool = True, *args, **kwargs) -> None:
+        """
+        Class initialization.
+
+        :param str name:            Thread name. This name is used to identify the thread on the pool.
+        :param bool daemon:         If true the thread will be initialized as daemon.
+        :param bool auto_remove:    If true the thread will be deleted after completion.
+        """
+        # Create thread
+        super(ThreadItem, self).__init__(name=name, *args, **kwargs)
+        self._auto_remove = auto_remove
+        self.setDaemon(daemon)
+
+        # Add thread to pool and start
+        ThreadPool().add(thread=self)
+        self.start()
+
+    def __del__(self) -> None:
+        """
+        Class destructor. This method ensures that the thread is removed from the
+        pool when deleted.
+        """
+        ThreadPool().remove(thread=self)
+
+    def run(self) -> None:
+        """
+        Runs the thread target process. If auto remove is set to true this method
+        will attempt to delete the thread when the process finishes the execution.
+        """
+        super().run()
+        if self._auto_remove:
+            self.remove()
+
+    def remove(self):
+        """
+        Removes the thread item from the pool and attempts to delete itself.
+        """
+        ThreadPool().remove(thread=self)
+        del self
