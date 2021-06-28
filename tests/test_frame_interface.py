@@ -2,13 +2,11 @@
 # -*- coding: ascii -*-
 """
 Frame interface usage test.
-The frame interface is used to allows to mix the command IDs/definitions plus
-the frame structure to transmit (send/receive) commands over serial.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import unittest
@@ -22,10 +20,12 @@ LOG_SDK.enable()
 
 # Test Definitions ==============================
 class TestFrameInterface(unittest.TestCase):
-    """Basic streaming tests using the SimpleFrame example.
+    """
+    Basic frame streaming tests using the SimpleFrame example.
     """
     def test_transmit(self):
-        """Send and receive a frame using the frame stream on a looped serial device.
+        """
+        Send and receive a frame using the frame stream on a looped serial device.
         Test if the transmitted/received frames are the same.
         """
         frame = SimpleFrame(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
@@ -33,7 +33,8 @@ class TestFrameInterface(unittest.TestCase):
 
     @staticmethod
     def transmit(frame: SimpleFrame) -> None:
-        """Simulate a serial device on loop mode and perform a comparison between
+        """
+        Simulate a serial device on loop mode and perform a comparison between
         the data being received and sent.
         """
         # Prepare interface
@@ -46,7 +47,7 @@ class TestFrameInterface(unittest.TestCase):
             return True
 
         # Perform transmission
-        si.transmit(send=frame, resp_logic=rx_logic)
+        si.transmit(send=frame, logic=rx_logic)
 
         # Wait until ready
         si.stop()
