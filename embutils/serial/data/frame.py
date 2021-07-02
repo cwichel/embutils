@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Frame implementation.
-This classes are used to:
-    - Define the command frame payload / serialization.
-    - Define how the serial device data should be read to deserialize a frame.
+Frame implementation classes.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 from abc import abstractmethod
@@ -18,57 +15,66 @@ from embutils.utils import EventHook, Serialized
 
 
 class Frame(Serialized):
-    """This class define the basic structure of the frame.
+    """
+    Frame structure implementation. This class define the base structure of a
+    serializable frame object.
     """
     def __repr__(self) -> str:
-        """Get the class representation string.
+        """
+        Representation string.
 
-        Return:
-            str: Class representation string.
+        :returns: Representation string.
+        :rtype: str
         """
         return f'{self.__class__.__name__}(raw=0x{self.raw().hex()})'
 
     def __eq__(self, other: 'Frame'):
-        """Compare two frames.
+        """
+        Check if two objects are equal.
 
-        Returns:
-            bool: True if equal, false otherwise.
+        :param Frame other: Instance of class to compare.
+
+        :returns: True if equal, false otherwise.
+        :rtype: bool
         """
         return self.raw() == other.raw()
 
     def __ne__(self, other: 'Frame'):
-        """Compare two frames.
+        """
+        Check if two objects are not equal.
 
-        Returns:
-            bool: True if not equal, false otherwise.
+        :param Frame other: Instance of class to compare.
+
+        :returns: True if not equal, false otherwise.
+        :rtype: bool
         """
         return not self.__eq__(other=other)
 
     @abstractmethod
     def raw(self) -> bytearray:
-        """Frame contents as bytearray (without encoding).
+        """
+        Not encoded frame bytes.
 
-        Returns:
-            bytearray: Frame contents.
+        :returns: Frame bytes.
+        :rtype: bytearray
         """
         pass
 
 
 class FrameHandler:
-    """This class define how the frame bytes are processed when received.
-
-    The idea is to use this class to define a state machine to receive the frame.
+    """
+    Frame handler implementation. This class define how to process the bytes
+    received from the serial device in order to deserialize a frame.
     """
     @abstractmethod
-    def read_process(self, serial_device: SerialDevice, emitter: EventHook) -> bool:
-        """This method implements the frame reading state machine.
+    def read_process(self, serial: SerialDevice, emitter: EventHook) -> bool:
+        """
+        This method implements the frame reading process.
 
-        Args:
-            serial_device (bytearray): Device to read the frame bytes.
-            emitter (EventHook): Event to be raised when a frame is received.
+        :param SerialDevice serial: Serial device from where the bytes are read.
+        :param EventHook emitter:   Event to be raised when a frame is received.
 
-        Return:
-            bool: True if success, false on serial device disconnection or
-            reading issues.
+        :returns: True if success, false on serial device disconnection or reading issues.
+        :rtype: bool
         """
         pass

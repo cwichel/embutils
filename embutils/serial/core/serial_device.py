@@ -1,16 +1,12 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Serial device implementation.
-The classes are used to:
-    - Abstract the serial device interface.
-    - Define/operate over a list of devices.
-    - Scan connected devices.
+Serial device implementation classes.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import serial
@@ -24,14 +20,17 @@ logger_sdk = LOG_SDK.logger
 
 
 class SerialDevice:
-    """Serial device implementation.
-    This class can be used to extend the Serial class capabilities.
+    """
+    Serial device implementation. This class can be used to extend the
+    python serial class capabilities.
 
-    The available events are:
-        1. on_usb_id_changed: This event is emitted when, on connection,
-            the ID of the serial USB changes.
-            Subscribe using callback with syntax:
-                def <callback>(old_id: UsbID, new_id: UsbID)
+    Available events:
+
+    #.  **on_usb_id_changed:** This event is emitted when the ID of the serial
+        device change during connection. Subscribe using callbacks with syntax::
+
+            def <callback>(old_id: UsbID, new_id: UsbID)
+
     """
     SETTINGS = {
         'baudrate': 115200,
@@ -41,17 +40,17 @@ class SerialDevice:
         'timeout':  0.1
         }
 
-    def __init__(self, port: str = None, usb_id: UsbID = None, settings: dict = None, looped: bool = False) -> None:
-        """Class initialization.
+    def __init__(self, port: str = None, uid: UsbID = None, settings: dict = None, looped: bool = False) -> None:
+        """
+        Class initialization.
 
-        Args:
-            port (str): Port in which the serial device is connected.
-            usb_id (UsbID): Serial device USB ID.
-            settings (dict): Serial device configuration.
-            looped (bool): Enable the test mode (looped serial).
+        :param str port:        Port in which the serial device is connected.
+        :param UsbID uid:       Device USB ID.
+        :param dict settings:   Device configuration.
+        :param bool looped:     Enable the test mode (looped serial).
         """
         # Initialize values
-        self._id:       Union[None, UsbID]  = None
+        self._id: Union[None, UsbID] = None
 
         # Check settings
         if not isinstance(settings, dict):
@@ -64,12 +63,12 @@ class SerialDevice:
         if looped:
             # Yes -> Configure looped
             # Ask for ID
-            if not isinstance(usb_id, UsbID):
+            if not isinstance(uid, UsbID):
                 raise ValueError('Test UsbID is required for looped mode!')
             # Configure
             self._serial = serial.serial_for_url(url='loop://', exclusive=True)
             self._serial.apply_settings(d=settings)
-            self._id = usb_id
+            self._id = uid
         else:
             # No -> Configure normal
             # Ask for port
@@ -78,96 +77,108 @@ class SerialDevice:
                 logger_sdk.error(msg)
                 raise ValueError(msg)
             # Get ID if needed
-            if not isinstance(usb_id, UsbID):
-                usb_id = self._get_id_from_port(port=port)
-                if usb_id is None:
+            if not isinstance(uid, UsbID):
+                uid = self._get_id_from_port(port=port)
+                if uid is None:
                     msg = 'Serial port is not connected!'
                     logger_sdk.error(msg)
                     raise ValueError(msg)
             # Prepare port
             self._serial = serial.Serial(exclusive=True)
             self._serial.apply_settings(d=settings)
-            self.serial.port = port
-            self._id = usb_id
+            self._serial.port = port
+            self._id = uid
 
         # Log creation
-        logger_sdk.info("Device created: port={}, id={}.".format(self.port, self.id))
+        logger_sdk.info(f'Device created: port={self._serial.port}, id={self._id}.')
 
     def __repr__(self) -> str:
-        """Get the class representation string.
-
-        Return:
-            str: Class representation string.
         """
-        return f'{self.__class__.__name__}(port={self.port}, usb_id={self.id})'
+        Representation string.
+
+        :returns: Representation string.
+        :rtype: str
+        """
+        return f'{self.__class__.__name__}(port={self._serial.port}, usb_id={self._id})'
 
     def __eq__(self, other: 'SerialDevice') -> bool:
-        """Compare two serial devices.
-
-        Returns:
-            bool: True if equal, false otherwise.
         """
-        return (self.port == other.port) and (self.id == other.id)
+        Check if two objects are equal.
+
+        :param Frame other: Instance of class to compare.
+
+        :returns: True if equal, false otherwise.
+        :rtype: bool
+        """
+        return (self._serial.port == other.port) and (self._id == other.id)
 
     @property
     def serial(self) -> serial.Serial:
-        """Serial port handler object.
+        """
+        Get the serial handler.
 
-        Returns:
-            serial.Serial: Serial interface.
+        :returns: Serial handler.
+        :rtype: serial.Serial
         """
         return self._serial
 
     @property
     def port(self) -> str:
-        """Serial device port.
+        """
+        Get the device port name.
 
-        Returns:
-            str: Serial device port name.
+        :returns: Device port name.
+        :rtype: str
         """
         return self._serial.port
 
     @property
     def id(self) -> UsbID:
-        """Serial device USB ID.
+        """
+        Get the device USB ID.
 
-        Returns:
-            UsbID: USB ID.
+        :returns: Device USB ID.
+        :rtype: UsbID
         """
         return self._id
 
     @property
     def timeout(self) -> float:
-        """Serial device operation timeout.
+        """
+        Get the serial process timeout.
 
-        Return:
-            float: Serial device operation timeout.
+        :returns: Timeout in seconds.
+        :rtype: float
         """
         return self._serial.timeout
 
     @timeout.setter
     def timeout(self, timeout: float) -> None:
-        """Set the serial device operation timeout.
-
-        Args:
-            timeout (float): Serial operation timeout.
         """
+        Set the serial process timeout.
+
+        :param float timeout: Timeout in seconds.
+        """
+        if timeout <= 0.0:
+            raise ValueError('The response timeout needs to be greater than zero.')
         self._serial.timeout = timeout
 
     @property
     def is_open(self) -> bool:
-        """Check if the serial device is open.
+        """
+        Get if the serial device is open.
 
-        Returns:
-            bool: True if open, false otherwise.
+        :returns: True if open, false otherwise.
+        :rtype: bool
         """
         return self._serial.is_open
 
     def open(self) -> bool:
-        """Tries to open the serial device connection.
+        """
+        Tries to open the serial device port.
 
-        Returns:
-            bool: True if succeed, false otherwise.
+        :returns: True if open, false otherwise.
+        :rtype: bool
         """
         # Check if port is available
         if self._serial.port is None:
@@ -176,12 +187,12 @@ class SerialDevice:
         # Update USB ID
         usb_id = self._get_id_from_port(port=self._serial.port)
         if usb_id is None:
-            logger_sdk.error("Port {} is not connected".format(self.port))
+            logger_sdk.error(f'Port {self._serial.port} is not connected')
             return False
         elif usb_id != self._id:
-            logger_sdk.error("Port {} has changed its ID!".format(self.port))
+            logger_sdk.error(f'Port {self._serial.port} has changed its ID!')
             ThreadItem(
-                name='{}.{}'.format(self.__class__.__name__, 'on_list_change'),
+                name=f'{self.__class__.__name__}.on_list_change',
                 target=lambda: self.on_usb_id_changed.emit(old_id=self._id, new_id=usb_id)
                 )
             self._id = usb_id
@@ -189,27 +200,29 @@ class SerialDevice:
         # Try to connect
         try:
             if self._serial.is_open:
-                logger_sdk.info("Port {} already open.".format(self.port))
+                logger_sdk.info(f'Port {self._serial.port} already open.')
                 return True
             else:
                 self._serial.open()
-                logger_sdk.info("Port {} opened.".format(self.port))
+                logger_sdk.info(f'Port {self._serial.port} opened.')
                 return True
 
         except serial.SerialException as ex:
-            logger_sdk.error("Port {} couldn't be opened. {}".format(self.port, ex))
+            logger_sdk.error(f'Port {self._serial.port} has connection issues. {ex}')
             return False
 
     def close(self) -> None:
-        """Close the serial port.
+        """
+        Closes the serial device port.
         """
         if self._serial.is_open:
             self.flush()
             self._serial.close()
-            logger_sdk.info("Port {} closed.".format(self.port))
+            logger_sdk.info(f'Port {self._serial.port} closed.')
 
     def flush(self) -> None:
-        """Flush the serial port buffer.
+        """
+        Flush the serial device buffer.
         """
         try:
             if self._serial.is_open:
@@ -218,55 +231,63 @@ class SerialDevice:
             pass
 
     def write(self, data: bytearray) -> int:
-        """Writes a bytearray through the serial port.
+        """
+        Write the given byte array through the device serial port.
 
-        Args:
-            data (bytearray): Bytes to be sent.
+        :param bytearray data: Bytes to be sent through the serial port.
 
-        Return:
-             int: Bytes sent.
+        :returns: Number of bytes sent.
+        :rtype: int
         """
         if self._serial.is_open:
             return self._serial.write(data=data)
         return 0
 
     def read(self, size: int = 1) -> Union[None, bytearray]:
-        """Read a given number of bytes form the serial buffer. The process
-        is stopped after the timeout is reached.
+        """
+        Read a fixed number of bytes from the serial buffer. The process is
+        stopped with error if a timeout is reached before completion.
 
-        Args:
-            size (int): Number oo bytes to read.
+        :param int size: Number of bytes to read.
 
-        Returns:
-            Union[None, bytearray]: None if empty or disconnected. Bytearray in case of bytes received.
+        :returns: None if empty or disconnected. Bytearray in case of bytes received.
+        :rtype: Union[None, bytearray]
         """
         try:
             if self._serial.is_open:
                 return self._serial.read(size=size)
         except serial.SerialException as ex:
-            logger_sdk.error("Port {} has connection issues. {}".format(self.port, ex))
+            logger_sdk.error(f'Port {self._serial.port} has connection issues. {ex}')
             return None
 
     def read_until(self, expected: bytes = b'\n', size: int = None) -> Union[None, bytearray]:
-        """Read bytes until the expected sequence is found, the bytes exceed the size or a timeout
-        is triggered.
+        """
+        Read bytes from the serial buffer until the expected sequence is found,
+        the received bytes exceed the specified limit or a timeout is reached.
 
-        Args:
-            expected (bytes): Read target byte.
-            size (int): Read size limit.
+        :param bytes expected:  Stop read condition.
+        :param int size:        Read array size limit.
 
-        Returns:
-            Union[None, bytearray]: None if empty or disconnected. Bytearray in case of bytes received.
+        :returns: None if empty or disconnected. Bytearray in case of bytes received.
+        :rtype: Union[None, bytearray]
         """
         try:
             if self._serial.is_open:
                 return self._serial.read_until(expected=expected, size=size)
         except serial.SerialException as ex:
-            logger_sdk.error("Port {} has connection issues. {}".format(self.port, ex))
+            logger_sdk.error(f'Port {self._serial.port} has connection issues. {ex}')
             return None
 
     @staticmethod
     def _get_id_from_port(port: str) -> Union[None, UsbID]:
+        """
+        Gets the USB ID form the given port.
+
+        :param str port: Target serial device port.
+
+        :returns: None if device is not connected, USB ID otherwise.
+        :rtype: Union[None, UsbID]
+        """
         dev_list = SerialDeviceList.scan().filter(port=port)
         if dev_list:
             return dev_list[0].id
@@ -274,17 +295,18 @@ class SerialDevice:
 
 
 class SerialDeviceList(List[SerialDevice]):
-    """Serial device list implementation.
-    Can be used to list the connected serial devices.
+    """
+    Serial device list implementation. This class define a list of serial devices
+    and implements mechanisms to compare and filter lists.
     """
     def get_changes(self, other: 'SerialDeviceList') -> 'SerialDeviceList':
-        """Get the differences between two serial device lists.
+        """
+        Get the differences between two serial device lists.
 
-        Args:
-            other (SerialDeviceList): List to compare with.
+        :param SerialDeviceList other: List to compare with.
 
-        Return:
-            SerialDeviceList: List containing the filtered devices.
+        :returns: List containing the filtered devices.
+        :rtype: SerialDeviceList
         """
         if self == other:
             return SerialDeviceList()
@@ -304,15 +326,15 @@ class SerialDeviceList(List[SerialDevice]):
                 diff.append(dev)
         return diff
 
-    def filter(self, port: str = None, usb_id: UsbID = None) -> 'SerialDeviceList':
-        """Filter elements on the serial device list.
+    def filter(self, port: str = None, uid: UsbID = None) -> 'SerialDeviceList':
+        """
+        Filter serial devices from a given list.
 
-        Args:
-            port (str): Port of interest.
-            usb_id (UsbID): Device ID of interest.
+        :param str port:    Required port name.
+        :param UsbID uid:   Required USB ID.
 
-        Return:
-            SerialDeviceList: List containing filtered devices.
+        :returns: List containing the filtered devices.
+        :rtype: SerialDeviceList
         """
         dev_list = self
 
@@ -321,22 +343,23 @@ class SerialDeviceList(List[SerialDevice]):
             dev_list = SerialDeviceList([dev for dev in dev_list if dev.port == port])
 
         # Filter by ID
-        if isinstance(usb_id, UsbID):
-            dev_list = SerialDeviceList([dev for dev in dev_list if dev.id == usb_id])
+        if isinstance(uid, UsbID):
+            dev_list = SerialDeviceList([dev for dev in dev_list if dev.id == uid])
 
         return dev_list
 
     @staticmethod
     def scan() -> 'SerialDeviceList':
-        """Scan the system for available serial ports.
+        """
+        Scan the system and return a list with the connected serial devices.
 
-        Return:
-            SerialDeviceList: List including all the connected ports.
+        :returns: List with connected devices.
+        :rtype: SerialDeviceList
         """
         dev_list = SerialDeviceList()
 
         # Get devices
-        logger_sdk.info("Scanning serial devices")
+        logger_sdk.info('Scanning serial devices')
         dev_scan = list_ports.comports()
         for dev in dev_scan:
             # Not consider items without ID
@@ -344,45 +367,51 @@ class SerialDeviceList(List[SerialDevice]):
                 continue
 
             # Create device
-            new = SerialDevice(port=dev.device, usb_id=UsbID(vid=dev.vid, pid=dev.pid))
+            new = SerialDevice(port=dev.device, uid=UsbID(vid=dev.vid, pid=dev.pid))
             dev_list.append(new)
 
         return dev_list
 
 
 class SerialDeviceScanner:
-    """Serial device scanner implementation.
-    This class can be used to periodically check the serial devices on the system.
+    """
+    Serial device scanner implementation. This class define a thread that allow
+    to check periodically for changes on the connected serial devices.
 
-    The available events are:
-        1. on_scan_period: This event is emitted after every periodic scan.
-            Subscribe using callback with syntax:
-                def <callback>()
+    Available events:
 
-        2. on_list_change: This event is emitted when a change is detected on the device list.
-            Subscribe using callback with syntax:
-                def <callback>(event: SerialDeviceScanner.Event, devices: SerialDeviceList)
+    #.  **on_scan_period:** This event is emitted after the scan period is
+        completed. Subscribe using callbacks with syntax::
+
+            def <callback>()
+
+    #.  **on_list_change:** This event is emitted when a change is detected
+        on the connected device list. Subscribe using callbacks with syntax::
+
+            def <callback>(event: SerialDeviceScanner.Event, devices: SerialDeviceList)
+
     """
     class Event(IntEnumMod):
-        """Serial device scanner events.
         """
-        SD_NO_EVENT             = 0x00      # No event
-        SD_LIST_CHANGED         = 0x01      # Serial devices list has changed
-        SD_PLUGGED_SINGLE       = 0x02      # A single device was plugged
-        SD_PLUGGED_MULTI        = 0x03      # Multiple devices were plugged
-        SD_REMOVED_SINGLE       = 0x04      # A single device was unplugged
-        SD_REMOVED_MULTI        = 0x05      # Multiple devices were unplugged
+        Serial device scanner event definitions.
+        """
+        SD_NO_EVENT         = 0x00      # No event
+        SD_LIST_CHANGED     = 0x01      # Serial devices list has changed
+        SD_PLUGGED_SINGLE   = 0x02      # A single device was plugged
+        SD_PLUGGED_MULTI    = 0x03      # Multiple devices were plugged
+        SD_REMOVED_SINGLE   = 0x04      # A single device was unplugged
+        SD_REMOVED_MULTI    = 0x05      # Multiple devices were unplugged
 
         @staticmethod
         def get_event(old: SerialDeviceList, new: SerialDeviceList) -> Tuple['SerialDeviceScanner.Event', SerialDeviceList]:
-            """Compare the two lists and return the associates scanner event and difference list.
+            """
+            Compares two serial device lists and return the differences.
 
-            Args:
-                old (SerialDeviceList): Current device list.
-                new (SerialDeviceList): Last scanned list.
+            :param SerialDeviceList old: Last scanned device list.
+            :param SerialDeviceList new: New scanned device list.
 
-            Returns:
-                SerialDeviceScanner.Event, SerialDeviceList: Scanner event and difference list.
+            :returns: Serial device scanner event and device difference list.
+            :rtype: Tuple[SerialDeviceScanner.Event, SerialDeviceList]
             """
             # Get difference and define event
             diff = old.get_changes(other=new)
@@ -398,18 +427,18 @@ class SerialDeviceScanner:
                 event = event.SD_LIST_CHANGED
             return event, diff
 
-    def __init__(self, scan_period: float = 0.5) -> None:
-        """Class initialization.
+    def __init__(self, period: float = 0.5) -> None:
+        """
+        Class initialization.
 
-        Args:
-            scan_period (float): Scanner refresh period in seconds.
+        :param float period:    Scanner refresh period in seconds.
         """
         # Define device lists
         self._dev_list      = SerialDeviceList()    # Devices connected
         self._dev_change    = SerialDeviceList()    # List of devices that triggered the event
 
         # Define scan period
-        self._scan_period = scan_period
+        self._scan_period = period
 
         # Define events
         self.on_scan_period = EventHook()
@@ -420,38 +449,48 @@ class SerialDeviceScanner:
         self._thread = ThreadItem(name=self.__class__.__name__, target=self._process)
 
     def __del__(self) -> None:
-        """Class destructor. Stop the thread.
+        """
+        Class destructor. Stops the scanner thread.
         """
         self.stop()
 
     @property
     def is_alive(self) -> bool:
-        """Return if the thread is alive.
+        """
+        Check if the scan thread is alive.
 
-        Returns:
-            bool: True if alive, false otherwise.
+        :returns: True if alive, false otherwise.
+        :rtype: bool
         """
         return self._thread.is_alive()
 
     @property
-    def connected_devices(self) -> SerialDeviceList:
-        """Return the current scanned device list.
+    def devices(self) -> SerialDeviceList:
+        """
+        Connected serial devices list.
 
-        Returns:
-            SerialDeviceList: List with the scanned devices.
+        :returns: List with connected devices.
+        :rtype: SerialDeviceList
         """
         return self._dev_list
 
     def stop(self) -> None:
-        """Stops the serial scanner thread.
+        """
+        Stops the scanner thread.
         """
         self._is_active = False
         while self._thread.is_alive():
             time.sleep(0.01)
-        logger_sdk.info("Scanner stopped.")
+        logger_sdk.info('Scanner stopped.')
 
     def _scan(self) -> None:
-        """This method executed on every period.
+        """
+        Scanner functionality:
+
+        #. Read the connected devices.
+        #. Check for changes on the connected devices.
+        #. Raise change event if required, updates current device list.
+
         """
         # Get the connected devices
         dev_list = SerialDeviceList.scan()
@@ -461,7 +500,7 @@ class SerialDeviceScanner:
             # Get the changes and generate event
             event, dev_diff = self.Event.get_event(old=self._dev_change, new=dev_list)
             ThreadItem(
-                name='{}.{}'.format(self.__class__.__name__, 'on_list_change'),
+                name=f'{self.__class__.__name__}.on_list_change',
                 target=lambda: self.on_list_change.emit(event=event, dev_diff=dev_diff)
                 )
 
@@ -471,18 +510,19 @@ class SerialDeviceScanner:
         # Update the connected devices list
         self._dev_list = dev_list
         ThreadItem(
-            name='{}.{}'.format(self.__class__.__name__, 'on_scan_period'),
+            name=f'{self.__class__.__name__}.on_scan_period',
             target=self.on_scan_period.emit
             )
 
     def _process(self) -> None:
-        """Serial device scanner main process.
-        The process consists in:
-            1. Read the connected devices.
-            2. Compare the new/old lists and generate the change events.
-            3. Update connected device lists.
         """
-        logger_sdk.info("Scanner started.")
+        Scanner process:
+
+        #. Initialize the scanned devices list.
+        #. Ensures the periodic scanner execution.
+
+        """
+        logger_sdk.info('Scanner started.')
 
         # Initialize connected devices
         self._dev_list = SerialDeviceList.scan()
