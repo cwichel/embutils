@@ -3,47 +3,54 @@
 """
 Serialized object definition.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 from abc import abstractmethod
+from typing import Union
 
 
 class Serialized:
-    """Serial item abstract definition.
     """
+    Abstract implementation for a serialized item.
+    """
+    #:  Serialized object byte length. If the length is variable, this defines the minimum.
     LENGTH = 0
 
     @property
     def length(self) -> int:
-        """Length of the payload contents.
+        """
+        Serialized item length in bytes. This property allows to handle the cases
+        in which the object has variable size and the attribute :attr:`LENGTH` only
+        defines the minimum length.
 
-        Returns:
-            int: Payload length
+        :returns: Serialized item length.
+        :rtype: int
         """
         return self.LENGTH
 
     @abstractmethod
     def serialize(self) -> bytearray:
-        """Serialize the item to a bytearray.
+        """
+        Serializes the object to a byte array.
 
-        Returns:
-            bytearray: Serialized object.
+        :returns: Serialized object.
+        :rtype: bytearray
         """
         pass
 
     @staticmethod
     @abstractmethod
-    def deserialize(data: bytearray) -> 'Serialized':
-        """Deserializes an item form the input bytes.
+    def deserialize(data: bytearray) -> Union[None, 'Serialized']:
+        """
+        Deserializes the object from a byte array.
 
-        Args:
-            data (bytearray): Input byte stream.
+        :param bytearray data: Bytes to be deserialized.
 
-        Returns:
-            SerialItem: Deserialized item.
+        :returns: None if deserialization fail, deserialized object otherwise.
+        :rtype: Serialized
         """
         pass

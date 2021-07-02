@@ -2,13 +2,11 @@
 # -*- coding: ascii -*-
 """
 Frame stream implementation.
-The frame stream is the class used to read/write frames from/to the serial
-device.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import time
@@ -21,30 +19,39 @@ logger_sdk = LOG_SDK.logger
 
 
 class FrameStream:
-    """Frame stream implementation.
-    This class is used to send and receive frames through the serial device
-    in an asynchronous way. When a new frame is received this class will notify
+    """
+    This class is used to send and receive frames through the serial device in an
+    asynchronous way. When a new frame is received this class will notify the system
     using events.
 
-    The available events are:
-        1. on_frame_received: This event is emitted when a frame is received.
-            Subscribe using callback with syntax:
-                def <callback>(frame: Frame)
+    Available events:
 
-        2. on_port_reconnect: This event is emitted when the port is able to reconnect.
-            Subscribe using callback with syntax:
-                def <callback>()
+    #.  **on_frame_received:** This event is emitted when a frame is received
+        and deserialized from the serial device. Subscribe using callbacks with
+        syntax::
 
-        3. on_port_disconnect: This event is emitted when the port get disconnected.
-            Subscribe using callback with syntax:
-                def <callback>()
+            def <callback>(frame: Frame)
+
+    #.  **on_port_reconnect:** This event is emitted when the system is able to
+        reconnect to the configured port. Subscribe using callbacks with syntax::
+
+            def <callback>()
+
+    #.  **on_port_disconnect:** This event is emitted when the system gets
+        disconnected from the configured serial port. Subscribe using callbacks
+        with syntax::
+
+            def <callback>()
+
     """
     def __init__(self, serial_device: SerialDevice, frame_handler: FrameHandler) -> None:
-        """Class initialization.
+        """
+        Class initialization.
 
-        Args:
-            serial_device (SerialDevice): Used to read/write from serial.
-            frame_handler (FrameHandler): Used to interpret the incoming bytes as a frame.
+        :param SerialDevice serial_device: Serial device interface. Used to read/write
+            from the serial.
+        :param FrameHandler frame_handler: Frame handler. Used to read and decode the
+            incoming bytes into a frame.
         """
         # Initialize
         self._serial_device = serial_device
@@ -65,7 +72,9 @@ class FrameStream:
         self._thread = ThreadItem(name=self.__class__.__name__, target=self._process)
 
     def __del__(self) -> None:
-        """Class destructor. Stop the thread and remove the associated serial device.
+        """
+        Class destructor. Stops the stream thread and removes the associated
+        serial device.
         """
         if self._is_active:
             self.stop()
@@ -73,22 +82,25 @@ class FrameStream:
 
     @property
     def serial_device(self) -> SerialDevice:
-        """Get the current serial device handler.
+        """
+        Get the serial device handler.
 
-        Returns:
-            SerialDevice: Handler used to interact with the serial port.
+        :returns: Serial device handler.
+        :rtype: SerialDevice
         """
         return self._serial_device
 
     @serial_device.setter
     def serial_device(self, handler: SerialDevice) -> None:
-        """Configure a new handler for the serial device.
+        """
+        Set the serial device handler.
 
-        NOTE: If the new handler has no port defined the current device
-        will be preserved.
+        .. note::
+            *   This action replaces the current serial device.
+            *   If the new serial device handler has no port defined
+                the current port is preserved.
 
-        Args:
-            handler (SerialDevice): Serial device handler.
+        :param SerialDevice handler: Serial device handler.
         """
         self.pause()
         if handler.port is not None:
@@ -97,19 +109,20 @@ class FrameStream:
 
     @property
     def frame_handler(self) -> FrameHandler:
-        """Get the current frame handler.
+        """
+        Get the frame handler.
 
-        Returns:
-            FrameHandler: Handler used to process the received bytes into a frame.
+        :returns: Frame handler.
+        :rtype: FrameHandler
         """
         return self._frame_handler
 
     @frame_handler.setter
     def frame_handler(self, handler: FrameHandler) -> None:
-        """Configure a new frame handler.
+        """
+        Set the frame handler.
 
-        Args:
-            handler (FrameHandler): Frame handler.
+        :param FrameHandler handler: Frame handler.
         """
         self.pause()
         if handler:
@@ -118,68 +131,75 @@ class FrameStream:
 
     @property
     def is_alive(self) -> bool:
-        """Return if the thread is alive.
+        """
+        Returns if the stream thread is alive.
 
-        Returns:
-            bool: True if alive, false otherwise.
+        :returns: True if alive, false otherwise.
+        :rtype: bool
         """
         return self._thread.is_alive()
 
     @property
     def is_working(self) -> bool:
-        """Return if the process is being executed.
+        """
+        Returns if the stream thread is working (not paused).
 
-        Returns;
-            bool: True if working, false if stopped or paused.
+        :returns: True if working, false otherwise.
+        :rtype: bool
         """
         return self.is_alive and self._serial_device.is_open and not self._is_paused
 
     def send_frame(self, frame: Frame) -> None:
-        """Send the specified frame using the serial device.
+        """
+        Send a frame through the serial device.
 
-        Args:
-            frame (Frame): Frame to be sent.
+        :param Frame frame: Frame to send.
         """
         if self.is_working:
             self._print_debug(frame=frame, received=False)
             self._serial_device.write(data=frame.serialize())
 
     def resume(self) -> None:
-        """Resume the data transmission.
+        """
+        Resume the stream data transmission.
         """
         if self.is_alive and self._serial_device.open():
             self._serial_device.flush()
             self._is_paused = False
             self._pause_active = False
-            logger_sdk.info("Stream resumed.")
+            logger_sdk.info('Stream resumed.')
 
     def pause(self) -> None:
-        """Pause the data transmission.
+        """
+        Pauses the stream data transmission.
         """
         if self.is_working:
             self._is_paused = True
             while not self._pause_active:
                 time.sleep(0.01)
             self._serial_device.close()
-            logger_sdk.info("Stream paused.")
+            logger_sdk.info('Stream paused.')
 
     def stop(self) -> None:
-        """Stop the transmission and kill the thread.
+        """
+        Stops the stream transmission and kills the thread.
         """
         self._is_active = False
         while self._thread.is_alive():
             time.sleep(0.01)
         self._serial_device.close()
-        logger_sdk.info("Stream stopped.")
+        logger_sdk.info('Stream stopped.')
 
     def _process(self) -> None:
-        """Frame transmission main loop.
-        This loop handle the frame reception:
-            1. Read the FrameHandler required bytes.
-            2. Send the bytes to be processed by the FrameHandler.
-            3. Handle disconnection status.
         """
-        logger_sdk.info("Frame stream started.")
+        Frame stream process:
+
+        #. Read bytes depending on the requirements of the frame handler.
+        #. Process bytes, parses frames and raises events.
+        #. Handle disconnection status.
+
+        """
+        logger_sdk.info('Frame stream started.')
 
         # Do this periodically
         while self._is_active:
@@ -191,16 +211,16 @@ class FrameStream:
                 continue
 
             # Receive and process data
-            if not self._frame_handler.read_process(serial_device=self._serial_device, emitter=self.on_frame_received):
+            if not self._frame_handler.read_process(serial=self._serial_device, emitter=self.on_frame_received):
                 # Device disconnected...
-                logger_sdk.info("Device disconnected: {}".format(self._serial_device))
+                logger_sdk.info(f'Device disconnected: {self._serial_device}')
                 ThreadItem(
-                    name='{}.{}'.format(self.__class__.__name__, 'on_port_disconnect'),
+                    name=f'{self.__class__.__name__}.on_port_disconnect',
                     target=self.on_port_disconnect.emit
                     )
                 if self._reconnect():
                     ThreadItem(
-                        name='{}.{}'.format(self.__class__.__name__, 'on_port_reconnect'),
+                        name=f'{self.__class__.__name__}.on_port_reconnect',
                         target=self.on_port_reconnect.emit
                         )
 
@@ -208,31 +228,32 @@ class FrameStream:
             time.sleep(0.01)
 
     def _reconnect(self) -> bool:
-        """Start a reconnection attempt to the serial device.
+        """
+        Performs a reconnection attempt with the serial device.
 
-        Returns:
-            bool: True if reconnection succeeded, false otherwise.
+        :returns: True if reconnection succeeded, false otherwise.
+        :rtype: bool
         """
         status = False
         self._serial_device.close()
-        logger_sdk.info("Starting reconnection attempt on {}".format(self._serial_device))
+        logger_sdk.info(f'Starting reconnection attempt on {self._serial_device}')
         while self._is_active:
             if self._serial_device.open():
-                logger_sdk.info("Device {} reconnected.".format(self._serial_device))
+                logger_sdk.info(f'Device {self._serial_device} reconnected.')
                 status = True
                 break
             else:
-                logger_sdk.info("Reconnection attempt on {} failed.".format(self._serial_device))
+                logger_sdk.info(f'Reconnection attempt on {self._serial_device} failed.')
                 time.sleep(0.5)
         return status
 
     @staticmethod
     def _print_debug(frame: Frame, received: bool) -> None:
-        """This function is used to print the sent/received frames on the log.
-
-        Args:
-            frame (Frame): Frame that is being sent/received.
-            received (bool): Flag to define if we are sending/receiving.
         """
-        msg = "Frame {action}: {frame}".format(action='recv' if received else 'sent', frame=frame)
-        logger_sdk.debug(msg)
+        Prints the received/sent frames on the SDK logger:
+
+        :param Frame frame: Frame that is being sent/received.
+        :param bool received: Flag to indicate if we are sending/receiving the frame.
+        """
+        action = 'recv' if received else 'sent'
+        logger_sdk.debug(f'Frame {action}: {frame}')

@@ -2,12 +2,11 @@
 # -*- coding: ascii -*-
 """
 Frame stream usage test.
-The frame stream is a thread used to read/write frame from/to the serial device.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import time
@@ -22,10 +21,12 @@ LOG_SDK.enable()
 
 # Test Definitions ==============================
 class TestFrameStream(unittest.TestCase):
-    """Basic streaming tests using the SimpleFrame example.
+    """
+    Basic streaming tests using the SimpleFrame example.
     """
     def test_send_and_receive(self):
-        """Send and receive a frame using the frame stream on a looped serial device.
+        """
+        Send and receive a frame using the frame stream on a looped serial device.
         Test if the transmitted/received frames are the same.
         """
         frame = SimpleFrame(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
@@ -33,7 +34,8 @@ class TestFrameStream(unittest.TestCase):
 
     @staticmethod
     def send_and_receive(frame_tx: SimpleFrame) -> None:
-        """Simulate a serial device on loop mode and perform a comparison between
+        """
+        Simulate a serial device on loop mode and perform a comparison between
         the data being received and sent.
         """
         # Stop flag
@@ -48,7 +50,7 @@ class TestFrameStream(unittest.TestCase):
 
         # Initialize frame stream
         fh = SimpleFrameHandler()
-        sd = SerialDevice(usb_id=UsbID(vid=0x1234, pid=0x5678), looped=True)
+        sd = SerialDevice(uid=UsbID(vid=0x1234, pid=0x5678), looped=True)
         fs = FrameStream(serial_device=sd, frame_handler=fh)
         fs.on_frame_received += on_frame_received
 

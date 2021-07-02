@@ -1,72 +1,104 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Event handling.
+Event handling utilities.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 
 class EventHook:
-    """Utility that allows to subscribe multiple callbacks
-    to a single event. When the event is emitted the given
-    inputs are propagated to all the registered callbacks.
-
-    NOTE: All the callbacks added to the hook need to have
-    the same arguments.
     """
+    Event hook abstraction. This utility allows to emit custom states to several
+    callbacks in a simple fashion.
+
+    .. note::
+        *   All the callbacks subscribed to a hook need to handle the same arguments.
+    """
+
     def __init__(self):
-        """Class initialization.
         """
-        self._handlers = []
-
-    def __iadd__(self, handler: callable) -> 'EventHook':
-        """Operator += implementation.
-        Adds a function handler to the event hook.
-
-        Args:
-            handler (callable): Function handler.
-
-        Returns:
-            EventHook: self.
+        This class don't require any input from the user to be initialized.
         """
-        if handler not in self._handlers:
-            self._handlers.append(handler)
+        self._callbacks = []
+
+    def __iadd__(self, callback: callable) -> 'EventHook':
+        """
+        Simplified callback subscription. Overrides the **+=** operator.
+
+        :param callable callback: Event callback.
+
+        :returns: Self.
+        :rtype: EventHook
+        """
+        self.subscribe(callback=callback)
         return self
 
-    def __isub__(self, handler: callable) -> 'EventHook':
-        """Operator -= implementation.
-        Removes a function handler from the event hook.
-
-        Args:
-            handler (callable): Function handler.
-
-        Returns:
-            EventHook: self.
+    def __isub__(self, callback: callable) -> 'EventHook':
         """
-        if handler not in self._handlers:
-            self._handlers.remove(handler)
+        Simplified callback unsubscription. Overrides the **-=** operator.
+
+        :param callable callback: Event callback.
+
+        :returns: Self.
+        :rtype: EventHook
+        """
+        self.unsubscribe(callback=callback)
         return self
 
     @property
     def empty(self) -> bool:
-        """Return if the event hook is empty.
-
-        Returns:
-            bool: True if the hook has no handlers.
         """
-        return len(self._handlers) == 0
+        Checks if the event hook has callbacks subscribed.
+
+        :returns: True if the hook has no callbacks, false otherwise.
+        :rtype: bool
+        """
+        return len(self._callbacks) == 0
+
+    def subscribe(self, callback: callable) -> bool:
+        """
+        Subscribes a callback to the event hook.
+
+        :param callable callback: Event callback.
+
+        :returns: True if subscribed, false otherwise.
+        :rtype: bool
+        """
+        if callback not in self._callbacks:
+            self._callbacks.append(callback)
+            return True
+        return False
+
+    def unsubscribe(self, callback: callable) -> bool:
+        """
+        Unsubscribes a callback from the event hook.
+
+        :param callable callback: Event callback.
+
+        :returns: True if unsubscribed, false otherwise.
+        :rtype: bool
+        """
+        if callback in self._callbacks:
+            self._callbacks.remove(callback)
+            return True
+        return False
 
     def clear(self) -> None:
-        """Clears the handlers array.
         """
-        self._handlers.clear()
+        Remove all the callbacks from the hook.
+        """
+        self._callbacks.clear()
 
     def emit(self, *args, **kwargs) -> None:
-        """Emits all the handlers with the given arguments.
         """
-        for handler in self._handlers:
-            handler(*args, **kwargs)
+        Emit the given arguments to all the callbacks.
+
+        :param args: Arguments.
+        :param kwargs: Key arguments.
+        """
+        for callback in self._callbacks:
+            callback(*args, **kwargs)

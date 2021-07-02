@@ -2,12 +2,11 @@
 # -*- coding: ascii -*-
 """
 Frame usage test.
-The frame is used to define and serialize the serial commands.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import unittest
@@ -17,10 +16,12 @@ from embutils.utils import CRC, COBS
 
 # Test Definitions ==============================
 class TestFrame(unittest.TestCase):
-    """Basic reference tests using the SimpleFrame example.
+    """
+    Basic reference tests using the SimpleFrame example.
     """
     def test_serialize(self):
-        """Check if the serialization of a frame is being done correctly.
+        """
+        Check if the serialization of a frame is being done correctly.
         """
         # By hand
         frame_raw = bytearray([0x01, 0x02, 0x02, 0xDD, 0x07])
@@ -35,7 +36,8 @@ class TestFrame(unittest.TestCase):
         assert frame_ser == frame.serialize()
 
     def test_deserialize(self):
-        """Check if the deserialization of a frame is being done correctly.
+        """
+        Check if the deserialization of a frame is being done correctly.
         """
         # By hand
         frame_raw = bytearray([0x01, 0x02, 0x02, 0xDD, 0x07])
@@ -50,7 +52,8 @@ class TestFrame(unittest.TestCase):
         assert frame_raw == frame_2.raw()
 
     def test_comparison(self):
-        """Check if the comparison of frames is being done correctly.
+        """
+        Check if the comparison of frames is being done correctly.
         """
         # Create frames
         frame_1 = SimpleFrame(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))

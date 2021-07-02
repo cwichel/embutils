@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-SDK logger.
+SDK logger implementation.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import logging
@@ -15,29 +15,35 @@ from dataclasses import dataclass
 
 @dataclass
 class LoggerFormat:
-    """Class used to contain a logger format configuration.
-
-    By default:
     """
+    Implements a data type to define and store the logger entries formatting
+    configuration.
+    """
+    #: Defines the structure of each log entry.
     pattern:    str = '{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}'
+
+    #: Defines how the pattern should be interpreted.
     style:      str = '{'
 
 
 class Logger:
-    """Implement a basic logger handler class.
     """
-    FMT_BASE = LoggerFormat()
+    Implements a basic logger handler class.
+    """
+    #: Default logger entry format.
+    FMT_DEFAULT = LoggerFormat()
 
     def __init__(self, name: str = '', fmt: LoggerFormat = None) -> None:
-        """Class initialization. Apply a basic configuration to the logger.
+        """Logger initialization. Applies the basic configuration to
+        the logger.
 
-        Args:
-            name (str): Logger name.
-            fmt (LoggerFormat): Log entries format.
+        :param str name: Logger name.
+        :param LoggerFormat fmt: Format used on the log entries. If set to None
+            the logger will be initialized with the value defined on :attr:`FMT_DEFAULT`.
         """
         # Define formatter
         if fmt is None:
-            fmt = self.FMT_BASE
+            fmt = self.FMT_DEFAULT
 
         # Create logger (debug level, disabled)
         self._logger = logging.Logger(name=name)
@@ -52,27 +58,30 @@ class Logger:
 
     @property
     def logger(self) -> logging.Logger:
-        """Get the logger handler.
+        """
+        Logger instance.
 
-        Return:
-            logging.Logger: Logger handler.
+        :returns: Logger instance.
+        :rtype: logging.Logger
         """
         return self._logger
 
     def enable(self) -> None:
-        """Enable the logger.
+        """
+        Enables the logger.
         """
         self._logger.disabled = False
 
     def disable(self) -> None:
-        """Disable the logger.
+        """
+        Disables the logger.
         """
         self._logger.disabled = True
 
     def set_level(self, level: int = logging.DEBUG) -> None:
-        """Set the logger messages level.
+        """
+        Set the logger message level.
 
-        Args:
-            level (int): Logger level.
+        :param int level: Logger level.
         """
         self._logger.setLevel(level=level)

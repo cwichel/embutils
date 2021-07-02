@@ -3,22 +3,22 @@
 """
 Time utilities.
 
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import time
 
 
 def time_elapsed(start: float) -> float:
-    """Return the time elapsed since start.
+    """
+    Computes the elapsed time since the given timestamp.
 
-    Args:
-        start (float): Start timestamp.
+    :param float start: Start timestamp.
 
-    Returns:
-        float: Time elapsed.
+    :returns: Time elapsed.
+    :rtype: float
     """
     return time.time() - start

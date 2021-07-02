@@ -1,24 +1,20 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Serial interface implementation.
-This class represents the point closer to the user. Here the DEV has to
-define/use payload/commands/frame layouts to communicate with the device.
+Serial interface implementation. This class represents the closer point to the
+user. Here the developer needs to complete the interface with the specific
+applications commands.
 
-NOTE: All the functions that interacts with the device (ex: read_serial_number)
-should be defined here.
-
-@date:      2021
-@author:    Christian Wiche
-@contact:   cwichel@gmail.com
-@license:   The MIT License (MIT)
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
 """
 
 import time
 from embutils.serial.data import Frame, FrameHandler
 from embutils.serial.core import FrameStream, SerialDevice
 from embutils.utils import time_elapsed, EventHook, LOG_SDK, UsbID
-from threading import Lock
 from typing import Union
 
 
@@ -26,26 +22,34 @@ logger_sdk = LOG_SDK.logger
 
 
 class SerialInterface:
-    """Serial command interface implementation.
-    This class implement all serial command wrappers and handlers.
+    """
+    Serial command interface implementation. This class should implement all the
+    methods to interact with the target device.
 
-    The available events are:
-        1. on_port_reconnect: This event is emitted when the port is able to reconnect.
-            Subscribe using callback with syntax:
-                def <callback>()
+    Available events:
 
-        2. on_port_disconnect: This event is emitted when the port get disconnected.
-            Subscribe using callback with syntax:
-                def <callback>()
+    #.  **on_frame_received:** This event is emitted when a frame is received
+        and deserialized from the serial device. Subscribe using callbacks with
+        syntax::
 
-        3. on_frame_received: This event is emitted when a frame is received.
-            Subscribe using callback with syntax:
-                def <callback>(frame: Frame)
-        """
-    # Command wait response timeout
+            def <callback>(frame: Frame)
+
+    #.  **on_port_reconnect:** This event is emitted when the system is able to
+        reconnect to the configured port. Subscribe using callbacks with syntax::
+
+            def <callback>()
+
+    #.  **on_port_disconnect:** This event is emitted when the system gets
+        disconnected from the configured serial port. Subscribe using callbacks
+        with syntax::
+
+            def <callback>()
+
+    """
+    #: Interface command response timeout
     RESPONSE_TIMEOUT_S = 0.5
 
-    # Serial device settings
+    #: Default serial device settings
     SERIAL_SETTINGS = {
         'baudrate': 230400,
         'bytesize': 8,
@@ -55,28 +59,26 @@ class SerialInterface:
         }
 
     def __init__(self, frame_handler: FrameHandler, port: str = None, looped: bool = False) -> None:
-        """Class initialization.
-
-        Args:
-            frame_handler (FrameHandler): Handler used to process incoming frames.
-            port (str): Serial device port.
-            looped (bool): Enable test mode (looped serial).
         """
-        # Add lock for multithreading usage
-        self._lock = Lock()
+        Class initialization.
 
+        :param FrameHandler frame_handler: Frame handler. Used to read and decode the
+            incoming bytes into a frame.
+        :param str port:    Serial device port.
+        :param bool looped: Enable test mode (with looped serial).
+        """
         # Response timeout configuration
         self._timeout = self.RESPONSE_TIMEOUT_S
 
         # Public events
+        self.on_frame_received = EventHook()
         self.on_port_reconnect = EventHook()
         self.on_port_disconnect = EventHook()
-        self.on_frame_received = EventHook()
 
         # Frame Stream: Communications thread
         # Start serial device
         if looped:
-            serial = SerialDevice(usb_id=UsbID(vid=0xDEAD, pid=0xBEEF), settings=self.SERIAL_SETTINGS, looped=True)
+            serial = SerialDevice(uid=UsbID(vid=0xDEAD, pid=0xBEEF), settings=self.SERIAL_SETTINGS, looped=True)
         else:
             serial = SerialDevice(port=port, settings=self.SERIAL_SETTINGS)
 
@@ -86,70 +88,70 @@ class SerialInterface:
         self._frame_stream.on_port_disconnect += self.on_port_disconnect.emit
         self._frame_stream.on_frame_received  += self._process_frame
 
-        logger_sdk.info('Interface initialized on: {}'.format(self._frame_stream.serial_device))
-
-    @property
-    def lock(self) -> Lock:
-        """Return the Command Interface lock for multithreading
-        support.
-
-        Return:
-            Lock: Mutex.
-        """
-        return self._lock
+        logger_sdk.info(f'Interface initialized on: {self._frame_stream.serial_device}')
 
     @property
     def frame_stream(self) -> FrameStream:
-        """Return the current frame stream handler.
+        """
+        Get the frame stream handler.
 
-        Return:
-            FrameStream: Handler used to send/receive frames over serial.
+        :returns: Frame stream handler.
+        :rtype: FrameStream
         """
         return self._frame_stream
 
     @property
     def timeout(self) -> float:
-        """Returns the current response timeout.
+        """
+        Get the interface message response timeout.
 
-        Return:
-            float: Time in [s].
+        :returns: Timeout in seconds.
+        :rtype: float
         """
         return self._timeout
 
     @timeout.setter
-    def timeout(self, value: float) -> None:
-        """Set the current response timeout.
-
-        Args:
-            value (float): Time in [s].
+    def timeout(self, timeout: float) -> None:
         """
-        if value <= 0.0:
+        Set the interface message response timeout.
+
+        :param float timeout: Timeout in seconds.
+        """
+        if timeout <= 0.0:
             raise ValueError('The response timeout needs to be greater than zero.')
-        self._timeout = value
+        self._timeout = timeout
 
     def _process_frame(self, frame: Frame) -> None:
-        """Method used to handle what to do when a frame is received.
+        """
+        Method used to handle the received frames for processing.
 
-        Args:
-            frame (Frame): Frame to be processed.
+        :param Frame frame: Frame to be processed.
         """
         # Do special actions:
 
         # Pass frame to user:
         self.on_frame_received.emit(frame=frame)
 
-    def transmit(self, send: Frame, resp_logic: callable = None, resp_timeout: float = None) -> Union[None, Frame]:
-        """Send a frame and wait for the response based on custom logic.
-        The response detection callback syntax is:
+    def transmit(self, send: Frame, logic: callable = None, timeout: float = None) -> Union[None, Frame]:
+        """
+        Send a frame and, if required, wait for a response that complies with
+        the defined response logic.
+
+        The response detection logic callback should have the following syntax::
+
             def <callback>(sent: Frame, recv: Frame)
 
-        Args:
-            send (Frame): Frame to be sent to the device.
-            resp_logic (callable, optional): Response detection logic. The response detection is disabled when None.
-            resp_timeout (float, optional): Response timeout. Use default interface timeout when None.
+        Where:
 
-        Returns:
-            Union[None, Frame]: None if timeout of no response detection is requested. If response detected Frame.
+        * `sent`: Frame sent (if required for comparisons.
+        * `recv`: Frame received from the target.
+
+        :param Frame send:      Frame to send to target.
+        :param callable logic:  Response logic. Defines how the response is detected.
+        :param float timeout:   Response timeout. If none it'll use the default interface timeout.
+
+        :returns: None if timeout or no response is detected, response frame otherwise.
+        :rtype: Frame
         """
         # SEND ------------------------
         # Prepare and send frame
@@ -158,7 +160,7 @@ class SerialInterface:
 
         # RECEIVE ---------------------
         # Return nothing if we don't need response
-        if resp_logic is None:
+        if logic is None:
             logger_sdk.debug('Response is not needed.')
             return None
 
@@ -166,36 +168,37 @@ class SerialInterface:
         logger_sdk.debug('Waiting for frame response...')
         resp   = None
         ready  = False
-        resp_timeout = self._timeout if (resp_timeout is None) else resp_timeout
+        timeout = self._timeout if (timeout is None) else timeout
 
         # Receive logic callback
         def on_frame_received(frame: Frame):
-            nonlocal send, resp, resp_logic, ready
-            ready = resp_logic(sent=send, recv=frame)
+            nonlocal send, resp, logic, ready
+            ready = logic(sent=send, recv=frame)
             if ready:
                 resp = frame
 
         # Perform wait response logic
         self.on_frame_received += on_frame_received
         tm_start = time.time()
-        while not ready and (time_elapsed(tm_start) < resp_timeout):
+        while not ready and (time_elapsed(tm_start) < timeout):
             time.sleep(0.01)
         self.on_frame_received -= on_frame_received
 
         # Check data
-        logger_sdk.debug('Frame response: {state} after {elapsed:.03f}[s]'.format(
-            state='Received' if ready else 'Timeout',
-            elapsed=time_elapsed(start=tm_start)
-            ))
+        state = "Received" if ready else "Timeout"
+        logger_sdk.debug(f'Frame response: {state} after {time_elapsed(start=tm_start):.03f}[s]')
         return resp
 
     def stop(self) -> None:
-        """Stops the frame stream process.
+        """
+        Stops the frame stream process.
         """
         self._frame_stream.stop()
 
     def join(self) -> None:
-        """Maintains the process alive while the interface is working.
+        """
+        Maintains the process alive while the interface is working. The loop will
+        exit if the interface serial process gets stopped.
         """
         while self._frame_stream.is_alive:
             time.sleep(0.5)
