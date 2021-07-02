@@ -7,8 +7,10 @@ Welcome to embutils's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
+
+   _source/modules
 
 Indices and tables
 ==================
