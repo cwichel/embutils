@@ -153,41 +153,43 @@ class SerialInterface:
         :returns: None if timeout or no response is detected, response frame otherwise.
         :rtype: Frame
         """
-        # SEND ------------------------
-        # Prepare and send frame
-        logger_sdk.debug('Sending frame...')
-        self._frame_stream.send_frame(frame=send)
-
-        # RECEIVE ---------------------
-        # Return nothing if we don't need response
-        if logic is None:
-            logger_sdk.debug('Response is not needed.')
-            return None
-
-        # Process wait response
-        logger_sdk.debug('Waiting for frame response...')
-        resp   = None
-        ready  = False
+        recv    = None
         timeout = self._timeout if (timeout is None) else timeout
 
         # Receive logic callback
         def on_frame_received(frame: Frame):
-            nonlocal send, resp, logic, ready
-            ready = logic(sent=send, recv=frame)
-            if ready:
-                resp = frame
+            """Performs the response logic and returns a frame if succeed.
+            """
+            nonlocal send, recv
+            if logic(sent=send, recv=frame):
+                recv = frame
 
-        # Perform wait response logic
-        self.on_frame_received += on_frame_received
-        tm_start = time.time()
-        while not ready and (time_elapsed(tm_start) < timeout):
-            time.sleep(0.01)
-        self.on_frame_received -= on_frame_received
+        # Prepare response logic
+        if logic:
+            self.on_frame_received += on_frame_received
 
-        # Check data
-        state = "Received" if ready else "Timeout"
-        logger_sdk.debug(f'Frame response: {state} after {time_elapsed(start=tm_start):.03f}[s]')
-        return resp
+        # Prepare and send frame
+        logger_sdk.debug('Sending frame...')
+        self._frame_stream.send_frame(frame=send)
+
+        # Define if response is needed
+        if logic:
+            # Wait for response
+            logger_sdk.debug('Waiting for response...')
+            tm_start = time.time()
+            while not recv and (time_elapsed(tm_start) < timeout):
+                time.sleep(0.01)
+            self.on_frame_received -= on_frame_received
+
+            # Check data
+            state = "Received" if recv else "Timeout"
+            logger_sdk.debug(f'Frame response: {state} after {time_elapsed(start=tm_start):.03f}[s]')
+            return recv
+
+        else:
+            # Return nothing if we don't need response
+            logger_sdk.debug('Response not needed.')
+            return None
 
     def stop(self) -> None:
         """
