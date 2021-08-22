@@ -8,8 +8,10 @@ Project build utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
-import subprocess
+
 from pathlib import Path
+
+from embutils.utils import execute
 
 
 # -->> Definitions <<------------------
@@ -28,7 +30,7 @@ def build_iar(config: str, project: Path) -> None:
     :param Path project:    Path to EWARM project.
     """
     cmd = f'IarBuild "{project}" -build "{config}"'
-    _execute(cmd=cmd)
+    execute(cmd=cmd)
 
 
 def build_cubeide(name: str, config: str, project: Path, workspace: Path) -> None:
@@ -49,14 +51,4 @@ def build_cubeide(name: str, config: str, project: Path, workspace: Path) -> Non
     cmd = f'stm32cubeidec --launcher.suppressErrors -nosplash ' \
           f'-application org.eclipse.cdt.managedbuilder.core.headlessbuild ' \
           f'-data "{workspace}" -cleanBuild "{name}/{config}" -import "{project}'
-    _execute(cmd=cmd)
-
-
-def _execute(cmd: str) -> None:
-    """
-    Executed the command on the terminal.
-
-    :param str cmd: Command to be executed.
-    """
-    print(f'Executing:\n"{cmd}"\nOutput:')
-    subprocess.call(cmd, shell=True)
+    execute(cmd=cmd)
