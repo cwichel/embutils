@@ -66,20 +66,14 @@ class UsbID(int):
     @property
     def vid(self) -> int:
         """
-        USB VID value.
-
-        :returns: VID value.
-        :rtype: int.
+        USB vendor ID.
         """
         return self._vid
 
     @property
     def pid(self) -> int:
         """
-        USB PID value.
-
-        :returns: PID value.
-        :rtype: int.
+        USB product ID.
         """
         return self._pid
 

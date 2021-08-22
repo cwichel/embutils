@@ -83,10 +83,7 @@ class FrameStream:
     @property
     def serial_device(self) -> SerialDevice:
         """
-        Get the serial device handler.
-
-        :returns: Serial device handler.
-        :rtype: SerialDevice
+        Serial device handler.
         """
         return self._serial_device
 
@@ -110,10 +107,7 @@ class FrameStream:
     @property
     def frame_handler(self) -> FrameHandler:
         """
-        Get the frame handler.
-
-        :returns: Frame handler.
-        :rtype: FrameHandler
+        Frame handler.
         """
         return self._frame_handler
 
@@ -133,9 +127,6 @@ class FrameStream:
     def is_alive(self) -> bool:
         """
         Returns if the stream thread is alive.
-
-        :returns: True if alive, false otherwise.
-        :rtype: bool
         """
         return self._thread.is_alive()
 
@@ -143,9 +134,6 @@ class FrameStream:
     def is_working(self) -> bool:
         """
         Returns if the stream thread is working (not paused).
-
-        :returns: True if working, false otherwise.
-        :rtype: bool
         """
         return self.is_alive and self._serial_device.is_open and not self._is_paused
 

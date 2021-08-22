@@ -115,40 +115,28 @@ class SerialDevice:
     @property
     def serial(self) -> serial.Serial:
         """
-        Get the serial handler.
-
-        :returns: Serial handler.
-        :rtype: serial.Serial
+        Serial handler.
         """
         return self._serial
 
     @property
     def port(self) -> str:
         """
-        Get the device port name.
-
-        :returns: Device port name.
-        :rtype: str
+        Device port name.
         """
         return self._serial.port
 
     @property
     def id(self) -> UsbID:
         """
-        Get the device USB ID.
-
-        :returns: Device USB ID.
-        :rtype: UsbID
+        Device USB ID.
         """
         return self._id
 
     @property
     def timeout(self) -> float:
         """
-        Get the serial process timeout.
-
-        :returns: Timeout in seconds.
-        :rtype: float
+        Serial process timeout.
         """
         return self._serial.timeout
 
@@ -166,10 +154,7 @@ class SerialDevice:
     @property
     def is_open(self) -> bool:
         """
-        Get if the serial device is open.
-
-        :returns: True if open, false otherwise.
-        :rtype: bool
+        Returns if the serial device is open.
         """
         return self._serial.is_open
 
@@ -457,10 +442,7 @@ class SerialDeviceScanner:
     @property
     def is_alive(self) -> bool:
         """
-        Check if the scan thread is alive.
-
-        :returns: True if alive, false otherwise.
-        :rtype: bool
+        Returns if the scan thread is alive.
         """
         return self._thread.is_alive()
 
@@ -468,9 +450,6 @@ class SerialDeviceScanner:
     def devices(self) -> SerialDeviceList:
         """
         Connected serial devices list.
-
-        :returns: List with connected devices.
-        :rtype: SerialDeviceList
         """
         return self._dev_list
 

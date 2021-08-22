@@ -93,20 +93,14 @@ class SerialInterface:
     @property
     def frame_stream(self) -> FrameStream:
         """
-        Get the frame stream handler.
-
-        :returns: Frame stream handler.
-        :rtype: FrameStream
+        Frame stream handler.
         """
         return self._frame_stream
 
     @property
     def timeout(self) -> float:
         """
-        Get the interface message response timeout.
-
-        :returns: Timeout in seconds.
-        :rtype: float
+        Message response timeout.
         """
         return self._timeout
 

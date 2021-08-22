@@ -18,7 +18,7 @@ class Serialized:
     Abstract implementation for a serialized item.
     """
     #:  Serialized object byte length. If the length is variable, this defines the minimum.
-    LENGTH = 0
+    _LENGTH = 0
 
     @property
     def length(self) -> int:
@@ -26,11 +26,8 @@ class Serialized:
         Serialized item length in bytes. This property allows to handle the cases
         in which the object has variable size and the attribute :attr:`LENGTH` only
         defines the minimum length.
-
-        :returns: Serialized item length.
-        :rtype: int
         """
-        return self.LENGTH
+        return self._LENGTH
 
     @abstractmethod
     def serialize(self) -> bytearray:
