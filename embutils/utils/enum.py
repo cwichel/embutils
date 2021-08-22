@@ -12,6 +12,10 @@ Enumeration utilities.
 from enum import IntEnum
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class IntEnumMod(IntEnum):
     """
     Modified integer enumeration class. This class extends the functionalities
@@ -49,8 +53,7 @@ class IntEnumMod(IntEnum):
         """
         if cls.has_value(value=value):
             return cls(value)
-        else:
-            raise ValueError(f'Value 0x{value:02X} is not defined.')
+        raise ValueError(f'Value 0x{value:02X} is not defined.')
 
     @classmethod
     def has_value(cls, value: int) -> bool:

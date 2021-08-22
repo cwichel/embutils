@@ -10,10 +10,15 @@ Frame implementation classes.
 """
 
 from abc import abstractmethod
+
 from embutils.serial.core import SerialDevice
 from embutils.utils import EventHook, Serialized
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class Frame(Serialized):
     """
     Frame structure implementation. This class define the base structure of a

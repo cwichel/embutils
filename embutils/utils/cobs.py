@@ -10,6 +10,10 @@ COBS encoding/decoding implementation.
 """
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class COBS:
     """
     Consistent Overhead Byte Stuffing (COBS) encoding/decoding utilities.

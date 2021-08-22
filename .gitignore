@@ -4,6 +4,9 @@
 # Jetbrains
 .idea/
 
+# Coverage
+.coverage
+
 # Poetry
 poetry.lock 
 

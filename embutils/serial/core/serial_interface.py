@@ -12,15 +12,18 @@ applications commands.
 """
 
 import time
+from typing import Union
+
 from embutils.serial.data import Frame, FrameHandler
 from embutils.serial.core import FrameStream, SerialDevice
 from embutils.utils import time_elapsed, EventHook, LOG_SDK, UsbID
-from typing import Union
 
 
+# -->> Definitions <<------------------
 logger_sdk = LOG_SDK.logger
 
 
+# -->> API <<--------------------------
 class SerialInterface:
     """
     Serial command interface implementation. This class should implement all the
@@ -78,7 +81,7 @@ class SerialInterface:
         # Frame Stream: Communications thread
         # Start serial device
         if looped:
-            serial = SerialDevice(uid=UsbID(vid=0xDEAD, pid=0xBEEF), settings=self.SERIAL_SETTINGS, looped=True)
+            serial = SerialDevice(usb_id=UsbID(vid=0xDEAD, pid=0xBEEF), settings=self.SERIAL_SETTINGS, looped=True)
         else:
             serial = SerialDevice(port=port, settings=self.SERIAL_SETTINGS)
 
@@ -93,20 +96,14 @@ class SerialInterface:
     @property
     def frame_stream(self) -> FrameStream:
         """
-        Get the frame stream handler.
-
-        :returns: Frame stream handler.
-        :rtype: FrameStream
+        Frame stream handler.
         """
         return self._frame_stream
 
     @property
     def timeout(self) -> float:
         """
-        Get the interface message response timeout.
-
-        :returns: Timeout in seconds.
-        :rtype: float
+        Message response timeout.
         """
         return self._timeout
 
@@ -186,10 +183,9 @@ class SerialInterface:
             logger_sdk.debug(f'Frame response: {state} after {time_elapsed(start=tm_start):.03f}[s]')
             return recv
 
-        else:
-            # Return nothing if we don't need response
-            logger_sdk.debug('Response not needed.')
-            return None
+        # Return nothing if we don't need response
+        logger_sdk.debug('Response not needed.')
+        return None
 
     def stop(self) -> None:
         """
