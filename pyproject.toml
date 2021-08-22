@@ -28,7 +28,7 @@ linter  = 'scripts.poetry:run_linter'
 version = 'scripts.poetry:run_version'
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 pyserial = "^3.5"
 intelhex = "^2.3.0"
 
