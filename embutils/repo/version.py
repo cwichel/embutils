@@ -28,12 +28,18 @@ class Version:
     """
     Firmware version definition class.
     """
+    #: Defines the structure of the version string.
     _REGEX = re.compile(pattern=r'^\d+(\.\d+){1,2}$')
+    #: Version base file name.
     _VFILE = 'version.txt'
+    #: Default build number.
     _BUILD = 99999
 
+    #: Version major.
     major: int = 99
+    #: Version minor.
     minor: int = 0
+    #: Version build.
     build: Union[None, int] = None
 
     def __str__(self):
@@ -47,9 +53,11 @@ class Version:
         Bumps the version number.
 
         :param str ver: This value can be:
-                        - 'major': Increases the major number in 1.
-                        - 'minor': Increases the minor number in 1.
-                        - 'M.m'  : Set the major and minor numbers.
+
+            - 'major': Increases the major number in 1.
+            - 'minor': Increases the minor number in 1.
+            - 'M.m'  : Set the major and minor numbers.
+
         """
         ver = ver.lower()
         if ver ==  'major':
@@ -71,11 +79,11 @@ class Version:
         :param Path path: Path were the version text file is stored.
         """
         if not (path.is_dir() and path.exists()):
-            ValueError(f'The provided path is not reachable: {path}')
+            raise ValueError(f'The provided path is not reachable: {path}')
 
         file = path / self._VFILE
         if not file.exists():
-            ValueError(f'Unable to find a version.txt file in: {path}')
+            raise ValueError(f'Unable to find a version.txt file in: {path}')
 
         with file.open(mode='r') as ver_file:
             ver = ver_file.read().split('.')
@@ -93,7 +101,7 @@ class Version:
         :param bool store_build: If true, the build value will be stored in the file. False by default.
         """
         if not (path.is_dir() and path.exists()):
-            ValueError(f'The provided path is not reachable: {path}')
+            raise ValueError(f'The provided path is not reachable: {path}')
 
         file = path / self._VFILE
         with file.open(mode='w') as ver_file:
