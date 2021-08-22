@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Build commands.
+Project build utilities.
 
 :date:      2021
 :author:    Christian Wiche
