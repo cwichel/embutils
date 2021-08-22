@@ -14,6 +14,7 @@ Submodules
    embutils.utils.events
    embutils.utils.logger
    embutils.utils.serialized
+   embutils.utils.subprocess
    embutils.utils.threading
    embutils.utils.time
    embutils.utils.usb_id
