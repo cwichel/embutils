@@ -11,9 +11,14 @@ USB device ID.
 
 import re
 from typing import Tuple
+
 from embutils.utils.bytes import bitmask
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class UsbID(int):
     """
     USB ID implementation. This class represents the USB VID/PID as a single

@@ -13,6 +13,10 @@ from abc import abstractmethod
 from typing import Union
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class Serialized:
     """
     Abstract implementation for a serialized item.

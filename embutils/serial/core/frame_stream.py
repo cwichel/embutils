@@ -10,14 +10,17 @@ Frame stream implementation.
 """
 
 import time
+
 from embutils.serial.data import Frame, FrameHandler
 from embutils.serial.core.serial_device import SerialDevice
 from embutils.utils import EventHook, LOG_SDK, ThreadItem
 
 
+# -->> Definitions <<------------------
 logger_sdk = LOG_SDK.logger
 
 
+# -->> API <<--------------------------
 class FrameStream:
     """
     This class is used to send and receive frames through the serial device in an
@@ -199,7 +202,11 @@ class FrameStream:
                 continue
 
             # Receive and process data
-            if not self._frame_handler.read_process(serial=self._serial_device, emitter=self.on_frame_received):
+            working = self._frame_handler.read_process(
+                serial=self._serial_device,
+                emitter=self.on_frame_received
+                )
+            if not working:
                 # Device disconnected...
                 logger_sdk.info(f'Device disconnected: {self._serial_device}')
                 ThreadItem(
@@ -230,9 +237,8 @@ class FrameStream:
                 logger_sdk.info(f'Device {self._serial_device} reconnected.')
                 status = True
                 break
-            else:
-                logger_sdk.info(f'Reconnection attempt on {self._serial_device} failed.')
-                time.sleep(0.5)
+            logger_sdk.info(f'Reconnection attempt on {self._serial_device} failed.')
+            time.sleep(0.5)
         return status
 
     @staticmethod

@@ -12,6 +12,10 @@ Time utilities.
 import time
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 def time_elapsed(start: float) -> float:
     """
     Computes the elapsed time since the given timestamp.

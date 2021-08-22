@@ -10,6 +10,10 @@ Event handling utilities.
 """
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class EventHook:
     """
     Event hook abstraction. This utility allows to emit custom states to several

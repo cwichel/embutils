@@ -8,11 +8,13 @@ Define the version handler class
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+
 import abc
 import datetime
 import os
 import re
 import subprocess
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
@@ -98,7 +100,7 @@ class Version:
         in the format 'major.minor.build'.
 
         :param Path path: Path were the version text file will be stored.
-        :param bool store_build: If true, the build value will be stored in the file. False by default.
+        :param bool store_build: If true, the build will be stored. False by default.
         """
         if not (path.is_dir() and path.exists()):
             raise ValueError(f'The provided path is not reachable: {path}')
@@ -109,6 +111,13 @@ class Version:
             ver_file.write(f'{self.major}.{self.minor}.{build}')
 
     def export_c(self, author: str, note: str, file: Path) -> None:
+        """
+        Exports the version to a C header file.
+
+        :param str author:  Author to be declared on the header file.
+        :param str note:    Note to be added on the file documentation.
+        :param Path file:   Path to version C header file.
+        """
         if file.parent.exists() and file.parent.is_dir():
             template = (THIS / 'version_template.h').open(mode='r').read()
             template = template.format(

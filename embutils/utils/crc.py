@@ -10,9 +10,14 @@ CRC implementation.
 """
 
 from typing import List
+
 from embutils.utils.bytes import bitmask, reverse_bits
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class CRC:
     """
     Generalized table-driven CRC implementation.
@@ -160,8 +165,7 @@ class CRC:
         # Generate the lookup table
         if self._size >= 8:
             return self._lookup_normal()
-        else:
-            return self._lookup_small()
+        return self._lookup_small()
 
     def _compute_small(self, data: bytearray, crc_init: int = None) -> int:
         """

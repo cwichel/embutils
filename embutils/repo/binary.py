@@ -8,7 +8,9 @@ Binary generation utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+
 import intelhex
+
 from pathlib import Path
 from typing import List, Tuple
 
@@ -25,8 +27,8 @@ def bin_to_hex(file: Path, offset: int) -> intelhex.IntelHex:
     :param int  offset: BIN file address offset.
     """
     out = intelhex.IntelHex()
-    with file.open(mode='r') as f:
-        out.loadbin(fobj=f, offset=offset)
+    with file.open(mode='r') as fhex:
+        out.loadbin(fobj=fhex, offset=offset)
     return out
 
 

@@ -9,11 +9,15 @@ SDK threading utilities.
 :license:   The MIT License (MIT)
 """
 
+from functools import wraps
 from threading import Lock, Thread
 from typing import List, Union
-from functools import wraps
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 def synchronous(lock_name: str) -> callable:
     """
     Decorator that can be used in a class to wrap a function or action with a
@@ -40,7 +44,7 @@ def synchronous(lock_name: str) -> callable:
     return _wrapper
 
 
-class ThreadPool(object):
+class ThreadPool:
     """
     Thread pool implementation for ThreadItem instances.
 
@@ -119,13 +123,14 @@ class ThreadItem(Thread):
     or not) can be monitored using the ThreadPool class.
     """
     def __init__(self,
+                 *args,
                  name: str, target: callable,
                  daemon: bool = True, auto_remove: bool = True,
-                 *args, **kwargs) -> None:
+                 **kwargs) -> None:
         """
         Class initialization.
 
-        :param str name:            Thread name. This name is used to identify the thread on the pool.
+        :param str name:            Thread name. Used to identify the thread on the pool.
         :param bool daemon:         If true the thread will be initialized as daemon.
         :param bool auto_remove:    If true the thread will be deleted after completion.
         """

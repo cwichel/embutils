@@ -10,9 +10,14 @@ SDK logger implementation.
 """
 
 import logging
+
 from dataclasses import dataclass
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 @dataclass
 class LoggerFormat:
     """
