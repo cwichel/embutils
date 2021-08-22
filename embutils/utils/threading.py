@@ -81,9 +81,6 @@ class ThreadPool(object):
     def count(self) -> int:
         """
         Number of threads registered in the pool.
-
-        :returns: Thread count.
-        :rtype: int
         """
         return len(self._threads)
 
@@ -92,9 +89,6 @@ class ThreadPool(object):
     def active(self) -> int:
         """
         Number of active threads in the pool.
-
-        :returns: Active thread count.
-        :rtype: int
         """
         return sum([1 if t.is_alive() else 0 for t in self._threads])
 
@@ -124,7 +118,10 @@ class ThreadItem(Thread):
     Thread item implementation. All the threads created using this class (daemons
     or not) can be monitored using the ThreadPool class.
     """
-    def __init__(self, name: str = 'Unnamed', daemon: bool = True, auto_remove: bool = True, *args, **kwargs) -> None:
+    def __init__(self,
+                 name: str, target: callable,
+                 daemon: bool = True, auto_remove: bool = True,
+                 *args, **kwargs) -> None:
         """
         Class initialization.
 
@@ -133,7 +130,7 @@ class ThreadItem(Thread):
         :param bool auto_remove:    If true the thread will be deleted after completion.
         """
         # Create thread
-        super(ThreadItem, self).__init__(name=name, *args, **kwargs)
+        super(ThreadItem, self).__init__(name=name, target=target, *args, **kwargs)
         self._auto_remove = auto_remove
         self.setDaemon(daemon)
 
