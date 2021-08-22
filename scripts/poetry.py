@@ -13,32 +13,41 @@ import argparse as ap
 import os
 import shutil
 import sys
-import subprocess as sp
 import toml
+
 from pathlib import Path
 
-#: Project root path
-ROOT = Path(os.path.dirname(os.path.abspath(__file__))).parent
+from embutils.repo import execute
 
+
+# -->> Definitions <<----------------------------------------------------------
+# Base Paths
+#: Script path
+PATH_THIS = Path(os.path.abspath(os.path.dirname(__file__)))
+#: Root path
+PATH_ROOT = PATH_THIS.parent
+
+# Project Definitions
 #: Project poetry file
-PRJ_TOML = ROOT / 'pyproject.toml'
-
+PROJ_TOML = PATH_ROOT / 'pyproject.toml'
 #: Project name
-PRJ_NAME = toml.loads(open(file=PRJ_TOML, mode='r').read())['tool']['poetry']['name']
-
+PROJ_NAME = toml.loads(open(file=PROJ_TOML, mode='r').read())['tool']['poetry']['name']
 #: Project path
-PRJ_PATH = ROOT / PRJ_NAME
+PROJ_PATH = PATH_ROOT / PROJ_NAME
 
+# Script definitions
 #: Version modifier options
 VER_OPT = ['minor', 'major', 'patch', 'post', 'prepatch', 'preminor', 'premajor', 'prerelease']
 
 
+# -->> API <<------------------------------------------------------------------
 def run_test() -> None:
     """
     Run the project tests.
     """
-    # Run pytest on repo
-    sp.call('pytest', shell=True)
+    path = PATH_ROOT / 'tests'
+    cmd = f"pytest {path}"
+    execute(cmd=cmd)
 
 
 def run_docs() -> None:
@@ -53,7 +62,7 @@ def run_docs() -> None:
     args = parser.parse_args(args=sys.argv[1:])
 
     # Define base path
-    path = ROOT / 'docs'
+    path = PATH_ROOT / 'docs'
 
     # Generate code documentation
     if args.generate:
@@ -64,31 +73,52 @@ def run_docs() -> None:
             shutil.rmtree(path=out)
         out.mkdir()
         # Generate new
-        cmd = f'sphinx-apidoc -f -P -e -o "{out}" "{PRJ_PATH}"'
-        sp.call(cmd, shell=True)
+        cmd = f'sphinx-apidoc -f -P -e -o "{out}" "{PROJ_PATH}"'
+        execute(cmd=cmd)
 
     # Clean las code build
     if args.clean:
         cmd = f'{path / "make"} clean'
-        sp.call(cmd, shell=True)
+        execute(cmd=cmd)
 
     # Build new documentation
     if args.build:
         out = path / '_build/html'
         cmd = f'sphinx-build -b html -E -T "{path}" "{out}"'
-        sp.call(cmd, shell=True)
+        execute(cmd=cmd)
 
 
 def run_html() -> None:
     """
     Enables a HTML server to render/check the generated documentation.
     """
-    docs_base_path = ROOT / 'docs'
-    docs_html_path = docs_base_path / '_build/html'
+    path = PATH_ROOT / 'docs/_build/html'
+    cmd = f'python -m http.server -d "{path}"'
+    execute(cmd=cmd)
 
-    # Run the documentation make
-    cmd = f'python -m http.server -d "{docs_html_path}"'
-    sp.call(cmd, shell=True)
+
+def run_coverage() -> None:
+    """
+    Runs coverage over project tests.
+    """
+    name = PROJ_NAME
+    path = PATH_ROOT / 'tests'
+    cmd = f'coverage run -m --source={name} pytest {path} && coverage report'
+    execute(cmd=cmd)
+
+
+def run_linter() -> None:
+    """
+    Runs linter checks over code.
+    """
+    parser = ap.ArgumentParser()
+    parser.add_argument('-d', '--disable', type=str, default='C0301,W1203', help='Linter messages to disable.')
+    parser.add_argument('-j', '--cores', type=int, default=4, help='Cores used for linter.')
+    args = parser.parse_args(args=sys.argv[1:])
+
+    name    = PROJ_NAME
+    cmd = f'pylint {name} -d "{args.disable}" -j "{args.cores}"'
+    execute(cmd=cmd)
 
 
 def run_version() -> None:
@@ -113,19 +143,19 @@ def _update_version(ver: str) -> None:
     """
     # Check if we need to fix the version
     if ver == 'post':
-        with open(file=PRJ_TOML, mode="r") as f:
+        with open(file=PROJ_TOML, mode="r") as f:
             conf = toml.loads(f.read())
             tmp  = conf['tool']['poetry']['version'].split('.')
             tmp[-1] = f'post{tmp[-1]}'
             ver  = '.'.join(tmp)
 
     # Execute poetry version command
-    ret = sp.run(f'poetry version {ver}', shell=True)
+    ret = execute(f'poetry version {ver}', ret=True)
     if ret.returncode != 0:
         raise ValueError(ret.stderr)
 
     # Parse project name and new version
-    with open(file=PRJ_TOML, mode="r") as f:
+    with open(file=PROJ_TOML, mode="r") as f:
         conf = toml.loads(f.read())
         file = f"{conf['tool']['poetry']['name']}/__init__.py"
         ver  = f"__version__ = \'{conf['tool']['poetry']['version']}\'"
