@@ -52,7 +52,7 @@ class CRC:
         self._crc_init = self._mask & crc_init
 
         # Generate the lookup table
-        self._table = self._generate_lookup_table()
+        self._table = self._compute_lookup_table()
 
     def __repr__(self) -> str:
         """
@@ -69,13 +69,11 @@ class CRC:
               f'ref_in={self._rev_in}, ref_out={self._rev_out})'
         return msg
 
+    # Read only properties
     @property
     def name(self) -> str:
         """
         Model name.
-
-        :return: name.
-        :rtype: str
         """
         return self._name
 
@@ -83,9 +81,6 @@ class CRC:
     def size(self) -> int:
         """
         Model bit size.
-
-        :return: Bit size.
-        :rtype: int
         """
         return self._size
 
@@ -93,9 +88,6 @@ class CRC:
     def poly(self) -> int:
         """
         Model polynomial.
-
-        :returns: Polynomial.
-        :rtype: int
         """
         return self._poly
 
@@ -103,9 +95,6 @@ class CRC:
     def xor_out(self) -> int:
         """
         Model output XOR value.
-
-        :returns: Output XOR.
-        :rtype: int
         """
         return self._xor_out
 
@@ -113,9 +102,6 @@ class CRC:
     def crc_init(self) -> int:
         """
         Model initial value.
-
-        :returns: Initial value.
-        :rtype: int
         """
         return self._crc_init
 
@@ -123,9 +109,6 @@ class CRC:
     def reverse_in(self) -> bool:
         """
         Model input bit reverse flag.
-
-        :returns: True if the input bits are reversed, false otherwise.
-        :rtype: bool
         """
         return self._rev_in
 
@@ -133,9 +116,6 @@ class CRC:
     def reverse_out(self) -> bool:
         """
         Model output bit reverse flag.
-
-        :returns: True if the output bits are reversed, false otherwise.
-        :rtype: bool
         """
         return self._rev_out
 
@@ -143,15 +123,12 @@ class CRC:
     def lookup_table(self) -> List[int]:
         """
         Model pre-computed lookup table.
-
-        :returns: Lookup table.
-        :rtype: List[int]
         """
         return self._table
 
     def compute(self, data: bytearray, crc_init: int = None) -> int:
         """
-        Computes the CRC of the given bytearray using the defined model.
+        Computes the CRC for the given bytearray.
 
         :param bytearray data:  Data to compute the CRC over.
         :param int crc_init:    Overrides the default initial CRC value.
@@ -165,47 +142,15 @@ class CRC:
 
         # Process depending on size
         if self._size >= 8:
-            # Define required constants
-            shift = self._size - 8
-
-            # Set the initial value and iterate through bytes
-            crc = crc_init
-            for byte in data:
-                # Get the byte (reverse if necessary)
-                byte = reverse_bits(value=byte, size=8) if self._rev_in else byte
-                # Get index and update CRC
-                pos = 0xFF & ((crc >> shift) ^ byte)
-                crc = self._mask & ((crc << 8) ^ self._table[pos])
-
+            crc = self._compute_normal(data=data, crc_init=crc_init)
         else:
-            # Define required constants
-            shift = 8 - self._size
-
-            if self._rev_in:
-                # Set the initial value and iterate through bytes
-                crc = reverse_bits(value=crc_init, size=self._size)
-                for byte in data:
-                    # Get index and update CRC
-                    pos = 0xFF & (crc ^ byte)
-                    crc = self._mask & ((crc >> 8) ^ self._table[pos])
-                # Adjust output value
-                crc = reverse_bits(value=crc, size=self._size)
-
-            else:
-                # Set the initial value and iterate through bytes
-                crc = crc_init << shift
-                for byte in data:
-                    # Get index and update CRC
-                    pos = 0xFF & (crc ^ byte)
-                    crc = (self._mask << shift) & ((crc << self._size) ^ (self._table[pos] << shift))
-                # Adjust output value
-                crc >>= shift
+            crc = self._compute_small(data=data, crc_init=crc_init)
 
         # Prepare the final CRC value and apply XOR
         crc = reverse_bits(value=crc, size=self._size) if self._rev_out else crc
         return crc ^ self._xor_out
 
-    def _generate_lookup_table(self) -> List[int]:
+    def _compute_lookup_table(self) -> List[int]:
         """
         Generates the lookup table for the current CRC model.
 
@@ -213,41 +158,112 @@ class CRC:
         :rtype: List[int]
         """
         # Generate the lookup table
-        out = []
         if self._size >= 8:
-            # Define required constants
-            shift = self._size - 8
-            check = bitmask(bit=(self._size - 1))
-
-            # Iterate through all the table values
-            for idx in range(256):
-                # The current byte is the table index
-                byte = idx << shift
-
-                # Compute the CRC value
-                for bit in range(8):
-                    byte = ((byte << 1) ^ self._poly) if ((byte & check) != 0) else (byte << 1)
-
-                # Store the value on the table
-                out.append(self._mask & byte)
-
+            return self._lookup_normal()
         else:
-            # Define required constants
-            shift = (8 - self._size)
-            check = bitmask(bit=7)
+            return self._lookup_small()
 
-            # Iterate through all the table values
-            for idx in range(256):
-                # The current byte is the table index
-                byte = reverse_bits(value=idx, size=8) if self._rev_in else idx
+    def _compute_small(self, data: bytearray, crc_init: int = None) -> int:
+        """
+        Computes the CRC for model size < 8bit.
 
-                # Compute the CRC value
-                for bit in range(8):
-                    byte = ((byte << 1) ^ (self._poly << shift)) if ((byte & check) != 0) else (byte << 1)
+        :param bytearray data:  Data to compute the CRC over.
+        :param int crc_init:    Overrides the default initial CRC value.
 
-                # Store the value on the table
-                byte = (reverse_bits(value=(byte >> shift), size=self._size) << shift) if self._rev_in else byte
-                out.append(self._mask & (byte >> shift))
+        :returns: CRC value.
+        :rtype: int
+        """
+        # Define required constants
+        shift = 8 - self._size
+        if self._rev_in:
+            # Set the initial value and iterate through bytes
+            crc = reverse_bits(value=crc_init, size=self._size)
+            for byte in data:
+                # Get index and update CRC
+                pos = 0xFF & (crc ^ byte)
+                crc = self._mask & ((crc >> 8) ^ self._table[pos])
+            # Adjust output value
+            crc = reverse_bits(value=crc, size=self._size)
+        else:
+            # Set the initial value and iterate through bytes
+            crc = crc_init << shift
+            for byte in data:
+                # Get index and update CRC
+                pos = 0xFF & (crc ^ byte)
+                crc = (self._mask << shift) & ((crc << self._size) ^ (self._table[pos] << shift))
+            # Adjust output value
+            crc >>= shift
+        return crc
 
-        # Return the lookup table
+    def _lookup_small(self) -> List[int]:
+        """
+        Generates the lookup table for model size < 8bit.
+
+        :returns: Table with 256 pre-computed CRC values.
+        :rtype: List[int]
+        """
+        out = []
+        # Define required constants
+        shift = (8 - self._size)
+        check = bitmask(bit=7)
+
+        # Iterate through all the table values
+        for idx in range(256):
+            # The current byte is the table index
+            byte = reverse_bits(value=idx, size=8) if self._rev_in else idx
+
+            # Compute the CRC value
+            for _ in range(8):
+                byte = ((byte << 1) ^ (self._poly << shift)) if ((byte & check) != 0) else (byte << 1)
+
+            # Store the value on the table
+            byte = (reverse_bits(value=(byte >> shift), size=self._size) << shift) if self._rev_in else byte
+            out.append(self._mask & (byte >> shift))
+        return out
+
+    def _compute_normal(self, data: bytearray, crc_init: int = None) -> int:
+        """
+        Computes the CRC for model size >= 8bit.
+
+        :param bytearray data:  Data to compute the CRC over.
+        :param int crc_init:    Overrides the default initial CRC value.
+
+        :returns: CRC value.
+        :rtype: int
+        """
+        # Define required constants
+        shift = self._size - 8
+        # Set the initial value and iterate through bytes
+        crc = crc_init
+        for byte in data:
+            # Get the byte (reverse if necessary)
+            byte = reverse_bits(value=byte, size=8) if self._rev_in else byte
+            # Get index and update CRC
+            pos = 0xFF & ((crc >> shift) ^ byte)
+            crc = self._mask & ((crc << 8) ^ self._table[pos])
+        return crc
+
+    def _lookup_normal(self) -> List[int]:
+        """
+        Generates the lookup table for model size >= 8bit.
+
+        :returns: Table with 256 pre-computed CRC values.
+        :rtype: List[int]
+        """
+        out = []
+        # Define required constants
+        shift = self._size - 8
+        check = bitmask(bit=(self._size - 1))
+
+        # Iterate through all the table values
+        for idx in range(256):
+            # The current byte is the table index
+            byte = idx << shift
+
+            # Compute the CRC value
+            for _ in range(8):
+                byte = ((byte << 1) ^ self._poly) if ((byte & check) != 0) else (byte << 1)
+
+            # Store the value on the table
+            out.append(self._mask & byte)
         return out
