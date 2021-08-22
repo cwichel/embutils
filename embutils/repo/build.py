@@ -18,7 +18,7 @@ from pathlib import Path
 # -->> API <<--------------------------
 def build_iar(config: str, project: Path) -> None:
     """
-    Calls the EWARM headless builder on the specified project.
+    Calls the IAR headless builder on the specified project.
 
     ::note:
 
