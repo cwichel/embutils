@@ -28,6 +28,7 @@ version = 'scripts.poetry:run_version'
 [tool.poetry.dependencies]
 python = "^3.8"
 pyserial = "^3.5"
+intelhex = "^2.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
