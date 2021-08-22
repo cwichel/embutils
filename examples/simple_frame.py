@@ -35,29 +35,27 @@ class SimpleFrame(Frame):
     #. CRC16:            uint16_t
 
     """
+    #: Frame CRC model.
     CRC16 = CRC()
 
+    #: Message source.
     source:         int
+    #: Message destination.
     destination:    int
+    #: Message payload.
     payload:        bytearray
 
     @property
     def crc(self) -> int:
         """
-        Get the frame CRC value.
-
-        :returns: Frame CRC.
-        :rtype: int
+        Frame CRC value.
         """
         return self.CRC16.compute(data=self._base())
 
     @property
     def length(self) -> int:
         """
-        Get the frame payload length.
-
-        :returns: payload length.
-        :rtype: int
+        Frame payload length.
         """
         return len(self.payload)
 

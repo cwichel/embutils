@@ -50,7 +50,7 @@ class TestFrameStream(unittest.TestCase):
 
         # Initialize frame stream
         fh = SimpleFrameHandler()
-        sd = SerialDevice(uid=UsbID(vid=0x1234, pid=0x5678), looped=True)
+        sd = SerialDevice(usb_id=UsbID(vid=0x1234, pid=0x5678), looped=True)
         fs = FrameStream(serial_device=sd, frame_handler=fh)
         fs.on_frame_received += on_frame_received
 

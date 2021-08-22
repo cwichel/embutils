@@ -10,14 +10,17 @@ Frame stream implementation.
 """
 
 import time
+
 from embutils.serial.data import Frame, FrameHandler
 from embutils.serial.core.serial_device import SerialDevice
 from embutils.utils import EventHook, LOG_SDK, ThreadItem
 
 
+# -->> Definitions <<------------------
 logger_sdk = LOG_SDK.logger
 
 
+# -->> API <<--------------------------
 class FrameStream:
     """
     This class is used to send and receive frames through the serial device in an
@@ -83,10 +86,7 @@ class FrameStream:
     @property
     def serial_device(self) -> SerialDevice:
         """
-        Get the serial device handler.
-
-        :returns: Serial device handler.
-        :rtype: SerialDevice
+        Serial device handler.
         """
         return self._serial_device
 
@@ -110,10 +110,7 @@ class FrameStream:
     @property
     def frame_handler(self) -> FrameHandler:
         """
-        Get the frame handler.
-
-        :returns: Frame handler.
-        :rtype: FrameHandler
+        Frame handler.
         """
         return self._frame_handler
 
@@ -133,9 +130,6 @@ class FrameStream:
     def is_alive(self) -> bool:
         """
         Returns if the stream thread is alive.
-
-        :returns: True if alive, false otherwise.
-        :rtype: bool
         """
         return self._thread.is_alive()
 
@@ -143,9 +137,6 @@ class FrameStream:
     def is_working(self) -> bool:
         """
         Returns if the stream thread is working (not paused).
-
-        :returns: True if working, false otherwise.
-        :rtype: bool
         """
         return self.is_alive and self._serial_device.is_open and not self._is_paused
 
@@ -211,7 +202,11 @@ class FrameStream:
                 continue
 
             # Receive and process data
-            if not self._frame_handler.read_process(serial=self._serial_device, emitter=self.on_frame_received):
+            working = self._frame_handler.read_process(
+                serial=self._serial_device,
+                emitter=self.on_frame_received
+                )
+            if not working:
                 # Device disconnected...
                 logger_sdk.info(f'Device disconnected: {self._serial_device}')
                 ThreadItem(
@@ -242,9 +237,8 @@ class FrameStream:
                 logger_sdk.info(f'Device {self._serial_device} reconnected.')
                 status = True
                 break
-            else:
-                logger_sdk.info(f'Reconnection attempt on {self._serial_device} failed.')
-                time.sleep(0.5)
+            logger_sdk.info(f'Reconnection attempt on {self._serial_device} failed.')
+            time.sleep(0.5)
         return status
 
     @staticmethod

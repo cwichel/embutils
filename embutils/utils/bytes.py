@@ -10,6 +10,10 @@ Byte manipulation utilities.
 """
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 def bitmask(bit: int, fill: bool = False) -> int:
     """
     Returns a bitmask for the given bit length.

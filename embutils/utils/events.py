@@ -10,6 +10,10 @@ Event handling utilities.
 """
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class EventHook:
     """
     Event hook abstraction. This utility allows to emit custom states to several
@@ -52,10 +56,7 @@ class EventHook:
     @property
     def empty(self) -> bool:
         """
-        Checks if the event hook has callbacks subscribed.
-
-        :returns: True if the hook has no callbacks, false otherwise.
-        :rtype: bool
+        Returns if the event hook has callbacks subscribed.
         """
         return len(self._callbacks) == 0
 

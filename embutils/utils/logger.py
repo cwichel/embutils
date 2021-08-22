@@ -10,9 +10,14 @@ SDK logger implementation.
 """
 
 import logging
+
 from dataclasses import dataclass
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 @dataclass
 class LoggerFormat:
     """
@@ -60,9 +65,6 @@ class Logger:
     def logger(self) -> logging.Logger:
         """
         Logger instance.
-
-        :returns: Logger instance.
-        :rtype: logging.Logger
         """
         return self._logger
 

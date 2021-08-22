@@ -11,9 +11,14 @@ USB device ID.
 
 import re
 from typing import Tuple
+
 from embutils.utils.bytes import bitmask
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 class UsbID(int):
     """
     USB ID implementation. This class represents the USB VID/PID as a single
@@ -66,20 +71,14 @@ class UsbID(int):
     @property
     def vid(self) -> int:
         """
-        USB VID value.
-
-        :returns: VID value.
-        :rtype: int.
+        USB vendor ID.
         """
         return self._vid
 
     @property
     def pid(self) -> int:
         """
-        USB PID value.
-
-        :returns: PID value.
-        :rtype: int.
+        USB product ID.
         """
         return self._pid
 

@@ -9,11 +9,15 @@ SDK threading utilities.
 :license:   The MIT License (MIT)
 """
 
+from functools import wraps
 from threading import Lock, Thread
 from typing import List, Union
-from functools import wraps
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 def synchronous(lock_name: str) -> callable:
     """
     Decorator that can be used in a class to wrap a function or action with a
@@ -40,7 +44,7 @@ def synchronous(lock_name: str) -> callable:
     return _wrapper
 
 
-class ThreadPool(object):
+class ThreadPool:
     """
     Thread pool implementation for ThreadItem instances.
 
@@ -81,9 +85,6 @@ class ThreadPool(object):
     def count(self) -> int:
         """
         Number of threads registered in the pool.
-
-        :returns: Thread count.
-        :rtype: int
         """
         return len(self._threads)
 
@@ -92,9 +93,6 @@ class ThreadPool(object):
     def active(self) -> int:
         """
         Number of active threads in the pool.
-
-        :returns: Active thread count.
-        :rtype: int
         """
         return sum([1 if t.is_alive() else 0 for t in self._threads])
 
@@ -124,16 +122,20 @@ class ThreadItem(Thread):
     Thread item implementation. All the threads created using this class (daemons
     or not) can be monitored using the ThreadPool class.
     """
-    def __init__(self, name: str = 'Unnamed', daemon: bool = True, auto_remove: bool = True, *args, **kwargs) -> None:
+    def __init__(self,
+                 *args,
+                 name: str, target: callable,
+                 daemon: bool = True, auto_remove: bool = True,
+                 **kwargs) -> None:
         """
         Class initialization.
 
-        :param str name:            Thread name. This name is used to identify the thread on the pool.
+        :param str name:            Thread name. Used to identify the thread on the pool.
         :param bool daemon:         If true the thread will be initialized as daemon.
         :param bool auto_remove:    If true the thread will be deleted after completion.
         """
         # Create thread
-        super(ThreadItem, self).__init__(name=name, *args, **kwargs)
+        super(ThreadItem, self).__init__(name=name, target=target, *args, **kwargs)
         self._auto_remove = auto_remove
         self.setDaemon(daemon)
 
