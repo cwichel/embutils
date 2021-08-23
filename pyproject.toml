@@ -20,13 +20,14 @@ classifiers = [
     ]
 
 [tool.poetry.scripts]
-test    = 'scripts.poetry:run_test'
-docs    = 'scripts.poetry:run_docs'
-html    = 'scripts.poetry:run_html'
-cover   = 'scripts.poetry:run_coverage'
-linter  = 'scripts.poetry:run_linter'
-type    = 'scripts.poetry:run_type'
-version = 'scripts.poetry:run_version'
+version         = 'scripts.poetry:run_version'
+test            = 'scripts.poetry:run_test'
+docs            = 'scripts.poetry:run_docs'
+html            = 'scripts.poetry:run_html'
+check_coverage  = 'scripts.poetry:run_check_coverage'
+check_linter    = 'scripts.poetry:run_check_linter'
+check_types     = 'scripts.poetry:run_check_types'
+
 
 [tool.poetry.dependencies]
 python = "^3.7"
