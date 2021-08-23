@@ -25,6 +25,7 @@ docs    = 'scripts.poetry:run_docs'
 html    = 'scripts.poetry:run_html'
 cover   = 'scripts.poetry:run_coverage'
 linter  = 'scripts.poetry:run_linter'
+type    = 'scripts.poetry:run_type'
 version = 'scripts.poetry:run_version'
 
 [tool.poetry.dependencies]
@@ -39,6 +40,7 @@ Sphinx = "^4.0.2"
 sphinx-rtd-theme = "^0.5.2"
 coverage = "^5.5"
 pylint = "^2.10.2"
+mypy = "^0.910"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

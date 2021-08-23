@@ -116,8 +116,17 @@ def run_linter() -> None:
     parser.add_argument('-j', '--cores', type=int, default=4, help='Cores used for linter.')
     args = parser.parse_args(args=sys.argv[1:])
 
-    name    = PROJ_NAME
-    cmd = f'pylint {name} -d "{args.disable}" -j "{args.cores}"'
+    name = PROJ_NAME
+    cmd  = f'pylint {name} -d "{args.disable}" -j "{args.cores}"'
+    execute(cmd=cmd)
+
+
+def run_type() -> None:
+    """
+    Runs a type checker over code.
+    """
+    name = PROJ_NAME
+    cmd  = f'mypy {name}'
     execute(cmd=cmd)
 
 
