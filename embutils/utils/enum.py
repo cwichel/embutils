@@ -9,17 +9,17 @@ Enumeration utilities.
 :license:   The MIT License (MIT)
 """
 
-from enum import IntEnum
+from enum import IntEnum as _IntEnum
 
 
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
-class IntEnumMod(IntEnum):
+class IntEnum(_IntEnum):
     """
-    Modified integer enumeration class. This class extends the functionalities
-    of the base enumeration definition.
+    Integer enumeration class.
+    Extends the functionalities of the base integer enumeration definition.
     """
     def __repr__(self) -> str:
         """
@@ -40,14 +40,14 @@ class IntEnumMod(IntEnum):
         return f'{self.name}(0x{self.value:X})'
 
     @classmethod
-    def from_int(cls, value: int) -> 'IntEnumMod':
+    def from_int(cls, value: int) -> 'IntEnum':
         """
         Converts, if possible, the input value to an enum object.
 
         :param int value: Value to be converted.
 
         :returns: Enumeration object.
-        :rtype: IntEnumMod
+        :rtype: IntEnum
 
         :raises ValueError: Value is not contained on the enum.
         """
@@ -65,4 +65,4 @@ class IntEnumMod(IntEnum):
         :returns: True if exists, false otherwise.
         :rtype: bool
         """
-        return value in cls._value2member_map_
+        return value in cls.__getattribute__(cls, '_value2member_map_')
