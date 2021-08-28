@@ -9,81 +9,84 @@ SDK logger implementation.
 :license:   The MIT License (MIT)
 """
 
-import logging
+from collections import namedtuple
+from logging import Logger as _Logger, Formatter, StreamHandler
+from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING
 
-from dataclasses import dataclass
+from .enum import IntEnum
 
 
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
-@dataclass
-class LoggerFormat:
+class Logger(_Logger):
     """
-    Implements a data type to define and store the logger entries formatting
-    configuration.
+    Logger implementation wrapper.
+    This class simplifies the logger formatting and level definition for the SDK.
     """
-    #: Defines the structure of each log entry.
-    pattern:    str = '{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}'
-
-    #: Defines how the pattern should be interpreted.
-    style:      str = '{'
-
-
-class Logger:
-    """
-    Implements a basic logger handler class.
-    """
-    #: Default logger entry format.
-    FMT_DEFAULT = LoggerFormat()
-
-    def __init__(self, name: str = '', fmt: LoggerFormat = None) -> None:
-        """Logger initialization. Applies the basic configuration to
-        the logger.
-
-        :param str name: Logger name.
-        :param LoggerFormat fmt: Format used on the log entries. If set to None
-            the logger will be initialized with the value defined on :attr:`FMT_DEFAULT`.
+    class Level(IntEnum):
         """
+        Available logger message levels.
+        """
+        CRITICAL = CRITICAL
+        DEBUG = DEBUG
+        ERROR = ERROR
+        INFO = INFO
+        WARNING = WARNING
+
+    #: Logger entries format definition
+    Format = namedtuple('Format', ['style', 'pattern'])
+
+    #: Default entry format
+    FMT_DEFAULT = Format(style='{', pattern='{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}')
+
+    def __init__(self, name: str = '', level: Level = Level.DEBUG, fmt: Format = FMT_DEFAULT) -> None:
+        """
+        Logger configuration.
+        Applies the log entries formatting and initial log level.
+
+        :param str name:  Logger name.
+        :param int level: Logger initial message name.
+        :param Logger.Format fmt: Log entries formatting. By default :attr:`FMT_DEFAULT`.
+        """
+        # Initialize logger
+        super(Logger, self).__init__(name=name, level=level)
+
         # Define formatter
         if fmt is None:
             fmt = self.FMT_DEFAULT
 
-        # Create logger (debug level, disabled)
-        self._logger = logging.Logger(name=name)
-        self._logger.setLevel(level=logging.DEBUG)
-        self._logger.disabled = True
+        # Disable logger by default
+        self.disable()
 
-        # Set formatter
-        fmt = logging.Formatter(fmt=fmt.pattern, style=fmt.style)
-        hdlr = logging.StreamHandler()
+        # Configure format
+        fmt  = Formatter(fmt=fmt.pattern, style=fmt.style)
+        hdlr = StreamHandler()
         hdlr.setFormatter(fmt=fmt)
-        self._logger.addHandler(hdlr=hdlr)
-
-    @property
-    def logger(self) -> logging.Logger:
-        """
-        Logger instance.
-        """
-        return self._logger
+        self.addHandler(hdlr=hdlr)
 
     def enable(self) -> None:
         """
-        Enables the logger.
+        Enable logger.
         """
-        self._logger.disabled = False
+        self.disabled = False
 
     def disable(self) -> None:
         """
-        Disables the logger.
+        Disable logger.
         """
-        self._logger.disabled = True
+        self.disabled = True
 
-    def set_level(self, level: int = logging.DEBUG) -> None:
+    def set_level(self, level: Level = Level.DEBUG) -> None:
         """
-        Set the logger message level.
+        Set the log messages level.
 
-        :param int level: Logger level.
+        :param int level: Log level.
         """
-        self._logger.setLevel(level=level)
+        self.setLevel(level=level)
+
+
+# -->> Instances <<--------------------
+#: Embutils internal logger
+SDK_LOG = Logger(name='EMBUTILS')
