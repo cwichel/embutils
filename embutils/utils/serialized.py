@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Serialized object definition.
+Serialized object abstract implementation.
 
 :date:      2021
 :author:    Christian Wiche
@@ -9,49 +9,62 @@ Serialized object definition.
 :license:   The MIT License (MIT)
 """
 
-from abc import abstractmethod
-from typing import Union
+from abc import ABC, abstractmethod
+from typing import Tuple, Optional
 
 
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
-class Serialized:
+class AbstractSerialized(ABC):
     """
-    Abstract implementation for a serialized item.
+    Serialized abstraction.
+    This class implements the expected interface for a serialized object.
     """
-    #:  Serialized object byte length. If the length is variable, this defines the minimum.
-    _LENGTH = 0
+    def __repr__(self) -> str:
+        """
+        Representation string.
+        """
+        return f'{self.__class__.__name__}(serialized=0x{self.serialize().hex()})'
 
-    @property
-    def length(self) -> int:
+    def __eq__(self, other: object) -> bool:
         """
-        Serialized item length in bytes. This property allows to handle the cases
-        in which the object has variable size and the attribute :attr:`LENGTH` only
-        defines the minimum length.
+        Check if the object is equal to the input.
         """
-        return self._LENGTH
+        if isinstance(other, self.__class__):
+            return self.serialize() == other.serialize()
+        return False
+
+    def __ne__(self, other: object):
+        """
+        Check if the object is different to the input.
+        """
+        return not self.__eq__(other)
 
     @abstractmethod
     def serialize(self) -> bytearray:
         """
-        Serializes the object to a byte array.
+        Serializes the item into a bytearray.
 
         :returns: Serialized object.
-        :rtype: bytearray
+        :rtype: bytearray.
         """
         pass
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def deserialize(data: bytearray) -> Union[None, 'Serialized']:
+    def deserialize(cls, data: bytearray) -> Tuple[bytearray, Optional['AbstractSerialized']]:
         """
-        Deserializes the object from a byte array.
+        Deserializes an object from a bytearray.
 
-        :param bytearray data: Bytes to be deserialized.
+        :param bytearray data: Data to extract the object from.
 
-        :returns: None if deserialization fail, deserialized object otherwise.
-        :rtype: Serialized
+        :returns: Tuple containing:
+
+            - Bytes remaining from process.
+            - Deserialized object if available, None otherwise.
+
+        :rtype: Tuple[bytearray, Optional['AbstractSerialized']]
         """
         pass
