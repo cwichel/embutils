@@ -17,7 +17,7 @@ import toml
 
 from pathlib import Path
 
-from embutils.repo import execute
+from embutils.utils import execute
 
 
 # -->> Definitions <<----------------------------------------------------------
