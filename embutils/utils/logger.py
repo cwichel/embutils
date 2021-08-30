@@ -39,9 +39,9 @@ class Logger(_Logger):
     Format = namedtuple('Format', ['style', 'pattern'])
 
     #: Default entry format
-    FMT_DEFAULT = Format(style='{', pattern='{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}')
+    DEF_FMT = Format(style='{', pattern='{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}')
 
-    def __init__(self, name: str = '', level: Level = Level.DEBUG, fmt: Format = FMT_DEFAULT) -> None:
+    def __init__(self, name: str = '', level: Level = Level.DEBUG, fmt: Format = DEF_FMT) -> None:
         """
         Logger configuration.
         Applies the log entries formatting and initial log level.
@@ -55,7 +55,7 @@ class Logger(_Logger):
 
         # Define formatter
         if fmt is None:
-            fmt = self.FMT_DEFAULT
+            fmt = self.DEF_FMT
 
         # Disable logger by default
         self.disable()

@@ -24,18 +24,12 @@ class IntEnum(_IntEnum):
     def __repr__(self) -> str:
         """
         Representation string.
-
-        :returns: Representation string.
-        :rtype: str
         """
         return f'{self.__class__.__name__}({self.__str__()})'
 
     def __str__(self) -> str:
         """
         Class object as string.
-
-        :returns: Object value string.
-        :rtype: str
         """
         return f'{self.name}(0x{self.value:X})'
 

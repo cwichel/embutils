@@ -62,9 +62,6 @@ class CRC:
     def __repr__(self) -> str:
         """
         Representation string.
-
-        :returns: Representation string.
-        :rtype: str
         """
         size = 2 * ((self._size + 7) // 8)
         msg = f'{self.__class__.__name__}(name={self._name}, size={self._size}, ' \

@@ -121,11 +121,12 @@ class SimpleThreadTask(AbstractThreadTask):
     Simple thread task.
     Accepts a function to be executed by a worker on the ThreadPool.
     """
-    def __init__(self, task: Callable[..., None], *args, **kwargs) -> None:
+    def __init__(self, task: Callable[..., None], *args, name: str = 'Unnamed', **kwargs) -> None:
         """
         Task configuration:
 
         :param Callable[..., None] task:    Task function.
+        :param str name:                    Task name.
         :param args:                        Task arguments.
         :param kwargs:                      Task keyword arguments.
         """
@@ -134,15 +135,21 @@ class SimpleThreadTask(AbstractThreadTask):
             raise ValueError("The task is not a valid function")
 
         # Store attributes
+        self._name   = name
         self._task   = task
         self._args   = args
         self._kwargs = kwargs
+
+    def __repr__(self) -> str:
+        """
+        Representation string.
+        """
+        return f"{self.__class__.__name__}(name={self._name}, task={self._task.__name__})"
 
     def execute(self) -> None:
         """
         Execution called by the ThreadWorkers on the ThreadPool implementation.
         """
-        SDK_LOG.debug(f"Executing task {self._task.__name__}")
         self._task(*self._args, **self._kwargs)
 
 
@@ -183,10 +190,7 @@ class ThreadPool:
     @sync(lock_name='_rlock')
     def size(self) -> int:
         """
-        Returns the size of the thread pool.
-
-        :returns: Number of workers.
-        :rtype: int
+        Size of the thread pool.
         """
         return self._size
 

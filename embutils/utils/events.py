@@ -59,9 +59,6 @@ class EventHook:
     def empty(self) -> bool:
         """
         Returns if the event hook has callbacks subscribed.
-
-        :returns: True if callbacks subscribed, False otherwise.
-        :rtype: bool
         """
         return len(self._callbacks) == 0
 
