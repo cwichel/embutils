@@ -22,7 +22,7 @@ SDK_LOG.enable()
 
 
 # Test Definitions ==============================
-class TestFrameStream(unittest.TestCase):
+class TestStream(unittest.TestCase):
     """
     Basic streaming tests using the SimplePacket example.
     """
@@ -44,7 +44,7 @@ class TestFrameStream(unittest.TestCase):
         sent = send
         is_ready = False
 
-        # Manage frame reception
+        # Manage reception
         def on_received(item: SimplePacket):
             nonlocal sent, is_ready
             assert (sent is not None) and (item is not None)
