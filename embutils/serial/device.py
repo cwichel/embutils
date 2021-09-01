@@ -15,8 +15,8 @@ import time
 from serial.tools import list_ports
 from typing import List, Optional, Tuple
 
-from embutils.utils import EventHook, IntEnum, SimpleThreadTask, time_elapsed
-from embutils.utils import SDK_LOG, SDK_TP
+from ..utils import EventHook, IntEnum, SimpleThreadTask, time_elapsed
+from ..utils import SDK_LOG, SDK_TP
 
 
 # -->> Definitions <<------------------
@@ -30,7 +30,6 @@ class Device:
     """
     #: Default device ID
     DEF_ID = 0xDEADBEEF
-
     #: Default device settings
     DEF_SETTINGS = {
         'baudrate': 115200,
@@ -40,7 +39,7 @@ class Device:
         'timeout':  0.1
         }
 
-    def __init__(self, port: str, looped: bool = False, settings: dict = None) -> None:
+    def __init__(self, port: str = None, looped: bool = False, settings: dict = None) -> None:
         """
         Device configuration.
         Applies the serial device settings to the selected port.
@@ -59,9 +58,14 @@ class Device:
             self._serial = serial.serial_for_url(url="loop://", do_not_open=True, exclusive=True)
             self._id = self.DEF_ID
         else:
+            # Check port
+            if port is None:
+                raise ValueError(f"Port is required!")
+            # Get ID
             _id = self._id_from_port(port=port)
             if _id is None:
                 raise ValueError(f"Port {port} is not connected!")
+            # Initialize
             self._serial = serial.Serial()
             self._serial.port = port
             self._id = _id
@@ -367,22 +371,26 @@ class DeviceScanner:
         self.on_list_change = EventHook()
 
         # Start scanner
-        self._is_active = True
+        self._active = True
         self._finished  = False
-        SDK_TP.enqueue(task=SimpleThreadTask(task=self._process))
+        SDK_TP.enqueue(task=SimpleThreadTask(
+            name=f"{self.__class__.__name__}.process",
+            task=self._process
+            ))
 
     def __del__(self) -> None:
         """
         Class destructor. Stops the scanner thread.
         """
-        self.stop()
+        if self.is_alive:
+            self.stop()
 
     @property
     def is_alive(self) -> bool:
         """
         Returns if the scan thread is alive.
         """
-        return self._is_active or not self._finished
+        return self._active or not self._finished
 
     @property
     def devices(self) -> DeviceList:
@@ -395,7 +403,7 @@ class DeviceScanner:
         """
         Stops the scanner thread.
         """
-        self._is_active = False
+        self._active = False
         while self.is_alive:
             time.sleep(0.01)
         SDK_LOG.info('Scanner stopped.')
@@ -447,7 +455,7 @@ class DeviceScanner:
 
         # Do this periodically
         last_update = time.time()
-        while self._is_active:
+        while self._active:
             # Wait until the scan period is passed...
             if time_elapsed(last_update) > self._scan_period:
                 last_update = time.time()
