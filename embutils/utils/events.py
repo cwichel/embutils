@@ -9,6 +9,8 @@ Event handling utilities.
 :license:   The MIT License (MIT)
 """
 
+from typing import Callable
+
 
 # -->> Definitions <<------------------
 
@@ -16,8 +18,8 @@ Event handling utilities.
 # -->> API <<--------------------------
 class EventHook:
     """
-    Event hook abstraction. This utility allows to emit custom states to several
-    callbacks in a simple fashion.
+    Simple event hook implementation.
+    This utility allows to emit events to several callbacks in a simple fashion.
 
     .. note::
         *   All the callbacks subscribed to a hook need to handle the same arguments.
@@ -29,7 +31,7 @@ class EventHook:
         """
         self._callbacks = []
 
-    def __iadd__(self, callback: callable) -> 'EventHook':
+    def __iadd__(self, callback: Callable[..., None]) -> 'EventHook':
         """
         Simplified callback subscription. Overrides the **+=** operator.
 
@@ -41,7 +43,7 @@ class EventHook:
         self.subscribe(callback=callback)
         return self
 
-    def __isub__(self, callback: callable) -> 'EventHook':
+    def __isub__(self, callback: Callable[..., None]) -> 'EventHook':
         """
         Simplified callback unsubscription. Overrides the **-=** operator.
 
@@ -60,7 +62,7 @@ class EventHook:
         """
         return len(self._callbacks) == 0
 
-    def subscribe(self, callback: callable) -> bool:
+    def subscribe(self, callback: Callable[..., None]) -> bool:
         """
         Subscribes a callback to the event hook.
 
@@ -74,7 +76,7 @@ class EventHook:
             return True
         return False
 
-    def unsubscribe(self, callback: callable) -> bool:
+    def unsubscribe(self, callback: Callable[..., None]) -> bool:
         """
         Unsubscribes a callback from the event hook.
 

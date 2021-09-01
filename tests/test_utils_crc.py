@@ -14,7 +14,7 @@ from embutils.utils import CRC
 
 
 # Test Definitions ==============================
-class TestByte(unittest.TestCase):
+class TestCRC(unittest.TestCase):
     """
     Test CRC computation utility.
     """

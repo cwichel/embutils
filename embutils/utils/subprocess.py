@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Subprocess execution utilities. 
+Subprocess execution utilities.
 
 :date:      2021
 :author:    Christian Wiche
@@ -11,19 +11,19 @@ Subprocess execution utilities.
 
 import subprocess as sp
 
-from typing import Union
+from typing import Optional
 
 
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
-def execute(cmd: str, ret: bool = False) -> Union[None, sp.CompletedProcess]:
+def execute(cmd: str, ret: bool = False) -> Optional[sp.CompletedProcess]:
     """
-    Executed the command on the terminal.
+    Execute the given command as a subprocess.
 
     :param str cmd:  Command to be executed.
-    :param bool ret: Returns the command output.
+    :param bool ret: True if the command return is required, false otherwise.
     """
     print(f'Executing:\n"{cmd}"\nOutput:')
     if ret:

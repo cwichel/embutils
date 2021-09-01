@@ -1,5 +1,5 @@
 [tool.poetry]
-version = "0.2.2"
+version = "0.3.0"
 name = "embutils"
 license = "MIT"
 readme = "README.md"
@@ -20,12 +20,14 @@ classifiers = [
     ]
 
 [tool.poetry.scripts]
-test    = 'scripts.poetry:run_test'
-docs    = 'scripts.poetry:run_docs'
-html    = 'scripts.poetry:run_html'
-cover   = 'scripts.poetry:run_coverage'
-linter  = 'scripts.poetry:run_linter'
-version = 'scripts.poetry:run_version'
+version         = 'scripts.poetry:run_version'
+test            = 'scripts.poetry:run_test'
+docs            = 'scripts.poetry:run_docs'
+html            = 'scripts.poetry:run_html'
+check_coverage  = 'scripts.poetry:run_check_coverage'
+check_linter    = 'scripts.poetry:run_check_linter'
+check_types     = 'scripts.poetry:run_check_types'
+
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -39,6 +41,7 @@ Sphinx = "^4.0.2"
 sphinx-rtd-theme = "^0.5.2"
 coverage = "^5.5"
 pylint = "^2.10.2"
+mypy = "^0.910"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -14,7 +14,7 @@ from embutils.utils import bitmask, reverse_bits, reverse_bytes
 
 
 # Test Definitions ==============================
-class TestByte(unittest.TestCase):
+class TestBytes(unittest.TestCase):
     """
     Test byte utilities.
     """

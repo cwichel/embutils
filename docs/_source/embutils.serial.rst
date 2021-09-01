@@ -1,14 +1,15 @@
 embutils.serial package
 =======================
 
-Subpackages
------------
+Submodules
+----------
 
 .. toctree::
    :maxdepth: 4
 
-   embutils.serial.core
-   embutils.serial.data
+   embutils.serial.device
+   embutils.serial.interface
+   embutils.serial.stream
 
 Module contents
 ---------------

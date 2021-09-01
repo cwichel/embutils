@@ -11,7 +11,7 @@ CRC implementation.
 
 from typing import List
 
-from embutils.utils.bytes import bitmask, reverse_bits
+from .bytes import bitmask, reverse_bits
 
 
 # -->> Definitions <<------------------
@@ -34,7 +34,7 @@ class CRC:
                  rev_in: bool = False, rev_out: bool = False
                  ):
         """
-        Class initialization.
+        CRC model initialization.
 
         :param str name:        Model name.
         :param int size:        Size of the CRC in bits.
@@ -62,9 +62,6 @@ class CRC:
     def __repr__(self) -> str:
         """
         Representation string.
-
-        :returns: Representation string.
-        :rtype: str
         """
         size = 2 * ((self._size + 7) // 8)
         msg = f'{self.__class__.__name__}(name={self._name}, size={self._size}, ' \
@@ -167,7 +164,7 @@ class CRC:
             return self._lookup_normal()
         return self._lookup_small()
 
-    def _compute_small(self, data: bytearray, crc_init: int = None) -> int:
+    def _compute_small(self, data: bytearray, crc_init: int) -> int:
         """
         Computes the CRC for model size < 8bit.
 
@@ -225,7 +222,7 @@ class CRC:
             out.append(self._mask & (byte >> shift))
         return out
 
-    def _compute_normal(self, data: bytearray, crc_init: int = None) -> int:
+    def _compute_normal(self, data: bytearray, crc_init: int) -> int:
         """
         Computes the CRC for model size >= 8bit.
 

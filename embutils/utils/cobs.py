@@ -128,7 +128,7 @@ class COBS:
             if idx > len(data):
                 raise COBS.DecodeException('Not enough bytes to process!')
 
-            elif idx < len(data):
+            if idx < len(data):
                 # In range, add zero if needed
                 if code < 0xFF:
                     msg.append(0x00)

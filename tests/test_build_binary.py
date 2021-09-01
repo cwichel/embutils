@@ -1,23 +1,26 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Binary utilities testing.
+Binary file utilities testing.
 
 :date:      2021
 :author:    Christian Wiche
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+
 import intelhex
 import unittest
-from embutils.repo import bin_to_hex, merge_bin, merge_hex
+
 from pathlib import Path
+
+from embutils.repo import bin_to_hex, merge_bin, merge_hex
 
 
 # Test Definitions ==============================
 class TestVersion(unittest.TestCase):
     """
-    Test binary utilities.
+    Test binary files utilities.
     """
     OFFSET = 0x20
     FILES  = [

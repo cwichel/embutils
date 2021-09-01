@@ -17,7 +17,7 @@ import toml
 
 from pathlib import Path
 
-from embutils.repo import execute
+from embutils.utils import execute
 
 
 # -->> Definitions <<----------------------------------------------------------
@@ -41,6 +41,19 @@ VER_OPT = ['minor', 'major', 'patch', 'post', 'prepatch', 'preminor', 'premajor'
 
 
 # -->> API <<------------------------------------------------------------------
+def run_version() -> None:
+    """
+    This script update the toml and init file version strings.
+    """
+    # Get input
+    parser = ap.ArgumentParser()
+    parser.add_argument('version', type=str)
+    args = parser.parse_args(args=sys.argv[1:])
+
+    # Update version
+    _update_version(ver=args.version)
+
+
 def run_test() -> None:
     """
     Run the project tests.
@@ -97,7 +110,7 @@ def run_html() -> None:
     execute(cmd=cmd)
 
 
-def run_coverage() -> None:
+def run_check_coverage() -> None:
     """
     Runs coverage over project tests.
     """
@@ -107,7 +120,7 @@ def run_coverage() -> None:
     execute(cmd=cmd)
 
 
-def run_linter() -> None:
+def run_check_linter() -> None:
     """
     Runs linter checks over code.
     """
@@ -116,22 +129,18 @@ def run_linter() -> None:
     parser.add_argument('-j', '--cores', type=int, default=4, help='Cores used for linter.')
     args = parser.parse_args(args=sys.argv[1:])
 
-    name    = PROJ_NAME
-    cmd = f'pylint {name} -d "{args.disable}" -j "{args.cores}"'
+    name = PROJ_NAME
+    cmd  = f'pylint {name} -d "{args.disable}" -j "{args.cores}"'
     execute(cmd=cmd)
 
 
-def run_version() -> None:
+def run_check_types() -> None:
     """
-    This script update the toml and init file version strings.
+    Runs a type checker over code.
     """
-    # Get input
-    parser = ap.ArgumentParser()
-    parser.add_argument('version', type=str)
-    args = parser.parse_args(args=sys.argv[1:])
-
-    # Update version
-    _update_version(ver=args.version)
+    name = PROJ_NAME
+    cmd  = f'mypy {name}'
+    execute(cmd=cmd)
 
 
 def _update_version(ver: str) -> None:
