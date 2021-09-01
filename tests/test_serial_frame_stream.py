@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Frame stream usage test.
+Serialized objects stream test.
 
 :date:      2021
 :author:    Christian Wiche
@@ -11,55 +11,63 @@ Frame stream usage test.
 
 import time
 import unittest
-from examples import SimpleFrame, SimpleFrameHandler
-from embutils.serial.core import SerialDevice, FrameStream
-from embutils.utils import UsbID, LOG_SDK
+
+from examples.stream_setup import SimplePacket, COBSStreamFramingCodec
+
+from embutils.serial import Device, Stream
+from embutils.utils import SDK_LOG, time_elapsed
 
 
-LOG_SDK.enable()
+SDK_LOG.enable()
 
 
 # Test Definitions ==============================
 class TestFrameStream(unittest.TestCase):
     """
-    Basic streaming tests using the SimpleFrame example.
+    Basic streaming tests using the SimplePacket example.
     """
     def test_send_and_receive(self):
         """
-        Send and receive a frame using the frame stream on a looped serial device.
-        Test if the transmitted/received frames are the same.
+        Send and receive an item using the Stream on a looped serial Device.
+        Test if the transmitted/received items are the same.
         """
-        frame = SimpleFrame(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
-        self.send_and_receive(frame_tx=frame)
+        item = SimplePacket(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
+        self.send_and_receive(send=item)
 
     @staticmethod
-    def send_and_receive(frame_tx: SimpleFrame) -> None:
+    def send_and_receive(send: SimplePacket) -> None:
         """
         Simulate a serial device on loop mode and perform a comparison between
-        the data being received and sent.
+        the data being sent and received.
         """
         # Stop flag
+        sent = send
         is_ready = False
 
         # Manage frame reception
-        def on_frame_received(frame: SimpleFrame):
-            nonlocal frame_tx, is_ready
-            assert frame is not None
-            assert frame_tx == frame
+        def on_received(item: SimplePacket):
+            nonlocal sent, is_ready
+            assert (sent is not None) and (item is not None)
+            assert sent == item
             is_ready = True
 
-        # Initialize frame stream
-        fh = SimpleFrameHandler()
-        sd = SerialDevice(usb_id=UsbID(vid=0x1234, pid=0x5678), looped=True)
-        fs = FrameStream(serial_device=sd, frame_handler=fh)
-        fs.on_frame_received += on_frame_received
+        # Initialize stream
+        cdc = COBSStreamFramingCodec(dtype=SimplePacket)
+        dev = Device(looped=True)
+        sth = Stream(device=dev, codec=cdc)
+        sth.on_received += on_received
 
-        # Send frame
-        fs.send_frame(frame=frame_tx)
+        # Send item
+        sth.resume()
+        sth.send(item=send)
 
-        # Maintain alive the process
+        # Maintain alive the process until check
+        start = time.time()
         while not is_ready:
             time.sleep(0.1)
+            # If the process hangs, fail the test
+            if time_elapsed(start=start) > 1.0:
+                assert False
 
 
 # Test Execution ================================
