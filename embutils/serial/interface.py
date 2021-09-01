@@ -25,7 +25,7 @@ from .stream import Stream, AbstractSerializedStreamCodec
 # -->> API <<--------------------------
 class Interface:
     """
-    Serial command interface implementation. 
+    Serial command interface implementation.
     This class should implement all the methods to interact with the target device.
 
     Available events:

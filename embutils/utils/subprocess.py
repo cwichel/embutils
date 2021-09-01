@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Subprocess execution utilities. 
+Subprocess execution utilities.
 
 :date:      2021
 :author:    Christian Wiche
