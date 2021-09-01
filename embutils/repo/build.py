@@ -18,21 +18,6 @@ from embutils.utils import execute
 
 
 # -->> API <<--------------------------
-def build_iar(config: str, project: Path) -> None:
-    """
-    Calls the IAR headless builder on the specified project.
-
-    ::note:
-
-        - IarBuild executable must be in the PATH.
-
-    :param str config:      Build configuration to be used. Ex: Debug, Release.
-    :param Path project:    Path to EWARM project.
-    """
-    cmd = f'IarBuild "{project}" -build "{config}"'
-    execute(cmd=cmd)
-
-
 def build_cubeide(name: str, config: str, project: Path, workspace: Path) -> None:
     """
     Calls the STM32 CubeIDE headless builder on the specified project.
@@ -51,4 +36,19 @@ def build_cubeide(name: str, config: str, project: Path, workspace: Path) -> Non
     cmd = f'stm32cubeidec --launcher.suppressErrors -nosplash ' \
           f'-application org.eclipse.cdt.managedbuilder.core.headlessbuild ' \
           f'-data "{workspace}" -cleanBuild "{name}/{config}" -import "{project}'
+    execute(cmd=cmd)
+
+
+def build_iar(config: str, project: Path) -> None:
+    """
+    Calls the IAR headless builder on the specified project.
+
+    ::note:
+
+        - IarBuild executable must be in the PATH.
+
+    :param str config:      Build configuration to be used. Ex: Debug, Release.
+    :param Path project:    Path to EWARM project.
+    """
+    cmd = f'IarBuild "{project}" -build "{config}"'
     execute(cmd=cmd)

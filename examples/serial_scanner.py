@@ -9,12 +9,13 @@ Serial scanner usage example.
 :license:   The MIT License (MIT)
 """
 
-from embutils.serial.core import SerialDeviceList, SerialDeviceScanner
+from embutils.serial import DeviceList, DeviceScanner
+from embutils.utils import SDK_LOG
 import time
 
 
 # Example Definitions ===========================
-def on_change_handler(event: SerialDeviceScanner.Event, dev_diff: SerialDeviceList) -> None:
+def on_change_handler(event: DeviceScanner.Event, dev_diff: DeviceList) -> None:
     """
     Process the serial device change event.
 
@@ -37,7 +38,7 @@ def ex_serial_scanner() -> None:
 
     """
     # Create a serial scanner instance
-    ss = SerialDeviceScanner(period=0.05)
+    ss = DeviceScanner(period=0.05)
     ss.on_list_change += on_change_handler
 
     # Maintain this alive
@@ -47,4 +48,5 @@ def ex_serial_scanner() -> None:
 
 # Example Execution =============================
 if __name__ == '__main__':
+    SDK_LOG.enable()
     ex_serial_scanner()

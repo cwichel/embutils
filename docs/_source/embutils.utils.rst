@@ -17,7 +17,6 @@ Submodules
    embutils.utils.subprocess
    embutils.utils.threading
    embutils.utils.time
-   embutils.utils.usb_id
 
 Module contents
 ---------------

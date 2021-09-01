@@ -14,7 +14,7 @@ from embutils.utils import COBS
 
 
 # Test Definitions ==============================
-class TestByte(unittest.TestCase):
+class TestCOBS(unittest.TestCase):
     """
     Test COBS utilities.
     """
