@@ -1,7 +1,7 @@
-embutils.utils.usb\_id module
+embutils.serial.device module
 =============================
 
-.. automodule:: embutils.utils.usb_id
+.. automodule:: embutils.serial.device
    :members:
    :undoc-members:
    :show-inheritance:
