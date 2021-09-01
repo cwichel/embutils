@@ -10,7 +10,7 @@ Serialized object abstract implementation.
 """
 
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional
+from typing import Optional
 
 
 # -->> Definitions <<------------------
@@ -19,7 +19,7 @@ from typing import Tuple, Optional
 # -->> API <<--------------------------
 class AbstractSerialized(ABC):
     """
-    Serialized abstraction.
+    Serialized object abstraction.
     This class implements the expected interface for a serialized object.
     """
     def __repr__(self) -> str:
@@ -54,17 +54,42 @@ class AbstractSerialized(ABC):
 
     @classmethod
     @abstractmethod
-    def deserialize(cls, data: bytearray) -> Tuple[bytearray, Optional['AbstractSerialized']]:
+    def deserialize(cls, data: bytearray) -> Optional['AbstractSerialized']:
         """
         Deserializes an object from a bytearray.
 
         :param bytearray data: Data to extract the object from.
 
-        :returns: Tuple containing:
+        :returns: Deserialized object if available, None otherwise.
+        :rtype: Optional['AbstractSerialized']
+        """
+        pass
 
-            - Bytes remaining from process.
-            - Deserialized object if available, None otherwise.
 
-        :rtype: Tuple[bytearray, Optional['AbstractSerialized']]
+class AbstractSerializedCodec(ABC):
+    """
+    Serialized object codec abstraction.
+    This class implements the logic used to encode/decode a serialized object.
+    """
+    @abstractmethod
+    def encode(self, data: AbstractSerialized) -> bytearray:
+        """
+        Encodes a serialized object into a byte array.
+
+        :param AbstractSerialized data: Object to encode.
+
+        :returns: Encoded serialized data.
+        :rtype: bytearray
+        """
+
+    @abstractmethod
+    def decode(self, data: bytearray) -> Optional[AbstractSerialized]:
+        """
+        Decodes a serialized object from a byte array.
+
+        :param bytearray data: Bytes to decode.
+
+        :returns: Deserialized object if able, None otherwise.
+        :rtype: Optional[AbstractSerialized]
         """
         pass
