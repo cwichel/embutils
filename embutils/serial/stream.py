@@ -236,6 +236,9 @@ class Stream:
             # Give some time
             time.sleep(0.01)
 
+        # Inform finished
+        self._finished = True
+
     def _reconnect(self) -> bool:
         """
         Performs a reconnection attempt with the serial device.
