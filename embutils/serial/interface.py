@@ -12,7 +12,7 @@ applications commands.
 """
 
 import time
-from typing import Callable, Optional
+from typing import Protocol, Optional
 
 from ..utils import SDK_LOG, AbstractSerialized, EventHook, time_elapsed
 from .device import Device
@@ -20,6 +20,12 @@ from .stream import Stream, AbstractSerializedStreamCodec
 
 
 # -->> Definitions <<------------------
+class ResponseCheckCallback(Protocol):
+    """
+    Response check callback signature:
+    AbstractSerialized -> bool
+    """
+    def __call__(self, item: AbstractSerialized) -> bool: ...
 
 
 # -->> API <<--------------------------
@@ -128,7 +134,7 @@ class Interface:
 
     def transmit(self,
                  send: AbstractSerialized,
-                 logic: Callable[[AbstractSerialized], bool] = None,
+                 logic: ResponseCheckCallback = None,
                  timeout: float = None) -> Optional[AbstractSerialized]:
         """
         Send a item and, if required, wait for a response that complies with

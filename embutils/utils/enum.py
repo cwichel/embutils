@@ -59,4 +59,4 @@ class IntEnum(_IntEnum):
         :returns: True if exists, false otherwise.
         :rtype: bool
         """
-        return value in cls.__getattribute__(cls, '_value2member_map_')
+        return value in cls._value2member_map_

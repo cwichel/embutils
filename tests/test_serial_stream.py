@@ -18,10 +18,11 @@ from embutils.serial import Device, Stream
 from embutils.utils import SDK_LOG, time_elapsed
 
 
+# -->> Definitions <<------------------
 SDK_LOG.enable()
 
 
-# Test Definitions ==============================
+# -->> Test API <<---------------------
 class TestStream(unittest.TestCase):
     """
     Basic streaming tests using the SimplePacket example.
@@ -70,6 +71,6 @@ class TestStream(unittest.TestCase):
                 assert False
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()

@@ -16,7 +16,10 @@ from pathlib import Path
 from embutils.repo import VersionGit
 
 
-# Test Definitions ==============================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 class TestVersion(unittest.TestCase):
     """
     Test version utilities.
@@ -52,6 +55,6 @@ class TestVersion(unittest.TestCase):
         fver.unlink()
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()

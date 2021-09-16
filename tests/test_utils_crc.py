@@ -10,10 +10,14 @@ CRC computation testing.
 """
 
 import unittest
+
 from embutils.utils import CRC
 
 
-# Test Definitions ==============================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 class TestCRC(unittest.TestCase):
     """
     Test CRC computation utility.
@@ -116,6 +120,6 @@ class TestCRC(unittest.TestCase):
             assert test["exp"] == val
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()

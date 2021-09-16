@@ -16,7 +16,10 @@ import unittest
 from embutils.utils import ThreadPool, SimpleThreadTask
 
 
-# Test Utilities ================================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 def get_threads_with_name(name: str) -> dict:
     """
     Return all the live threads that match with the given name.
@@ -69,6 +72,6 @@ class TestByte(unittest.TestCase):
             SimpleThreadTask(task=None)
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()

@@ -13,10 +13,13 @@ import unittest
 
 from examples.stream_setup import SimplePacket
 
-from embutils.utils import CRC, COBS
+from embutils.utils import CRC
 
 
-# Test Definitions ==============================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 class TestSerialized(unittest.TestCase):
     """
     Basic reference tests using the SimplePacket example.
@@ -68,6 +71,6 @@ class TestSerialized(unittest.TestCase):
         assert item_1.serialize() != item_3.serialize()
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()
