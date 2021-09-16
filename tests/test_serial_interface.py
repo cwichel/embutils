@@ -17,10 +17,11 @@ from embutils.serial import Interface
 from embutils.utils import SDK_LOG
 
 
+# -->> Definitions <<------------------
 SDK_LOG.enable()
 
 
-# Test Definitions ==============================
+# -->> Test API <<---------------------
 class TestFrameInterface(unittest.TestCase):
     """
     Basic streaming tests using the SimplePacket example.
@@ -57,6 +58,6 @@ class TestFrameInterface(unittest.TestCase):
         si.join()
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()
