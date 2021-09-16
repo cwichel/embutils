@@ -13,7 +13,10 @@ import unittest
 from embutils.utils import bitmask, reverse_bits, reverse_bytes
 
 
-# Test Definitions ==============================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 class TestBytes(unittest.TestCase):
     """
     Test byte utilities.
@@ -55,6 +58,6 @@ class TestBytes(unittest.TestCase):
         assert rev_bytes == 0x040302
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()

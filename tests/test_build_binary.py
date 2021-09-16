@@ -17,7 +17,10 @@ from pathlib import Path
 from embutils.repo import bin_to_hex, merge_bin, merge_hex
 
 
-# Test Definitions ==============================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 class TestVersion(unittest.TestCase):
     """
     Test binary files utilities.
@@ -105,6 +108,6 @@ class TestVersion(unittest.TestCase):
             file.unlink(missing_ok=True)
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()

@@ -10,10 +10,14 @@ COBS encode/decode testing.
 """
 
 import unittest
+
 from embutils.utils import COBS
 
 
-# Test Definitions ==============================
+# -->> Definitions <<------------------
+
+
+# -->> Test API <<---------------------
 class TestCOBS(unittest.TestCase):
     """
     Test COBS utilities.
@@ -81,6 +85,6 @@ class TestCOBS(unittest.TestCase):
         return data == decode
 
 
-# Test Execution ================================
+# -->> Test Execution <<---------------
 if __name__ == '__main__':
     unittest.main()
