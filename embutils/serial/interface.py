@@ -155,7 +155,7 @@ class Interface:
 
         The response detection logic should have the following syntax::
 
-            def <callback>(AbstractSerialized)
+            def <callback>(AbstractSerialized) -> bool:
 
         Where the input is the item received from the device.
 
