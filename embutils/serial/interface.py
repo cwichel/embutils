@@ -42,8 +42,13 @@ class Interface:
 
             def <callback>(item: AbstractSerialized)
 
+    #.  **on_connect:** This event is emitted when the system is able to
+        connect to the device. Subscribe using callbacks with syntax::
+
+            def <callback>()
+
     #.  **on_reconnect:** This event is emitted when the system is able to
-        connect/reconnect to the device. Subscribe using callbacks with syntax::
+        reconnect to the device. Subscribe using callbacks with syntax::
 
             def <callback>()
 
@@ -53,8 +58,14 @@ class Interface:
             def <callback>()
 
     """
+    #: Interface command pull period
+    PERIOD_PULL_S = 0.005
+
+    #: Interface join period
+    PERIOD_JOIN_S = 0.5
+
     #: Interface command response timeout
-    RESPONSE_TIMEOUT_S = 0.5
+    TIMEOUT_RESPONSE_S = 0.5
 
     #: Default serial device settings
     SERIAL_SETTINGS = {
@@ -74,12 +85,13 @@ class Interface:
         :param bool looped:                         Enable test mode (looped serial).
         """
         # Response timeout configuration
-        self._timeout = self.RESPONSE_TIMEOUT_S
+        self._timeout = self.TIMEOUT_RESPONSE_S
 
         # Public events
-        self.on_received = EventHook()
-        self.on_reconnect = EventHook()
-        self.on_disconnect = EventHook()
+        self.on_received    = EventHook()
+        self.on_connect     = EventHook()
+        self.on_reconnect   = EventHook()
+        self.on_disconnect  = EventHook()
 
         # Stream: Communications thread
         # Start serial device
@@ -90,9 +102,10 @@ class Interface:
 
         # Initialize stream and attach callbacks
         self._stream = Stream(device=serial, codec=codec)
-        self._stream.on_reconnect  += self.on_reconnect.emit
-        self._stream.on_disconnect += self.on_disconnect.emit
-        self._stream.on_received   += self._process
+        self._stream.on_connect     += self.on_connect.emit
+        self._stream.on_reconnect   += self.on_reconnect.emit
+        self._stream.on_disconnect  += self.on_disconnect.emit
+        self._stream.on_received    += self._process
 
         SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
 
@@ -142,7 +155,7 @@ class Interface:
 
         The response detection logic should have the following syntax::
 
-            def <callback>(AbstractSerialized)
+            def <callback>(AbstractSerialized) -> bool:
 
         Where the input is the item received from the device.
 
@@ -179,7 +192,7 @@ class Interface:
             SDK_LOG.debug('Waiting for response...')
             tm_start = time.time()
             while not recv and (time_elapsed(tm_start) < timeout):
-                time.sleep(0.01)
+                time.sleep(self.PERIOD_PULL_S)
             self.on_received -= on_received
 
             # Check data
@@ -203,4 +216,4 @@ class Interface:
         exit if the interface serial process gets stopped.
         """
         while self._stream.is_alive:
-            time.sleep(0.5)
+            time.sleep(self.PERIOD_JOIN_S)
