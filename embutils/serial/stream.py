@@ -56,8 +56,13 @@ class Stream:
 
             def <callback>(item: AbstractSerialized)
 
+    #.  **on_connect:** This event is emitted when the system is able to
+        connect to the device. Subscribe using callbacks with syntax::
+
+            def <callback>()
+
     #.  **on_reconnect:** This event is emitted when the system is able to
-        connect/reconnect to the device. Subscribe using callbacks with syntax::
+        reconnect to the device. Subscribe using callbacks with syntax::
 
             def <callback>()
 
@@ -67,6 +72,12 @@ class Stream:
             def <callback>()
 
     """
+    #: Stream pull period
+    PERIOD_PULL_S = 0.005
+
+    #: Stream reconnect try period
+    PERIOD_RECONNECT_S = 0.5
+
     def __init__(self, device: Device, codec: AbstractSerializedStreamCodec) -> None:
         """
         Class initialization.
@@ -79,18 +90,19 @@ class Stream:
         self._codec  = codec
 
         # Events
-        self.on_received = EventHook()
-        self.on_reconnect = EventHook()
-        self.on_disconnect = EventHook()
+        self.on_received    = EventHook()
+        self.on_connect     = EventHook()
+        self.on_reconnect   = EventHook()
+        self.on_disconnect  = EventHook()
 
         # Debug prints for received
         self.on_received += lambda item: self._print_debug(item=item, received=True)
 
         # Start thread
-        self._active = True
-        self._finished = False
-        self._paused = False            # enables pause?
-        self._in_pause = False          # tells if we are actually on pause state
+        self._active    = True
+        self._finished  = False
+        self._paused    = False     # enables pause?
+        self._in_pause  = False     # tells if we are actually on pause state
         SDK_TP.enqueue(task=SimpleThreadTask(
             name=f"{self.__class__.__name__}.process",
             task=self._process
@@ -201,43 +213,65 @@ class Stream:
 
         """
         SDK_LOG.info('Stream started.')
-        self._device.open()
+
+        # Connect to device if not connected
+        if not self._device.is_open and self._reconnect():
+            SDK_TP.enqueue(task=SimpleThreadTask(
+                name=f"{self.__class__.__name__}.on_connect",
+                task=self.on_connect.emit
+                ))
 
         # Do this periodically
         while self._active:
-            # Pause state
+            # Handle pause
             if self._paused:
-                if not self._in_pause:
-                    self._in_pause = True
-                time.sleep(0.01)
+                self._process_paused()
                 continue
-
-            # Receive and process data
-            try:
-                item = self._codec.decode_stream(device=self._device)
-                if item:
-                    SDK_TP.enqueue(task=SimpleThreadTask(
-                        name=f"{self.__class__.__name__}.on_received",
-                        task=lambda recv=item: self.on_received.emit(item=recv)
-                        ))
-            except ConnectionError:
-                # Device disconnected...
-                SDK_LOG.info(f'Device disconnected: {self._device}')
-                SDK_TP.enqueue(task=SimpleThreadTask(
-                    name=f"{self.__class__.__name__}.on_disconnect",
-                    task=self.on_disconnect.emit
-                    ))
-                if self._reconnect():
-                    SDK_TP.enqueue(task=SimpleThreadTask(
-                        name=f"{self.__class__.__name__}.on_reconnect",
-                        task=self.on_reconnect.emit
-                        ))
-
-            # Give some time
-            time.sleep(0.01)
+            # Handle reading
+            self._process_active()
 
         # Inform finished
         self._finished = True
+
+    def _process_paused(self):
+        """
+        Handle process pause state.
+        """
+        # Inform that pause started
+        if not self._in_pause:
+            self._in_pause = True
+
+        # Delay...
+        time.sleep(0.01)
+
+    def _process_active(self):
+        """
+        Handle process active state.
+        """
+        # Try to receive data, if failed go to reconnection loop
+        try:
+            item = self._codec.decode_stream(device=self._device)
+            if item:
+                SDK_TP.enqueue(task=SimpleThreadTask(
+                    name=f"{self.__class__.__name__}.on_received",
+                    task=lambda recv=item: self.on_received.emit(item=recv)
+                    ))
+
+        except ConnectionError:
+            # Device disconnected...
+            SDK_LOG.info(f'Device disconnected: {self._device}')
+            SDK_TP.enqueue(task=SimpleThreadTask(
+                name=f"{self.__class__.__name__}.on_disconnect",
+                task=self.on_disconnect.emit
+                ))
+            if self._reconnect():
+                SDK_TP.enqueue(task=SimpleThreadTask(
+                    name=f"{self.__class__.__name__}.on_reconnect",
+                    task=self.on_reconnect.emit
+                    ))
+
+        # Delay...
+        time.sleep(self.PERIOD_PULL_S)
 
     def _reconnect(self) -> bool:
         """
@@ -248,14 +282,14 @@ class Stream:
         """
         status = False
         self._device.close()
-        SDK_LOG.info(f'Starting reconnection attempt on {self._device}')
+        SDK_LOG.info(f'Starting connection attempt on {self._device}')
         while self._active:
             if self._device.open():
-                SDK_LOG.info(f'Device {self._device} reconnected.')
+                SDK_LOG.info(f'Device {self._device} connected.')
                 status = True
                 break
-            SDK_LOG.info(f'Reconnection attempt on {self._device} failed.')
-            time.sleep(0.5)
+            SDK_LOG.info(f'Connection attempt on {self._device} failed.')
+            time.sleep(self.PERIOD_RECONNECT_S)
         return status
 
     @staticmethod
