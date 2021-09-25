@@ -14,7 +14,7 @@ import unittest
 
 from pathlib import Path
 
-from embutils.repo import bin_to_hex, merge_bin, merge_hex
+from embutils.utils import bin_to_hex, merge_bin, merge_hex
 
 
 # -->> Definitions <<------------------

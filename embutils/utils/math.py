@@ -30,8 +30,7 @@ def closest_multi(ref: float, base: float, force_next: bool = False) -> float:
     mod = ref % base
     if mod != 0:
         return ref + (base - mod)
-    else:
-        return ref + base if force_next else ref
+    return ref + base if force_next else ref
 
 
 def closest_pow(ref: float, base: float, force_next: bool = False) -> float:

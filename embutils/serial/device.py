@@ -60,7 +60,7 @@ class Device:
         else:
             # Check port
             if port is None:
-                raise ValueError(f"Port is required!")
+                raise ValueError("Port is required!")
             # Get ID
             _id = self._id_from_port(port=port)
             if _id is None:
