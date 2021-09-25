@@ -27,6 +27,7 @@ class TestMath(unittest.TestCase):
         Test closest multiple computation.
         """
         assert closest_multi(2, 2) == 2
+        assert closest_multi(4, 3) == 6
         assert closest_multi(2, 2, True) == 4
 
     def test_02_closest_pow(self):

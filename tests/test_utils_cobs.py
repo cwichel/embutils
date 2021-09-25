@@ -9,6 +9,7 @@ COBS encode/decode testing.
 :license:   The MIT License (MIT)
 """
 
+import pytest
 import unittest
 
 from embutils.utils import COBS
@@ -22,7 +23,21 @@ class TestCOBS(unittest.TestCase):
     """
     Test COBS utilities.
     """
-    def test_01_wiki_examples(self):
+    def test_01_fail(self):
+        """
+        Test COBS decode exception.
+        """
+        # Data start with 0x00
+        with pytest.raises(COBS.DecodeException):
+            COBS.decode(data=bytearray([0x00]))
+        # Not enough data
+        with pytest.raises(COBS.DecodeException):
+            COBS.decode(data=bytearray([0x02]))
+        # 0x00 found in the middle of a block
+        with pytest.raises(COBS.DecodeException):
+            COBS.decode(data=bytearray([0x02, 0x00, 0x01]))
+
+    def test_02_wiki_examples(self):
         """
         Test based on COBS wikipedia page examples.
 
@@ -51,7 +66,7 @@ class TestCOBS(unittest.TestCase):
         for ex in data:
             assert self._test_base(data=bytearray(ex))
 
-    def test_02_multi_blocks(self):
+    def test_03_multi_blocks(self):
         """
         Test based on COBS paper: http://www.stuartcheshire.org/papers/COBSforToN.pdf
 
