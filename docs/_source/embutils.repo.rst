@@ -7,7 +7,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   embutils.repo.binary
    embutils.repo.build
    embutils.repo.version
 

@@ -39,7 +39,6 @@ class AbstractSerializedStreamCodec(AbstractSerializedCodec):
 
         :raises ConnectionError: Device raised exception while reading.
         """
-        pass
 
 
 class Stream:

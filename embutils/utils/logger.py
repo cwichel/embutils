@@ -51,7 +51,7 @@ class Logger(_Logger):
         :param Logger.Format fmt: Log entries formatting. By default :attr:`FMT_DEFAULT`.
         """
         # Initialize logger
-        super(Logger, self).__init__(name=name, level=level)
+        super().__init__(name=name, level=level)
 
         # Define formatter
         if fmt is None:

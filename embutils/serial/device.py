@@ -9,11 +9,11 @@ Serial device implementation classes.
 :license:   The MIT License (MIT)
 """
 
-import serial
 import time
-
-from serial.tools import list_ports
 from typing import List, Optional, Tuple
+
+import serial
+from serial.tools import list_ports
 
 from ..utils import EventHook, IntEnum, SimpleThreadTask, time_elapsed
 from ..utils import SDK_LOG, SDK_TP
@@ -60,7 +60,7 @@ class Device:
         else:
             # Check port
             if port is None:
-                raise ValueError(f"Port is required!")
+                raise ValueError("Port is required!")
             # Get ID
             _id = self._id_from_port(port=port)
             if _id is None:
