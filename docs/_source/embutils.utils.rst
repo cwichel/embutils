@@ -7,12 +7,14 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   embutils.utils.binary
    embutils.utils.bytes
    embutils.utils.cobs
    embutils.utils.crc
    embutils.utils.enum
    embutils.utils.events
    embutils.utils.logger
+   embutils.utils.math
    embutils.utils.serialized
    embutils.utils.subprocess
    embutils.utils.threading

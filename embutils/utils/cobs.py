@@ -22,7 +22,6 @@ class COBS:
         """
         COBS decoding exception.
         """
-        pass
 
     @staticmethod
     def encode(data: bytearray = bytearray()) -> bytearray:

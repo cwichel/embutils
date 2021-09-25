@@ -50,7 +50,6 @@ class AbstractSerialized(ABC):
         :returns: Serialized object.
         :rtype: bytearray.
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -63,7 +62,6 @@ class AbstractSerialized(ABC):
         :returns: Deserialized object if available, None otherwise.
         :rtype: Optional['AbstractSerialized']
         """
-        pass
 
 
 class AbstractSerializedCodec(ABC):
@@ -92,4 +90,3 @@ class AbstractSerializedCodec(ABC):
         :returns: Deserialized object if able, None otherwise.
         :rtype: Optional[AbstractSerialized]
         """
-        pass

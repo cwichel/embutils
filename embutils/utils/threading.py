@@ -63,7 +63,7 @@ class _ThreadWorker(Thread):
         :param Queue queue:     Queue to get the tasks from.
         :param float timeout:   Timeout for waiting for a task.
         """
-        super(_ThreadWorker, self).__init__(name=name)
+        super().__init__(name=name)
         SDK_LOG.debug(f"Creating worker thread {self.name}")
         self._active = True
         self._queue = queue

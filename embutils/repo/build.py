@@ -11,7 +11,7 @@ Project build utilities.
 
 from pathlib import Path
 
-from embutils.utils import execute
+from ..utils import execute
 
 
 # -->> Definitions <<------------------
