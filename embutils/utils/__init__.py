@@ -4,7 +4,8 @@ from .crc import CRC
 from .enum import IntEnum
 from .events import EventHook
 from .logger import Logger, SDK_LOG
+from .math import closest_pow, closest_multi
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .subprocess import execute
-from .threading import AbstractThreadTask, SimpleThreadTask, ThreadPool, SDK_TP
+from .threading import AbstractThreadTask, SimpleThreadTask, ThreadPool, sync, SDK_TP
 from .time import time_elapsed
