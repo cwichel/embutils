@@ -14,6 +14,8 @@ import intelhex
 from pathlib import Path
 from typing import List, Tuple
 
+from .math import closest_multi
+
 
 # -->> Definitions <<------------------
 
@@ -69,3 +71,49 @@ def merge_hex(out: Path, sources: List[Path]) -> None:
     # Save output
     with out.open(mode='w') as file:
         tmp.write_hex_file(file)
+
+
+def shrink_hex(file: Path, empty: int = 0xFF, block: int = 4, count: int = 4) -> intelhex.IntelHex:
+    """
+    Remove all the empty byte blocks from the input HEX file.
+
+    By default this function considers blocks of 4 bytes with value 0xFF as empty. If more than
+    4 consecutive blocks are detected then the section is cleaned.
+
+    :param Path file:   Path to hex file to shrink.
+    :param int empty:   Empty byte value.
+    :param int block:   Number of empty bytes that form a clean block.
+    :param int count:   Minimum number of consecutive blocks to trigger cleaning.
+
+    :return: Reduced Hex file
+    :rtype: intelhex.IntelHex
+    """
+    output  = intelhex.IntelHex(source=f'{file}')
+
+    # Define reference values
+    check   = empty * block
+    start   = int(closest_multi(ref=output.minaddr(), base=block))
+    end     = output.maxaddr()
+
+    # Clean Process
+    detected  = 0
+    addr_init = 0
+    addr_last = 0
+    for addr_last in range(start, end, block):
+        data = output.gets(addr=addr_last, length=block)
+        test = (sum(data) == check)
+        if test:
+            if detected == 0:
+                addr_init = addr_last
+            detected += 1
+        else:
+            if detected >= count:
+                del output[addr_init:addr_last]
+            detected = 0
+
+    # Handle last detection
+    if detected >= count:
+        del output[addr_init:(addr_last + block)]
+
+    # Return result
+    return output

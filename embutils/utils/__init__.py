@@ -1,3 +1,4 @@
+from .binary import bin_to_hex, merge_bin, merge_hex, shrink_hex
 from .bytes import bitmask, reverse_bits, reverse_bytes
 from .cobs import COBS
 from .crc import CRC
