@@ -9,10 +9,10 @@ Binary generation utilities.
 :license:   The MIT License (MIT)
 """
 
-import intelhex
-
 from pathlib import Path
 from typing import List, Tuple
+
+import intelhex
 
 from .math import closest_multi
 

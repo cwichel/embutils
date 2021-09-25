@@ -9,11 +9,11 @@ Serial device implementation classes.
 :license:   The MIT License (MIT)
 """
 
-import serial
 import time
-
-from serial.tools import list_ports
 from typing import List, Optional, Tuple
+
+import serial
+from serial.tools import list_ports
 
 from ..utils import EventHook, IntEnum, SimpleThreadTask, time_elapsed
 from ..utils import SDK_LOG, SDK_TP
