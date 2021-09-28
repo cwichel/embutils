@@ -43,7 +43,7 @@ class TestVersion(unittest.TestCase):
         Test bin2hex utility.
         """
         for file, content in self.FILES:
-            fhex = bin_to_hex(file=file, offset=0x20)
+            fhex = bin_to_hex(src=file, off=0x20)
             assert fhex.gets(addr=0x20, length=len(content)).decode() == content
 
     def test_02_multi_bin2hex(self):
@@ -59,7 +59,7 @@ class TestVersion(unittest.TestCase):
 
         # Generate hex and check
         fhex = Path('test1.hex')
-        merge_bin(out=fhex, sources=sources)
+        merge_bin(out=fhex, src=sources)
         self.check_merged(file=fhex)
 
     def test_03_multi_hex2hex(self):
@@ -71,13 +71,13 @@ class TestVersion(unittest.TestCase):
         sources = []
         for file, content in self.FILES:
             fhex = file.parent / f'{file.name}.hex'
-            bin_to_hex(file=file, offset=(self.OFFSET + last)).write_hex_file(fhex)
+            bin_to_hex(src=file, off=(self.OFFSET + last)).write_hex_file(fhex)
             sources.append(fhex)
             last += len(content)
 
         # Generate hex
         f3 = Path('test3.hex')
-        merge_hex(out=f3, sources=sources)
+        merge_hex(out=f3, src=sources)
         self.check_merged(file=f3)
 
     def check_merged(self, file: Path) -> None:
