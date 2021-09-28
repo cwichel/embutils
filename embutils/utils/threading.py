@@ -113,7 +113,6 @@ class AbstractThreadTask(ABC):
         """
         Execution called by the ThreadWorkers on the ThreadPool implementation.
         """
-        pass
 
 
 class SimpleThreadTask(AbstractThreadTask):
