@@ -50,7 +50,7 @@ class Stream:
 
     Available events:
 
-    #.  **on_received:** This event is emitted when an object is received and
+    #.  **on_receive:** This event is emitted when an object is received and
         deserialized from the serial device. Subscribe using callbacks with
         syntax::
 
@@ -90,13 +90,13 @@ class Stream:
         self._codec  = codec
 
         # Events
-        self.on_received    = EventHook()
+        self.on_receive     = EventHook()
         self.on_connect     = EventHook()
         self.on_reconnect   = EventHook()
         self.on_disconnect  = EventHook()
 
         # Debug prints for received
-        self.on_received += lambda item: self._print_debug(item=item, received=True)
+        self.on_receive += lambda item: self._print_debug(item=item, received=True)
 
         # Multi-thread safety
         self._lock = RLock()
@@ -262,7 +262,7 @@ class Stream:
             if item:
                 SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_received",
-                    task=lambda recv=item: self.on_received.emit(item=recv)
+                    task=lambda recv=item: self.on_receive.emit(item=recv)
                     ))
 
         except ConnectionError:

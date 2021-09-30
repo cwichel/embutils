@@ -88,7 +88,7 @@ class Interface:
         self._timeout = self.TIMEOUT_RESPONSE_S
 
         # Public events
-        self.on_received    = EventHook()
+        self.on_receive     = EventHook()
         self.on_connect     = EventHook()
         self.on_reconnect   = EventHook()
         self.on_disconnect  = EventHook()
@@ -105,7 +105,7 @@ class Interface:
         self._stream.on_connect     += self.on_connect.emit
         self._stream.on_reconnect   += self.on_reconnect.emit
         self._stream.on_disconnect  += self.on_disconnect.emit
-        self._stream.on_received    += self._process
+        self._stream.on_receive    += self._process
 
         SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
 
@@ -143,7 +143,7 @@ class Interface:
         # Do special actions:
 
         # Pass item to user:
-        self.on_received.emit(item=item)
+        self.on_receive.emit(item=item)
 
     def transmit(self,
                  send: AbstractSerialized,
@@ -171,16 +171,13 @@ class Interface:
 
         # Receive logic callback
         def on_received(item: AbstractSerialized) -> None:
-            """
-            Checks the received item against the response logic.
-            """
             nonlocal send, recv
             if logic(item):
                 recv = item
 
         # Prepare response logic
         if logic:
-            self.on_received += on_received
+            self.on_receive += on_received
 
         # Prepare and send
         SDK_LOG.debug('Sending item...')
@@ -193,7 +190,7 @@ class Interface:
             tm_start = time.time()
             while not recv and (time_elapsed(tm_start) < timeout):
                 time.sleep(self.PERIOD_PULL_S)
-            self.on_received -= on_received
+            self.on_receive -= on_received
 
             # Check data
             state = "Received" if recv else "Timeout"
