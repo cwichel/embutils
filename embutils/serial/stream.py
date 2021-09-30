@@ -12,9 +12,10 @@ Stream implementation.
 import time
 
 from abc import abstractmethod
+from threading import RLock
 from typing import Optional
 
-from ..utils import SDK_LOG, SDK_TP, AbstractSerialized, AbstractSerializedCodec, EventHook, SimpleThreadTask
+from ..utils import SDK_LOG, SDK_TP, AbstractSerialized, AbstractSerializedCodec, EventHook, SimpleThreadTask, sync
 from .device import Device
 
 
@@ -97,6 +98,9 @@ class Stream:
         # Debug prints for received
         self.on_received += lambda item: self._print_debug(item=item, received=True)
 
+        # Multi-thread safety
+        self._lock = RLock()
+
         # Start thread
         self._active    = True
         self._finished  = False
@@ -124,6 +128,7 @@ class Stream:
         return self._device
 
     @device.setter
+    @sync(lock_name="_lock")
     def device(self, device: Device) -> None:
         """
         Serial device handler setter.
@@ -161,6 +166,7 @@ class Stream:
         """
         return self.is_alive and self._device.is_open and not self._paused
 
+    @sync(lock_name="_lock")
     def send(self, item: AbstractSerialized) -> None:
         """
         Send a serializable item through the serial device.
@@ -171,6 +177,7 @@ class Stream:
             self._print_debug(item=item, received=False)
             self._device.write(data=self._codec.encode(data=item))
 
+    @sync(lock_name="_lock")
     def resume(self) -> None:
         """
         Resume the stream transmission.
@@ -181,6 +188,7 @@ class Stream:
             self._in_pause = False
             SDK_LOG.info('Stream resumed.')
 
+    @sync(lock_name="_lock")
     def pause(self) -> None:
         """
         Pauses the stream transmission.
@@ -192,6 +200,7 @@ class Stream:
             self._device.close()
             SDK_LOG.info('Stream paused.')
 
+    @sync(lock_name="_lock")
     def stop(self) -> None:
         """
         Stops the stream transmission and kills the thread.

@@ -10,12 +10,14 @@ Serial device implementation classes.
 """
 
 import time
+
+from threading import RLock
 from typing import List, Optional, Tuple
 
 import serial
 from serial.tools import list_ports
 
-from ..utils import EventHook, IntEnum, SimpleThreadTask, time_elapsed
+from ..utils import EventHook, IntEnum, SimpleThreadTask, sync, time_elapsed
 from ..utils import SDK_LOG, SDK_TP
 
 
@@ -30,6 +32,7 @@ class Device:
     """
     #: Default device ID
     DEF_ID = 0xDEADBEEF
+
     #: Default device settings
     DEF_SETTINGS = {
         'baudrate': 115200,
@@ -51,6 +54,9 @@ class Device:
         # Prepare settings
         if not isinstance(settings, dict):
             settings = self.DEF_SETTINGS
+
+        # Multi-thread safety
+        self._lock = RLock()
 
         # Create serial
         self._loop = looped
@@ -122,6 +128,7 @@ class Device:
         """
         return self._serial.is_open
 
+    @sync(lock_name="_lock")
     def open(self) -> bool:
         """
         Tries to open the serial port.
@@ -143,6 +150,7 @@ class Device:
             SDK_LOG.error(f"Port {self.port} is unable to connect: {ex}")
             return False
 
+    @sync(lock_name="_lock")
     def close(self) -> None:
         """
         Closes the serial port.
@@ -152,6 +160,7 @@ class Device:
             self._serial.close()
             SDK_LOG.info(f"Port {self.port} closed!")
 
+    @sync(lock_name="_lock")
     def flush(self) -> None:
         """
         Flushes the serial buffer.
@@ -159,6 +168,7 @@ class Device:
         if self.is_open:
             self._serial.flush()
 
+    @sync(lock_name="_lock")
     def write(self, data: bytearray) -> int:
         """
         Writes the given data through the serial port.
@@ -172,6 +182,7 @@ class Device:
             return self._serial.write(data=data)
         return 0
 
+    @sync(lock_name="_lock")
     def read(self, size: int = 1) -> Optional[bytearray]:
         """
         Reads a fixed number of bytes from the serial buffer. The process is
@@ -190,6 +201,7 @@ class Device:
             SDK_LOG.error(f"Port {self.port} presented connection issues while reading: {ex}")
             return None
 
+    @sync(lock_name="_lock")
     def read_until(self, expected: bytes = b'\n', size: int = None) -> Optional[bytearray]:
         """
         Reads bytes from the serial buffer until the expected sequence is found,
