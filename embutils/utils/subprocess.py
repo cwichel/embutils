@@ -85,7 +85,7 @@ class StreamRedirect:
         self._ready = True
 
 
-def execute(cmd: str, pipe: bool = False) -> Optional[sp.CompletedProcess]:
+def execute(cmd: str, pipe: bool = True) -> Optional[sp.CompletedProcess]:
     """
     Execute the given command as a subprocess.
 
