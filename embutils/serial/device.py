@@ -306,8 +306,12 @@ class DeviceList(List[Device]):
             if dev.vid is None or dev.pid is None:
                 continue
             # Create device
-            new = Device(port=dev.device)
-            dev_list.append(new)
+            try:
+                new = Device(port=dev.device)
+                dev_list.append(new)
+            except ValueError as ex:
+                SDK_LOG.debug(f"Unable to create a serial device: {ex}")
+                continue
         return dev_list
 
 
