@@ -15,8 +15,7 @@ import time
 from typing import Protocol, Optional
 
 from ..utils import SDK_LOG, AbstractSerialized, EventHook, time_elapsed
-from .device import Device
-from .stream import Stream, AbstractSerializedStreamCodec
+from .stream import Stream
 
 
 # -->> Definitions <<------------------
@@ -36,7 +35,7 @@ class Interface:
 
     Available events:
 
-    #.  **on_received:** This event is emitted when an object is received and
+    #.  **on_receive:** This event is emitted when an object is received and
         deserialized from the serial device. Subscribe using callbacks with
         syntax::
 
@@ -67,45 +66,27 @@ class Interface:
     #: Interface command response timeout
     TIMEOUT_RESPONSE_S = 0.5
 
-    #: Default serial device settings
-    SERIAL_SETTINGS = {
-        'baudrate': 230400,
-        'bytesize': 8,
-        'stopbits': 1,
-        'parity':   'N',
-        'timeout':  0.1
-        }
-
-    def __init__(self, codec: AbstractSerializedStreamCodec, port: str = None, looped: bool = False) -> None:
+    def __init__(self, stream: Stream) -> None:
         """
         Class initialization.
 
-        :param AbstractSerializedStreamCodec codec: Serialized objects codec handler.
-        :param str port:                            Serial device port.
-        :param bool looped:                         Enable test mode (looped serial).
+        :param Stream stream:   Stream used to run the interface
         """
         # Response timeout configuration
         self._timeout = self.TIMEOUT_RESPONSE_S
 
         # Public events
-        self.on_received    = EventHook()
+        self.on_receive     = EventHook()
         self.on_connect     = EventHook()
         self.on_reconnect   = EventHook()
         self.on_disconnect  = EventHook()
 
-        # Stream: Communications thread
-        # Start serial device
-        if looped:
-            serial = Device(looped=True, settings=self.SERIAL_SETTINGS)
-        else:
-            serial = Device(port=port, settings=self.SERIAL_SETTINGS)
-
         # Initialize stream and attach callbacks
-        self._stream = Stream(device=serial, codec=codec)
+        self._stream = stream
         self._stream.on_connect     += self.on_connect.emit
         self._stream.on_reconnect   += self.on_reconnect.emit
         self._stream.on_disconnect  += self.on_disconnect.emit
-        self._stream.on_received    += self._process
+        self._stream.on_receive    += self._process
 
         SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
 
@@ -143,7 +124,7 @@ class Interface:
         # Do special actions:
 
         # Pass item to user:
-        self.on_received.emit(item=item)
+        self.on_receive.emit(item=item)
 
     def transmit(self,
                  send: AbstractSerialized,
@@ -171,16 +152,13 @@ class Interface:
 
         # Receive logic callback
         def on_received(item: AbstractSerialized) -> None:
-            """
-            Checks the received item against the response logic.
-            """
             nonlocal send, recv
             if logic(item):
                 recv = item
 
         # Prepare response logic
         if logic:
-            self.on_received += on_received
+            self.on_receive += on_received
 
         # Prepare and send
         SDK_LOG.debug('Sending item...')
@@ -193,7 +171,7 @@ class Interface:
             tm_start = time.time()
             while not recv and (time_elapsed(tm_start) < timeout):
                 time.sleep(self.PERIOD_PULL_S)
-            self.on_received -= on_received
+            self.on_receive -= on_received
 
             # Check data
             state = "Received" if recv else "Timeout"

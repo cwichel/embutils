@@ -52,15 +52,17 @@ class TestStream(unittest.TestCase):
             assert sent == item
             is_ready = True
 
-        # Initialize stream
-        cdc = COBSStreamFramingCodec(dtype=SimplePacket)
-        dev = Device(looped=True)
-        sth = Stream(device=dev, codec=cdc)
-        sth.on_received += on_received
+        # Manage connection
+        def on_connected():
+            ss.send(item=send)
 
-        # Send item
-        sth.resume()
-        sth.send(item=send)
+        # Initialize stream
+        sd = Device(looped=True)
+        ss = Stream(device=sd, codec=COBSStreamFramingCodec(dtype=SimplePacket))
+
+        # Add events
+        ss.on_connect += on_connected
+        ss.on_receive += on_received
 
         # Maintain alive the process until check
         start = time.time()
