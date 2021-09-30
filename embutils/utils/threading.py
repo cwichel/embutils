@@ -230,4 +230,4 @@ class ThreadPool:
 
 # -->> Instances <<--------------------
 #: Embutils internal thread pool
-SDK_TP = ThreadPool(size=25, name='EMBUTILS_Thread_', timeout=30)
+SDK_TP = ThreadPool(size=4, name='EMBUTILS_Thread_', timeout=30)
