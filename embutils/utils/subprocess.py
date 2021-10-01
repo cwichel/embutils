@@ -93,30 +93,26 @@ def execute(cmd: str, pipe: bool = True) -> Optional[sp.CompletedProcess]:
     :param bool pipe:   Pipe output to sys.
     """
     # Prepare
-    proc = sp.Popen(cmd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE)
-
-    # Execute
-    if pipe:
-        # Print header
-        print(f"Executing:\n{cmd}\nOutput:")
-
-        # Set piping...
-        s_err = StreamRedirect(name="stderr", stream_in=proc.stderr, stream_out=sys.stderr)
-        s_out = StreamRedirect(name="stdout", stream_in=proc.stdout, stream_out=sys.stdout)
-
-        # Wait for process and get data
-        proc.wait()
-        s_err.wait_ready()
-        s_out.wait_ready()
-
-        # Get buffers
-        err = s_err.buffer
-        out = s_out.buffer
-    else:
-        # Not piping needed...
-        out, err = proc.communicate()
-        out = '' if (out is None) else out.decode()
-        err = '' if (err is None) else err.decode()
-
-    # Return execution result
-    return sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
+    with sp.Popen(cmd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
+        # Execute
+        if pipe:
+            # Piping needed...
+            # Print header
+            print(f"Executing:\n{cmd}\nOutput:")
+            # Set piping...
+            s_err = StreamRedirect(name="stderr", stream_in=proc.stderr, stream_out=sys.stderr)
+            s_out = StreamRedirect(name="stdout", stream_in=proc.stdout, stream_out=sys.stdout)
+            # Wait for process and get data
+            proc.wait()
+            s_err.wait_ready()
+            s_out.wait_ready()
+            # Get buffers
+            err = s_err.buffer
+            out = s_out.buffer
+        else:
+            # Not piping needed...
+            out, err = proc.communicate()
+            out = '' if (out is None) else out.decode()
+            err = '' if (err is None) else err.decode()
+        # Return execution result
+        return sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
