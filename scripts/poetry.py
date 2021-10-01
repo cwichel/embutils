@@ -159,7 +159,7 @@ def _update_version(ver: str) -> None:
             ver  = '.'.join(tmp)
 
     # Execute poetry version command
-    ret = execute(f'poetry version {ver}', ret=True)
+    ret = execute(cmd=f'poetry version {ver}')
     if ret.returncode != 0:
         raise ValueError(ret.stderr)
 
