@@ -32,25 +32,32 @@ class TestVersion(unittest.TestCase):
         ]
 
     def __init__(self, *args, **kwargs):
+        """
+        Generate base files used on the test.
+        """
         super(TestVersion, self).__init__(*args, **kwargs)
-        self.generate()
+        self._generate()
 
     def __del__(self):
-        self.clean()
+        """
+        Remove test files after execution.
+        """
+        self._clean()
 
     def test_01_bin2hex(self):
         """
-        Test bin2hex utility.
+        Test bin > hex file conversion.
         """
         for file, content in self.FILES:
-            fhex = bin_to_hex(src=file, off=0x20)
+            fout = file.parent / f"{file.stem}.hex"
+            fhex = bin_to_hex(src=file, off=0x20, out=fout)
+            assert intelhex.IntelHex(source=f"{fout}").todict() == fhex.todict()
             assert fhex.gets(addr=0x20, length=len(content)).decode() == content
 
     def test_02_multi_bin2hex(self):
         """
-        Test multi bin2hex utility.
+        Test bin > hex file conversion and merge.
         """
-        # Prepare sources list
         last = 0
         sources = []
         for file, content in self.FILES:
@@ -60,13 +67,12 @@ class TestVersion(unittest.TestCase):
         # Generate hex and check
         fhex = Path('test1.hex')
         merge_bin(out=fhex, src=sources)
-        self.check_merged(file=fhex)
+        self._check_merged(file=fhex)
 
     def test_03_multi_hex2hex(self):
         """
-        Test multi hex2hex utility.
+        Test hex file merge.
         """
-        # Prepare source files
         last = 0
         sources = []
         for file, content in self.FILES:
@@ -78,11 +84,11 @@ class TestVersion(unittest.TestCase):
         # Generate hex
         f3 = Path('test3.hex')
         merge_hex(out=f3, src=sources)
-        self.check_merged(file=f3)
+        self._check_merged(file=f3)
 
-    def check_merged(self, file: Path) -> None:
+    def _check_merged(self, file: Path) -> None:
         """
-        Check the messages on the generated HEX.
+        Check merged files against sources.
         """
         last = 0
         fhex = intelhex.IntelHex(source=f'{file}')
@@ -90,17 +96,17 @@ class TestVersion(unittest.TestCase):
             assert fhex.gets(addr=(self.OFFSET + last), length=len(content)).decode() == content
             last += len(content)
 
-    def generate(self) -> None:
+    def _generate(self) -> None:
         """
-        Generate the test files.
+        Generate test files.
         """
         for file, content in self.FILES:
             with file.open(mode='wb') as f:
                 f.write(content.encode())
 
-    def clean(self) -> None:
+    def _clean(self) -> None:
         """
-        Clean all the used files.
+        Clean generated test files.
         """
         path  = Path()
         files = list(path.glob(pattern='*.hex')) + list(path.glob(pattern='*.bin'))
