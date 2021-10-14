@@ -12,14 +12,16 @@ Version handler class.
 import datetime
 import os
 import re
-import subprocess
 
 from dataclasses import dataclass
 from pathlib import Path
+from platform import system
+
+from ..utils import execute
 
 
 # -->> Definitions <<------------------
-PATH_THIS = Path(os.path.abspath(os.path.dirname(__file__)))
+PATH_THIS   = Path(os.path.abspath(os.path.dirname(__file__)))
 
 
 # -->> API <<--------------------------
@@ -94,12 +96,14 @@ class VersionGit(Version):
 
         :param Path path: Path to repo.
         """
-        cmd = f'cd {path} && git rev-parse --short HEAD'
-        ver = subprocess.check_output(cmd, shell=True).decode()
-        if 'not a git' in ver.lower():
+        win = 'win' in system().lower()
+        cmd = f"cd {path} " + (f"&& {path.drive} " if win else "") + "&& git rev-parse --short HEAD"
+        out = execute(cmd, pipe=False)
+        out = (out.stderr + out.stdout).strip().lower()
+        if 'not a git' in out:
             self.build = self.UVER_BUILD
         else:
-            self.build = int(ver, 16)
+            self.build = int(out, 16)
 
 
 @dataclass
@@ -114,11 +118,12 @@ class VersionSVN(Version):
         :param Path path: Path to repo.
         """
         cmd = f'svnversion {path}'
-        ver = subprocess.check_output(cmd, shell=True).decode()
-        if 'unversioned directory' in ver.lower():
+        out = execute(cmd, pipe=False)
+        out = (out.stderr + out.stdout).strip().lower()
+        if 'unversioned directory' in out:
             self.build =  self.UVER_BUILD
         else:
-            tmp = re.findall(pattern=r'\d+', string=ver)
+            tmp = re.findall(pattern=r'\d+', string=out)
             self.build = int(tmp[-1])
 
 

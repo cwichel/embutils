@@ -262,7 +262,7 @@ class Stream:
             if item:
                 SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_received",
-                    task=lambda recv=item: self.on_receive.emit(item=recv)
+                    task=lambda: self.on_receive.emit(item=item)
                     ))
 
         except ConnectionError:

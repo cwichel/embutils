@@ -15,7 +15,7 @@ import unittest
 from examples.stream_setup import SimplePacket, COBSStreamFramingCodec
 
 from embutils.serial import Device, Stream
-from embutils.utils import SDK_LOG, time_elapsed
+from embutils.utils import SDK_LOG, elapsed
 
 
 # -->> Definitions <<------------------
@@ -25,51 +25,58 @@ SDK_LOG.enable()
 # -->> Test API <<---------------------
 class TestStream(unittest.TestCase):
     """
-    Basic streaming tests using the SimplePacket example.
+    Basic stream tests using the SimplePacket example.
     """
-    def test_send_and_receive(self):
+    def test_01_configuration(self):
+        """
+        Test stream configuration.
+        """
+        # Prepare interface
+        sd = Device(looped=True)
+        ss = Stream(device=sd, codec=COBSStreamFramingCodec(dtype=SimplePacket))
+
+        # Test device property
+        assert ss.device == sd
+
+        # Test device configuration
+        sd_new = Device(looped=True)
+        ss.device = sd_new
+        assert ss.device == sd_new
+
+        # Stop interface
+        ss.stop()
+
+    def test_02_transmit(self):
         """
         Send and receive an item using the Stream on a looped serial Device.
         Test if the transmitted/received items are the same.
         """
-        item = SimplePacket(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
-        self.send_and_receive(send=item)
+        # Prepare data to send/receive
+        data = SimplePacket(source=0x01, destination=0x02, payload=bytearray([0xDD, 0x07]))
 
-    @staticmethod
-    def send_and_receive(send: SimplePacket) -> None:
-        """
-        Simulate a serial device on loop mode and perform a comparison between
-        the data being sent and received.
-        """
-        # Stop flag
-        sent = send
+        # Prepare interface
         is_ready = False
-
-        # Manage reception
-        def on_received(item: SimplePacket):
-            nonlocal sent, is_ready
-            assert (sent is not None) and (item is not None)
-            assert sent == item
-            is_ready = True
-
-        # Manage connection
-        def on_connected():
-            ss.send(item=send)
-
-        # Initialize stream
         sd = Device(looped=True)
         ss = Stream(device=sd, codec=COBSStreamFramingCodec(dtype=SimplePacket))
 
-        # Add events
+        # Transmission reception logic
+        def on_received(item: SimplePacket):
+            nonlocal is_ready
+            assert (item is not None) and (data is not None)
+            assert item == data
+            is_ready = True
+
+        # Execute tests on connect...
+        def on_connected():
+            ss.send(item=data)
+
+        # Run
         ss.on_connect += on_connected
         ss.on_receive += on_received
-
-        # Maintain alive the process until check
         start = time.time()
         while not is_ready:
             time.sleep(0.1)
-            # If the process hangs, fail the test
-            if time_elapsed(start=start) > 1.0:
+            if elapsed(start=start) > 1.0:
                 assert False
 
 

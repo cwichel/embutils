@@ -14,7 +14,7 @@ applications commands.
 import time
 from typing import Protocol, Optional
 
-from ..utils import SDK_LOG, AbstractSerialized, EventHook, time_elapsed
+from ..utils import SDK_LOG, AbstractSerialized, EventHook, elapsed
 from .stream import Stream
 
 
@@ -86,7 +86,7 @@ class Interface:
         self._stream.on_connect     += self.on_connect.emit
         self._stream.on_reconnect   += self.on_reconnect.emit
         self._stream.on_disconnect  += self.on_disconnect.emit
-        self._stream.on_receive    += self._process
+        self._stream.on_receive     += self._process
 
         SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
 
@@ -152,7 +152,7 @@ class Interface:
 
         # Receive logic callback
         def on_received(item: AbstractSerialized) -> None:
-            nonlocal send, recv
+            nonlocal recv
             if logic(item):
                 recv = item
 
@@ -169,13 +169,13 @@ class Interface:
             # Wait for response
             SDK_LOG.debug('Waiting for response...')
             tm_start = time.time()
-            while not recv and (time_elapsed(tm_start) < timeout):
+            while not recv and (elapsed(tm_start) < timeout):
                 time.sleep(self.PERIOD_PULL_S)
             self.on_receive -= on_received
 
             # Check data
             state = "Received" if recv else "Timeout"
-            SDK_LOG.debug(f'Item response: {state} after {time_elapsed(start=tm_start):.03f}[s]')
+            SDK_LOG.debug(f'Item response: {state} after {elapsed(start=tm_start):.03f}[s]')
             return recv
 
         # Return nothing if we don't need response

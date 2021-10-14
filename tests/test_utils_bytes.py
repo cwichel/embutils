@@ -10,6 +10,7 @@ Byte utilities testing.
 """
 
 import unittest
+
 from embutils.utils import bitmask, reverse_bits, reverse_bytes
 
 
@@ -35,7 +36,7 @@ class TestBytes(unittest.TestCase):
 
     def test_02_reverse_bits(self):
         """
-        Test bits reverse.
+        Test bit reverse functionality
         """
         # Test using fixed size
         rev_bits = reverse_bits(value=0b00101011, size=8)
@@ -47,7 +48,7 @@ class TestBytes(unittest.TestCase):
 
     def test_03_reverse_bytes(self):
         """
-        Test bytes reverse.
+        Test byte reverse functionality.
         """
         # Test using fixed size
         rev_bytes = reverse_bytes(value=0x00020304, size=4)

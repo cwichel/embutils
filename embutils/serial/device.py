@@ -17,7 +17,7 @@ from typing import List, Optional, Tuple
 import serial
 from serial.tools import list_ports
 
-from ..utils import EventHook, IntEnum, SimpleThreadTask, sync, time_elapsed
+from ..utils import EventHook, IntEnum, SimpleThreadTask, sync, elapsed
 from ..utils import SDK_LOG, SDK_TP
 
 
@@ -473,7 +473,7 @@ class DeviceScanner:
         last_update = time.time()
         while self._active:
             # Wait until the scan period is passed...
-            if time_elapsed(last_update) > self._scan_period:
+            if elapsed(last_update) > self._scan_period:
                 last_update = time.time()
                 self._scan()
 

@@ -25,14 +25,12 @@ class TestCOBS(unittest.TestCase):
     """
     def test_01_fail(self):
         """
-        Test COBS decode exception.
+        Test COBS failure cases.
         """
-        # Data start with 0x00
-        with pytest.raises(COBS.DecodeException):
-            COBS.decode(data=bytearray([0x00]))
         # Not enough data
         with pytest.raises(COBS.DecodeException):
             COBS.decode(data=bytearray([0x02]))
+
         # 0x00 found in the middle of a block
         with pytest.raises(COBS.DecodeException):
             COBS.decode(data=bytearray([0x02, 0x00, 0x01]))
@@ -43,13 +41,14 @@ class TestCOBS(unittest.TestCase):
 
         .. note::
             Cases explored:
+            * Zero data.
             * Normal messages.
-            * Pure zeroes message.
             * Large messages.
             * Large messages with zero/short extensions.
         """
         # Prepare data
         data = [
+            [],
             [0x00],
             [0x00, 0x00],
             [0x11, 0x22, 0x00, 0x33],
@@ -62,7 +61,7 @@ class TestCOBS(unittest.TestCase):
             [(n % (0xFF + 1)) for n in range(0x03, 0xFF + 0x03)]
             ]
 
-        # Execute example
+        # Execute example tests
         for ex in data:
             assert self._test_base(data=bytearray(ex))
 
