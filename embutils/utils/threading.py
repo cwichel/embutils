@@ -260,4 +260,4 @@ class ThreadPool:
 
 # -->> Instances <<--------------------
 #: Embutils internal thread pool
-SDK_TP = ThreadPool(size=4, name='EMBUTILS_Thread_')
+SDK_TP = ThreadPool(size=5, name='EMBUTILS_Thread_')
