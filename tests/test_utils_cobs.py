@@ -25,7 +25,7 @@ class TestCOBS(unittest.TestCase):
     """
     def test_01_fail(self):
         """
-        Test COBS fail cases.
+        Test COBS failure cases.
         """
         # Not enough data
         with pytest.raises(COBS.DecodeException):

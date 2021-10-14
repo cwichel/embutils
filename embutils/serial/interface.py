@@ -86,7 +86,7 @@ class Interface:
         self._stream.on_connect     += self.on_connect.emit
         self._stream.on_reconnect   += self.on_reconnect.emit
         self._stream.on_disconnect  += self.on_disconnect.emit
-        self._stream.on_receive    += self._process
+        self._stream.on_receive     += self._process
 
         SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
 
@@ -152,7 +152,7 @@ class Interface:
 
         # Receive logic callback
         def on_received(item: AbstractSerialized) -> None:
-            nonlocal send, recv
+            nonlocal recv
             if logic(item):
                 recv = item
 

@@ -21,7 +21,7 @@ SDK_LOG.enable()
 
 
 # -->> Test API <<---------------------
-class TestByte(unittest.TestCase):
+class TestThreading(unittest.TestCase):
     """
     Test threading utilities.
     """
