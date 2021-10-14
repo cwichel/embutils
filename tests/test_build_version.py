@@ -9,6 +9,7 @@ Version definition testing.
 :license:   The MIT License (MIT)
 """
 
+import pytest
 import unittest
 
 from pathlib import Path
@@ -24,44 +25,69 @@ class TestVersion(unittest.TestCase):
     """
     Test version utilities.
     """
-    def test_01_build(self):
+    def test_01_fail(self):
         """
-        Test version build.
+        Test failure cases.
         """
-        # Initial values
-        v = VersionGit()
-        assert v.build == v.UVER_BUILD
+        ver  = VersionGit()
+        file = Path('this/is/not/reachable.txt')
 
-        # Get build
-        v.update_build()
-        assert v.build != v.UVER_BUILD
+        # Unable to reach path to save version file
+        with pytest.raises(ValueError):
+            ver.save(file=file)
 
-    def test_02_storage(self):
+        # Unable to find version file to load
+        with pytest.raises(ValueError):
+            ver.load(file=file)
+
+        # Unable to find path to generate version header
+        with pytest.raises(ValueError):
+            export_version_c(ver=ver, author="Test", note="None", file=file.parent)
+
+    def test_02_git_build(self):
         """
-        Test version file save/load
+        Test Git build value retrieve operations.
         """
-        fver = Path('version.txt')
-        hver = Path('version.h')
+        ver = VersionGit()
+        path = Path("C:")
+
+        # Check initial build value
+        assert ver.build == ver.UVER_BUILD
+
+        # Get build from non-git directory
+        ver.update_build(path=path)
+        assert ver.build == ver.UVER_BUILD
+
+        # Get build from this repo...
+        ver.update_build()
+        assert ver.build != ver.UVER_BUILD
+
+    def test_03_git_storage(self):
+        """
+        Test version file load/save and C headers generation.
+        """
+        ver_file = Path('version.txt')
+        ver_head = Path('version.h')
 
         # Generate and store version
-        v_base = VersionGit()
-        v_base.update_build()
-        v_base.save(file=fver, store_build=True)
+        ver_base = VersionGit()
+        ver_base.update_build()
+        ver_base.save(file=ver_file, store_build=True)
 
         # Load and check version
-        v_load = VersionGit.load(file=fver)
-        assert v_base == v_load
+        ver_load = VersionGit.load(file=ver_file)
+        assert ver_base == ver_load
 
         # Export version header
-        export_version_c(ver=v_load, author='test', note='version header file', file=hver)
-        with hver.open('r') as f:
+        export_version_c(ver=ver_load, author='test', note='version header file', file=ver_head)
+        with ver_head.open('r') as f:
             data = f.read()
             assert ('test' in data) and ('version header file' in data)
-            assert f'"{v_load.major}.{v_load.minor}.{v_load.build}"' in data
+            assert f'"{ver_load.major}.{ver_load.minor}.{ver_load.build}"' in data
 
         # Clean
-        fver.unlink()
-        hver.unlink()
+        ver_file.unlink()
+        ver_head.unlink()
 
 
 # -->> Test Execution <<---------------
