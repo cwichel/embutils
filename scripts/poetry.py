@@ -103,10 +103,16 @@ def run_docs() -> None:
 
 def run_html() -> None:
     """
-    Enables a HTML server to render/check the generated documentation.
+    Enables a HTML server to render/check the generated documentation or coverage report.
     """
-    path = PATH_ROOT / 'docs/_build/html'
-    cmd = f'python -m http.server -d "{path}"'
+    # Get input
+    parser = ap.ArgumentParser()
+    parser.add_argument('-c', '--coverage', action='store_true', help='Starts the coverage html server.')
+    args = parser.parse_args(args=sys.argv[1:])
+
+    # run
+    target = 'htmlcov' if args.coverage else 'docs/_build/html'
+    cmd = f'python -m http.server -d "{PATH_ROOT / target}"'
     execute(cmd=cmd)
 
 
@@ -116,7 +122,7 @@ def run_check_coverage() -> None:
     """
     name = PROJ_NAME
     path = PATH_ROOT / 'tests'
-    cmd = f'coverage run -m --source={name} pytest {path} && coverage report'
+    cmd = f'coverage run -m --source={name} pytest {path} && coverage html && coverage report'
     execute(cmd=cmd)
 
 
