@@ -9,4 +9,4 @@ from .math import closest_pow, closest_multi
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .subprocess import execute
 from .threading import AbstractThreadTask, SimpleThreadTask, ThreadPool, sync, SDK_TP
-from .time import time_elapsed
+from .time import elapsed, timer
