@@ -20,7 +20,7 @@ from .stream import Stream
 
 # -->> Definitions <<------------------
 #: CallBack definition. AbstractSerialized -> bool
-CBSerialized2Bool = tp.Callable[[AbstractSerialized], None]
+CBSerialized2Bool = tp.Callable[[AbstractSerialized], bool]
 
 
 # -->> API <<--------------------------
