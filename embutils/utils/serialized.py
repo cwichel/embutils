@@ -9,15 +9,15 @@ Serialized object abstract implementation.
 :license:   The MIT License (MIT)
 """
 
-from abc import ABC, abstractmethod
-from typing import Optional
+import abc
+import typing as tp
 
 
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
-class AbstractSerialized(ABC):
+class AbstractSerialized(abc.ABC):
     """
     Serialized object abstraction.
     This class implements the expected interface for a serialized object.
@@ -42,7 +42,7 @@ class AbstractSerialized(ABC):
         """
         return not self.__eq__(other)
 
-    @abstractmethod
+    @abc.abstractmethod
     def serialize(self) -> bytearray:
         """
         Serializes the item into a bytearray.
@@ -52,8 +52,8 @@ class AbstractSerialized(ABC):
         """
 
     @classmethod
-    @abstractmethod
-    def deserialize(cls, data: bytearray) -> Optional['AbstractSerialized']:
+    @abc.abstractmethod
+    def deserialize(cls, data: bytearray) -> tp.Optional['AbstractSerialized']:
         """
         Deserializes an object from a bytearray.
 
@@ -64,12 +64,12 @@ class AbstractSerialized(ABC):
         """
 
 
-class AbstractSerializedCodec(ABC):
+class AbstractSerializedCodec(abc.ABC):
     """
     Serialized object codec abstraction.
     This class implements the logic used to encode/decode a serialized object.
     """
-    @abstractmethod
+    @abc.abstractmethod
     def encode(self, data: AbstractSerialized) -> bytearray:
         """
         Encodes a serialized object into a byte array.
@@ -80,8 +80,8 @@ class AbstractSerializedCodec(ABC):
         :rtype: bytearray
         """
 
-    @abstractmethod
-    def decode(self, data: bytearray) -> Optional[AbstractSerialized]:
+    @abc.abstractmethod
+    def decode(self, data: bytearray) -> tp.Optional[AbstractSerialized]:
         """
         Decodes a serialized object from a byte array.
 

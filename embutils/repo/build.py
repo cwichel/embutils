@@ -9,7 +9,7 @@ Project build utilities.
 :license:   The MIT License (MIT)
 """
 
-from pathlib import Path
+import pathlib as pl
 
 from ..utils import execute
 
@@ -18,7 +18,7 @@ from ..utils import execute
 
 
 # -->> API <<--------------------------
-def build_cubeide(name: str, config: str, project: Path, workspace: Path) -> None:
+def build_cubeide(name: str, config: str, project: pl.Path, workspace: pl.Path) -> None:
     """
     Calls the STM32 CubeIDE headless builder on the specified project.
 
@@ -39,7 +39,7 @@ def build_cubeide(name: str, config: str, project: Path, workspace: Path) -> Non
     execute(cmd=cmd)
 
 
-def build_iar(config: str, project: Path) -> None:
+def build_iar(config: str, project: pl.Path) -> None:
     """
     Calls the IAR headless builder on the specified project.
 

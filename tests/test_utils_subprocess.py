@@ -25,17 +25,17 @@ class TestSubprocess(unittest.TestCase):
     """
     Test subprocess utilities.
     """
-    def test_execute(self):
+    def test_01_execute(self):
         """
         Check if the execute command works correctly.
         """
         cmd = "python --version"
 
         # Execute
-        ret = execute(cmd=cmd)
+        ret = execute(cmd=cmd, pipe=False)
         assert "Python" in ret.stdout
 
-        ret = execute(cmd="unknown_command")
+        ret = execute(cmd="unknown_command", pipe=False)
         assert (ret.returncode != 0) and (len(ret.stderr) > 0)
 
         with patch('sys.stdout', new=StringIO()) as fake_out:

@@ -9,6 +9,9 @@ COBS encoding/decoding implementation.
 :license:   The MIT License (MIT)
 """
 
+import dataclasses as dc
+import typing as tp
+
 
 # -->> Definitions <<------------------
 
@@ -23,67 +26,54 @@ class COBS:
         COBS decoding exception.
         """
 
+    @dc.dataclass
+    class Block:
+        """
+        COBS encoding block.
+        """
+        code: int
+        data: bytearray
+        zero: bool = False
+
     @staticmethod
     def encode(data: bytearray = bytearray()) -> bytearray:
         """
         Encode a byte array using Consistent Overhead Byte Stuffing (COBS).
 
         .. note::
-            * Encoding guarantees non-zero bytes on the output array.
-            * An empty string is encoded to [0x01]
+            * Encoding guarantees non-zero bytes on the output array (besides the terminator).
+            * An empty string is encoded to [0x01, 0x00]
 
         :param bytearray data: Bytes to be encoded.
 
         :returns: Encoded byte array.
         :rtype: bytearray
         """
-        # Verify that we have bytes to encode...
-        if len(data) == 0:
-            return bytearray([0x01])
+        # Prepare
+        blocks: tp.List[COBS.Block] = []
+        base = data.copy()
+        base.append(0x00)
 
         # Encode
-        frame = bytearray()
-        add_zero = False
-        idx_start = 0
-        idx_end = 0
-        for byte in data:
-            # Compute code
-            code = idx_end - idx_start + 1
+        while base:
+            idx = base.find(0x00)
+            code = (idx + 1) if (idx != -1) else len(base)
+            if code > 0xFE:
+                # Extended block:
+                blocks.append(COBS.Block(code=0xFF, data=base[0:0xFE]))
+                del base[0:0xFE]
+            else:
+                # Block zero terminated:
+                blocks.append(COBS.Block(code=code, data=base[0:(code - 1)]))
+                del base[0:code]
 
-            # Process the current byte
-            if byte == 0x00:
-                # Add a zero: Block termination
-                #   - If this is the last message: Add another zero to show that is ready!
-                #   - We need to append < 0xFE bytes!
-                #   - Append the code (bytes available).
-                add_zero = True
-                frame.append(code)
-                frame += data[idx_start:idx_end]
-                idx_start = idx_end + 1
-
-            elif code == 0xFE:
-                # Special case: Send the full block with non-zero bytes
-                #   - We have 0xFE bytes available!
-                #   - The block header is set to 0xFF
-                #   - Don't need to add a zero termination!
-                add_zero = False
-                frame.append(0xFF)
-                frame += data[idx_start:(idx_end + 1)]
-                idx_start = idx_end + 1
-
-            # Explore the next byte...
-            idx_end += 1
-
-        # Finish the packet:
-        if (idx_end != idx_start) or add_zero:
-            # If needed:
-            #   - Add the block header code (if no bytes missing: 0x01)
-            #   - Add the missing bytes
-            code = idx_end - idx_start + 1
-            frame.append(code)
-            frame += data[idx_start:idx_end]
-
-        return frame
+        # Process encoding
+        out = bytearray()
+        for block in blocks:
+            out.append(block.code)
+            out.extend(block.data)
+        out.append(0x00)
+        return out
 
     @staticmethod
     def decode(data: bytearray) -> bytearray:
@@ -98,42 +88,34 @@ class COBS:
 
         :raises COBS.DecodeException: Encoded data is invalid.
         """
-        # Verify that he have enough bytes
-        if len(data) == 0:
-            return bytearray()
+        # Prepare
+        blocks: tp.List[COBS.Block] = []
+        base = data.copy()
 
-        msg = bytearray()
-        idx = 0
-
-        while idx < len(data):
-            # Get the frame block code
-            code = data[idx]
+        # Decode
+        while base:
+            # Check if the termination byte is received
+            code = base[0]
             if code == 0x00:
-                raise COBS.DecodeException('Zero byte found in input!')
-
-            # Get the data
-            idx += 1
-            end = idx + code - 1
-
-            tmp = data[idx:end]
-            if 0x00 in tmp:
-                raise COBS.DecodeException('Zero byte found in input!')
-
-            # Append it to the message
-            msg += tmp
-
-            # Update and check index
-            idx = end
-            if idx > len(data):
-                raise COBS.DecodeException('Not enough bytes to process!')
-
-            if idx < len(data):
-                # In range, add zero if needed
-                if code < 0xFF:
-                    msg.append(0x00)
-
-            else:
-                # All the bytes processed
                 break
+            # Add zero to last block, if needed
+            if blocks:
+                blocks[-1].zero = (blocks[-1].code != 0xFF)
+            # Get block and remove bytes
+            block = COBS.Block(code=code, data=base[1:code])
+            del base[0:code]
+            # Check block
+            if block.data.find(0x00) != -1:
+                raise COBS.DecodeException('Zero byte found in input!')
+            if len(block.data) != (code - 1):
+                raise COBS.DecodeException('Not enough bytes to process!')
+            # Append block
+            blocks.append(block)
 
-        return msg
+        # Process decoding
+        out = bytearray()
+        for block in blocks:
+            out.extend(block.data)
+            if block.zero:
+                out.append(0x00)
+        return out

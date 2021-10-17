@@ -9,21 +9,22 @@ Version handler class.
 :license:   The MIT License (MIT)
 """
 
-import datetime
+import dataclasses as dc
+import datetime as dt
 import os
+import pathlib as pl
+import platform as pf
 import re
-import subprocess
 
-from dataclasses import dataclass
-from pathlib import Path
+from ..utils import execute
 
 
 # -->> Definitions <<------------------
-PATH_THIS = Path(os.path.abspath(os.path.dirname(__file__)))
+PATH_THIS   = pl.Path(os.path.abspath(os.path.dirname(__file__)))
 
 
 # -->> API <<--------------------------
-@dataclass
+@dc.dataclass
 class Version:
     """
     Firmware version definition class.
@@ -40,7 +41,7 @@ class Version:
         """
         return f'{self.major}.{self.minor}.{self.build}'
 
-    def update_build(self, path: Path) -> None:
+    def update_build(self, path: pl.Path) -> None:
         """
         Updates the build number for the current repo.
 
@@ -48,8 +49,9 @@ class Version:
         """
         # Unversioned: do nothing.
         _ = path
+        self.build = self.UVER_BUILD
 
-    def save(self, file: Path, store_build: bool = False) -> None:
+    def save(self, file: pl.Path, store_build: bool = False) -> None:
         """
         Stores the version number to the provided file.
         The version number will be stored in the format 'major.minor.build'.
@@ -64,7 +66,7 @@ class Version:
             ver_file.write(f'{self.major}.{self.minor}.{build}')
 
     @classmethod
-    def load(cls, file: Path) -> 'Version':
+    def load(cls, file: pl.Path) -> 'Version':
         """
         Loads the version number from the provided file.
         The version number needs to be in the format 'major.minor.build'.
@@ -83,46 +85,49 @@ class Version:
             return ver
 
 
-@dataclass
+@dc.dataclass
 class VersionGit(Version):
     """
     Git version specialization.
     """
-    def update_build(self, path: Path = Path(os.getcwd())) -> None:
+    def update_build(self, path: pl.Path = pl.Path(os.getcwd())) -> None:
         """
         Updates the build number for the current repo.
 
         :param Path path: Path to repo.
         """
-        cmd = f'cd {path} && git rev-parse --short HEAD'
-        ver = subprocess.check_output(cmd, shell=True).decode()
-        if 'not a git' in ver.lower():
+        win = 'win' in pf.system().lower()
+        cmd = f"cd {path} " + (f"&& {path.drive} " if win else "") + "&& git rev-parse --short HEAD"
+        out = execute(cmd, pipe=False)
+        out = (out.stderr + out.stdout).strip().lower()
+        if 'not a git' in out:
             self.build = self.UVER_BUILD
         else:
-            self.build = int(ver, 16)
+            self.build = int(out, 16)
 
 
-@dataclass
+@dc.dataclass
 class VersionSVN(Version):
     """
     SVN version specialization.
     """
-    def update_build(self, path: Path = Path(os.getcwd())) -> None:
+    def update_build(self, path: pl.Path = pl.Path(os.getcwd())) -> None:
         """
         Updates the build number for the current repo.
 
         :param Path path: Path to repo.
         """
         cmd = f'svnversion {path}'
-        ver = subprocess.check_output(cmd, shell=True).decode()
-        if 'unversioned directory' in ver.lower():
+        out = execute(cmd, pipe=False)
+        out = (out.stderr + out.stdout).strip().lower()
+        if 'unversioned directory' in out:
             self.build =  self.UVER_BUILD
         else:
-            tmp = re.findall(pattern=r'\d+', string=ver)
+            tmp = re.findall(pattern=r'\d+', string=out)
             self.build = int(tmp[-1])
 
 
-def export_version_c(ver: Version, author: str, note: str, file: Path) -> None:
+def export_version_c(ver: Version, author: str, note: str, file: pl.Path) -> None:
     """
     Exports the version to a C header file.
 
@@ -137,7 +142,7 @@ def export_version_c(ver: Version, author: str, note: str, file: Path) -> None:
 
     template = (PATH_THIS / 'version_template.h').open(mode='r').read()
     template = template.format(
-        file=file.name, author=author, note=note, date=f'{datetime.datetime.now():%x %X}',
+        file=file.name, author=author, note=note, date=f'{dt.datetime.now():%x %X}',
         major=ver.major, minor=ver.minor,
         build=f'0x{ver.build:X}',
         version=f'"{ver.major}.{ver.minor}.{ver.build}"'

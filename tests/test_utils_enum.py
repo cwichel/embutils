@@ -32,7 +32,7 @@ class TestEnum(unittest.TestCase):
     """
     def test_01_check_value(self):
         """
-        Test enum value check
+        Test enum value check.
         """
         assert EnumExample.has_value(value=1)
         assert not EnumExample.has_value(value=4)

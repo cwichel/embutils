@@ -9,12 +9,11 @@ Subprocess execution utilities.
 :license:   The MIT License (MIT)
 """
 
+import queue
 import subprocess as sp
 import sys
 import time
-
-from queue import Queue
-from typing import AnyStr, IO, Optional
+import typing as tp
 
 from .threading import SDK_TP, SimpleThreadTask
 
@@ -28,7 +27,7 @@ class StreamRedirect:
     Stream redirect utility implementation.
     Allows to store and redirect a given stream.
     """
-    def __init__(self, name: str, stream_in: IO[AnyStr], stream_out: IO[AnyStr]) -> None:
+    def __init__(self, name: str, stream_in: tp.IO[tp.AnyStr], stream_out: tp.IO[tp.AnyStr]) -> None:
         """
         Class initialization.
 
@@ -38,7 +37,7 @@ class StreamRedirect:
         """
         self._name  = name
         self._buff  = []
-        self._queue = Queue()
+        self._queue = queue.Queue()
         self._src   = stream_in
         self._out   = stream_out
         self._ready = False
@@ -85,7 +84,7 @@ class StreamRedirect:
         self._ready = True
 
 
-def execute(cmd: str, pipe: bool = True) -> Optional[sp.CompletedProcess]:
+def execute(cmd: str, pipe: bool = True) -> sp.CompletedProcess:
     """
     Execute the given command as a subprocess.
 

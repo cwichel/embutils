@@ -12,19 +12,15 @@ applications commands.
 """
 
 import time
-from typing import Protocol, Optional
+import typing as tp
 
-from ..utils import SDK_LOG, AbstractSerialized, EventHook, time_elapsed
+from ..utils import SDK_LOG, AbstractSerialized, EventHook, elapsed
 from .stream import Stream
 
 
 # -->> Definitions <<------------------
-class ResponseCheckCallback(Protocol):
-    """
-    Response check callback signature:
-    AbstractSerialized -> bool
-    """
-    def __call__(self, item: AbstractSerialized) -> bool: ...
+#: CallBack definition. AbstractSerialized -> bool
+CBSerialized2Bool = tp.Callable[[AbstractSerialized], None]
 
 
 # -->> API <<--------------------------
@@ -86,7 +82,7 @@ class Interface:
         self._stream.on_connect     += self.on_connect.emit
         self._stream.on_reconnect   += self.on_reconnect.emit
         self._stream.on_disconnect  += self.on_disconnect.emit
-        self._stream.on_receive    += self._process
+        self._stream.on_receive     += self._process
 
         SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
 
@@ -128,8 +124,8 @@ class Interface:
 
     def transmit(self,
                  send: AbstractSerialized,
-                 logic: ResponseCheckCallback = None,
-                 timeout: float = None) -> Optional[AbstractSerialized]:
+                 logic: tp.Optional[CBSerialized2Bool] = None,
+                 timeout: float = None) -> tp.Optional[AbstractSerialized]:
         """
         Send a item and, if required, wait for a response that complies with
         the defined logic.
@@ -147,40 +143,41 @@ class Interface:
         :returns: None if timeout or no response is detected, response item otherwise.
         :rtype: Optional[AbstractSerialized]
         """
+        # Manage "send only" messages...
+        if logic is None:
+            SDK_LOG.debug('Sending item...')
+            self._stream.send(item=send)
+            SDK_LOG.debug('Response not needed.')
+            return None
+
+        # Manage "send and receive" messages...
         recv    = None
         timeout = self._timeout if (timeout is None) else timeout
 
         # Receive logic callback
         def on_received(item: AbstractSerialized) -> None:
-            nonlocal send, recv
+            nonlocal recv
             if logic(item):
                 recv = item
 
         # Prepare response logic
-        if logic:
-            self.on_receive += on_received
+        self.on_receive += on_received
 
         # Prepare and send
         SDK_LOG.debug('Sending item...')
         self._stream.send(item=send)
 
-        # Define if response is needed
-        if logic:
-            # Wait for response
-            SDK_LOG.debug('Waiting for response...')
-            tm_start = time.time()
-            while not recv and (time_elapsed(tm_start) < timeout):
-                time.sleep(self.PERIOD_PULL_S)
-            self.on_receive -= on_received
+        # Wait for response
+        SDK_LOG.debug('Waiting for response...')
+        tm_start = time.time()
+        while not recv and (elapsed(tm_start) < timeout):
+            time.sleep(self.PERIOD_PULL_S)
+        self.on_receive -= on_received
 
-            # Check data
-            state = "Received" if recv else "Timeout"
-            SDK_LOG.debug(f'Item response: {state} after {time_elapsed(start=tm_start):.03f}[s]')
-            return recv
-
-        # Return nothing if we don't need response
-        SDK_LOG.debug('Response not needed.')
-        return None
+        # Check data
+        state = "Received" if recv else "Timeout"
+        SDK_LOG.debug(f'Item response: {state} after {elapsed(start=tm_start):.03f}[s]')
+        return recv
 
     def stop(self) -> None:
         """

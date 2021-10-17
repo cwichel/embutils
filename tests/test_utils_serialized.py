@@ -24,7 +24,7 @@ class TestSerialized(unittest.TestCase):
     """
     Basic reference tests using the SimplePacket example.
     """
-    def test_serialize(self):
+    def test_01_serialize(self):
         """
         Check if the serialization is being done correctly.
         """
@@ -38,7 +38,7 @@ class TestSerialized(unittest.TestCase):
         # Compare
         assert raw == item.serialize()
 
-    def test_deserialize(self):
+    def test_02_deserialize(self):
         """
         Check if the deserialization is being done correctly.
         """
@@ -53,7 +53,7 @@ class TestSerialized(unittest.TestCase):
         assert item is not None
         assert raw == item.serialize()
 
-    def test_comparison(self):
+    def test_03_comparison(self):
         """
         Check if the comparison is being done correctly.
         """
