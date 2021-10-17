@@ -9,7 +9,7 @@ CRC implementation.
 :license:   The MIT License (MIT)
 """
 
-from typing import List
+import typing as tp
 
 from .bytes import bitmask, reverse_bits
 
@@ -122,7 +122,7 @@ class CRC:
         return self._rev_out
 
     @property
-    def lookup_table(self) -> List[int]:
+    def lookup_table(self) -> tp.List[int]:
         """
         Model pre-computed lookup table.
         """
@@ -152,7 +152,7 @@ class CRC:
         crc = reverse_bits(value=crc, size=self._size) if self._rev_out else crc
         return crc ^ self._xor_out
 
-    def _compute_lookup_table(self) -> List[int]:
+    def _compute_lookup_table(self) -> tp.List[int]:
         """
         Generates the lookup table for the current CRC model.
 
@@ -196,7 +196,7 @@ class CRC:
             crc >>= shift
         return crc
 
-    def _lookup_small(self) -> List[int]:
+    def _lookup_small(self) -> tp.List[int]:
         """
         Generates the lookup table for model size < 8bit.
 
@@ -244,7 +244,7 @@ class CRC:
             crc = self._mask & ((crc << 8) ^ self._table[pos])
         return crc
 
-    def _lookup_normal(self) -> List[int]:
+    def _lookup_normal(self) -> tp.List[int]:
         """
         Generates the lookup table for model size >= 8bit.
 

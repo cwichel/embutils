@@ -9,19 +9,22 @@ Timing utilities.
 :license:   The MIT License (MIT)
 """
 
-from functools import wraps
-from time import time
-from typing import Callable, TypeVar
+import functools as fc
+import time
+import typing as tp
 
 from .logger import SDK_LOG
 
 
 # -->> Definitions <<------------------
-RT = TypeVar('RT')
+#: TyPe definition. Any value.
+TPAny      = tp.TypeVar('TPAny')
+#: CallBack definition. Any -> Any
+CBAny2Any  = tp.Callable[..., TPAny]
 
 
 # -->> API <<--------------------------
-def timer(name: str = None, log: bool = False, precision: int = 6) -> Callable[[Callable[..., RT]], Callable[..., RT]]:
+def timer(name: str = None, log: bool = False, precision: int = 6) -> tp.Callable[[CBAny2Any], CBAny2Any]:
     """
     Decorator.
     Used to log the execution time of a function.
@@ -33,16 +36,16 @@ def timer(name: str = None, log: bool = False, precision: int = 6) -> Callable[[
     :return: Decorated function wrapped on timer.
     :rtype: Callable[[Callable[..., RT]], Callable[..., RT]]
     """
-    def decorator(func: Callable[..., RT]) -> Callable[..., RT]:
-        @wraps(func)
-        def wrapper(*args, **kwargs) -> RT:
+    def decorator(func: CBAny2Any) -> CBAny2Any:
+        @fc.wraps(func)
+        def wrapper(*args, **kwargs) -> TPAny:
             logger = SDK_LOG.info if log else print
             logger(f"{name}: Starting execution...")
-            start = time()
-            rv = func(*args, **kwargs)
+            start = time.time()
+            ret = func(*args, **kwargs)
             total = elapsed(start)
             logger(f"{name}: Execution time: {total:.{precision}f}[s]")
-            return rv
+            return ret
         return wrapper
     return decorator
 
@@ -56,4 +59,4 @@ def elapsed(start: float) -> float:
     :returns: Time elapsed.
     :rtype: float
     """
-    return time() - start
+    return time.time() - start

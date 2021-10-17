@@ -9,14 +9,14 @@ Enumeration utilities.
 :license:   The MIT License (MIT)
 """
 
-from enum import IntEnum as _IntEnum
+import enum
 
 
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
-class IntEnum(_IntEnum):
+class IntEnum(enum.IntEnum):
     """
     Integer enumeration class.
     Extends the functionalities of the base integer enumeration definition.
@@ -59,4 +59,5 @@ class IntEnum(_IntEnum):
         :returns: True if exists, false otherwise.
         :rtype: bool
         """
+        # pylint: disable=E1101
         return value in cls._value2member_map_

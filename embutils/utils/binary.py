@@ -9,8 +9,8 @@ Binary generation utilities.
 :license:   The MIT License (MIT)
 """
 
-from pathlib import Path
-from typing import List, Optional, Tuple
+import pathlib as pl
+import typing as tp
 
 import intelhex
 
@@ -20,7 +20,7 @@ RECORD_BYTES = 32
 
 
 # -->> API <<--------------------------
-def bin_to_hex(src: Path, off: int, out: Optional[Path] = None) -> intelhex.IntelHex:
+def bin_to_hex(src: pl.Path, off: int, out: tp.Optional[pl.Path] = None) -> intelhex.IntelHex:
     """
     Convert a binary file into an HEX.
 
@@ -36,12 +36,12 @@ def bin_to_hex(src: Path, off: int, out: Optional[Path] = None) -> intelhex.Inte
     tmp.loadbin(fobj=f'{src}', offset=off)
 
     # Save if required
-    if isinstance(out, Path):
+    if isinstance(out, pl.Path):
         tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
     return tmp
 
 
-def merge_bin(src: List[Tuple[Path, int]], out: Optional[Path] = None) -> intelhex.IntelHex:
+def merge_bin(src: tp.List[tp.Tuple[pl.Path, int]], out: tp.Optional[pl.Path] = None) -> intelhex.IntelHex:
     """
     Merge a group of binary files into an HEX.
 
@@ -60,12 +60,12 @@ def merge_bin(src: List[Tuple[Path, int]], out: Optional[Path] = None) -> intelh
         tmp.merge(other=this, overlap='replace')
 
     # Save if required
-    if isinstance(out, Path):
+    if isinstance(out, pl.Path):
         tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
     return tmp
 
 
-def merge_hex(src: List[Path], out: Optional[Path] = None) -> intelhex.IntelHex:
+def merge_hex(src: tp.List[pl.Path], out: tp.Optional[pl.Path] = None) -> intelhex.IntelHex:
     """
     Merge a group of HEX files.
 
@@ -82,6 +82,6 @@ def merge_hex(src: List[Path], out: Optional[Path] = None) -> intelhex.IntelHex:
         tmp.merge(other=this, overlap='replace')
 
     # Save if required
-    if isinstance(out, Path):
+    if isinstance(out, pl.Path):
         tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
     return tmp

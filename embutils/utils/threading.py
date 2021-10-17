@@ -9,21 +9,26 @@ SDK threading utilities.
 :license:   The MIT License (MIT)
 """
 
-from abc import ABC, abstractmethod
-from functools import wraps
-from queue import Empty, Queue
-from threading import enumerate, RLock, Thread
-from typing import Callable, List, TypeVar
+import abc
+import functools as fc
+import queue
+import threading as th
+import typing as tp
 
 from .logger import SDK_LOG
 
 
 # -->> Definitions <<------------------
-RT = TypeVar('RT')
+#: TyPe definition. Any value.
+TPAny      = tp.TypeVar('TPAny')
+#: CallBack definition. Any -> Any
+CBAny2Any  = tp.Callable[..., TPAny]
+#: CallBack definition. Any -> None
+CBAny2None = tp.Callable[..., None]
 
 
 # -->> API <<--------------------------
-def sync(lock_name: str) -> Callable[[Callable[..., RT]], Callable[..., RT]]:
+def sync(lock_name: str) -> tp.Callable[[CBAny2Any], CBAny2Any]:
     """
     Decorator.
     Used to wrap a class method with a given lock attribute.
@@ -33,9 +38,9 @@ def sync(lock_name: str) -> Callable[[Callable[..., RT]], Callable[..., RT]]:
     :returns: Decorated function wrapped on the given lock.
     :rtype: Callable[[Callable[..., RT]], Callable[..., RT]]
     """
-    def decorator(func: Callable[..., RT]) -> Callable[..., RT]:
-        @wraps(func)
-        def wrapper(self, *args, **kwargs) -> RT:
+    def decorator(func: CBAny2Any) -> CBAny2Any:
+        @fc.wraps(func)
+        def wrapper(self, *args, **kwargs) -> TPAny:
             lock = self.__getattribute__(lock_name)
             with lock:
                 return func(self, *args, **kwargs)
@@ -43,7 +48,7 @@ def sync(lock_name: str) -> Callable[[Callable[..., RT]], Callable[..., RT]]:
     return decorator
 
 
-def get_live_threads(name: str) -> List[Thread]:
+def get_live_threads(name: str) -> tp.List[th.Thread]:
     """
     Return all the live threads.
 
@@ -53,19 +58,19 @@ def get_live_threads(name: str) -> List[Thread]:
     :rtype: list
     """
     out = []
-    threads = enumerate()
+    threads = th.enumerate()
     for thread in threads:
         if name in thread.name:
             out.append(thread)
     return out
 
 
-class AbstractThreadTask(ABC):
+class AbstractThreadTask(abc.ABC):
     """
     Thread task abstraction.
     Use this class to define how to execute a task inside the ThreadPool.
     """
-    @abstractmethod
+    @abc.abstractmethod
     def execute(self) -> None:
         """
         Execution called by the ThreadWorkers on the ThreadPool implementation.
@@ -77,7 +82,7 @@ class SimpleThreadTask(AbstractThreadTask):
     Simple thread task.
     Accepts a function to be executed by a worker on the ThreadPool.
     """
-    def __init__(self, task: Callable[..., None], *args, name: str = 'Unnamed', **kwargs) -> None:
+    def __init__(self, task: CBAny2None, *args, name: str = 'Unnamed', **kwargs) -> None:
         """
         Class initialization.
 
@@ -109,23 +114,23 @@ class SimpleThreadTask(AbstractThreadTask):
         self._task(*self._args, **self._kwargs)
 
 
-class ThreadWorker(Thread):
+class ThreadWorker(th.Thread):
     """
     Thread pool worker.
     This represents a single thread on the pool. The thread is set as daemon or not based on
     the pool configurations.
     """
-    def __init__(self, name: str, queue: Queue, timeout: float) -> None:
+    def __init__(self, name: str, tasks: queue.Queue, timeout: float) -> None:
         """
         Class initialization.
 
         :param str name:        Worker name.
-        :param Queue queue:     Queue to get the tasks from.
+        :param Queue tasks:     Queue to get the tasks from.
         :param float timeout:   Timeout for waiting for a task.
         """
         super().__init__(name=name)
         self._active    = True
-        self._queue     = queue
+        self._queue     = tasks
         self._timeout   = timeout
         SDK_LOG.debug(f"Worker thread {self.name} created.")
 
@@ -157,7 +162,7 @@ class ThreadWorker(Thread):
                                      f"> Raised : {ex.__class__.__name__} {ex}")
                     finally:
                         self._queue.task_done()
-            except Empty:
+            except queue.Empty:
                 pass
 
         # Worker termination
@@ -192,9 +197,9 @@ class ThreadPool:
         self._daemon    = daemon
         self._prefix    = name
         self._timeout   = timeout
-        self._rlock     = RLock()
-        self._queue     = Queue()
-        self._workers: List[ThreadWorker] = []
+        self._rlock     = th.RLock()
+        self._tasks     = queue.Queue()
+        self._workers:  tp.List[ThreadWorker] = []
 
         # Create workers
         self._create_workers()
@@ -234,7 +239,7 @@ class ThreadPool:
         if not isinstance(task, AbstractThreadTask):
             raise ValueError(f"The task need to be {AbstractThreadTask.__name__} or a subclass of it")
         # Enqueue
-        self._queue.put(task)
+        self._tasks.put(task)
 
     @sync(lock_name='_rlock')
     def stop(self) -> None:
@@ -242,7 +247,7 @@ class ThreadPool:
         Wait for the task queue to be completed and stop all the workers.
         """
         SDK_LOG.debug("Waiting for all the tasks to be handled...")
-        self._queue.join()
+        self._tasks.join()
         SDK_LOG.debug("Terminating worker threads...")
         for worker in self._workers:
             worker.stop()
@@ -252,7 +257,7 @@ class ThreadPool:
         Create all the pool workers.
         """
         while len(self._workers) < self._size:
-            worker = ThreadWorker(name=f"{self._prefix}_{(len(self._workers) + 1)}", queue=self._queue, timeout=self._timeout)
+            worker = ThreadWorker(name=f"{self._prefix}_{(len(self._workers) + 1)}", tasks=self._tasks, timeout=self._timeout)
             worker.setDaemon(self._daemon)
             worker.start()
             self._workers.append(worker)

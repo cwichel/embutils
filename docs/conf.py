@@ -10,13 +10,15 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import os
+import pathlib as pl
 import sys
 import time
 import toml
-from pathlib import Path
 
-ROOT = Path(os.path.dirname(os.path.abspath(__file__))).parent
+
+ROOT = pl.Path(os.path.dirname(os.path.abspath(__file__))).parent
 sys.path.insert(0, os.path.abspath(ROOT))
+
 
 # -- Project information -----------------------------------------------------
 base_file = ROOT / "pyproject.toml"
