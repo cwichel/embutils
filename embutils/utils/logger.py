@@ -9,9 +9,8 @@ SDK logger implementation.
 :license:   The MIT License (MIT)
 """
 
-from collections import namedtuple
-from logging import Logger as _Logger, Formatter, StreamHandler
-from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING
+import collections as coll
+import logging as log
 
 from .enum import IntEnum
 
@@ -20,7 +19,7 @@ from .enum import IntEnum
 
 
 # -->> API <<--------------------------
-class Logger(_Logger):
+class Logger(log.Logger):
     """
     Logger implementation wrapper.
     This class simplifies the logger formatting and level definition for the SDK.
@@ -29,14 +28,14 @@ class Logger(_Logger):
         """
         Available logger message levels.
         """
-        CRITICAL = CRITICAL
-        DEBUG = DEBUG
-        ERROR = ERROR
-        INFO = INFO
-        WARNING = WARNING
+        CRITICAL    = log.CRITICAL
+        DEBUG       = log.DEBUG
+        ERROR       = log.ERROR
+        INFO        = log.INFO
+        WARNING     = log.WARNING
 
     #: Logger entries format definition
-    Format = namedtuple('Format', ['style', 'pattern'])
+    Format = coll.namedtuple('Format', ['style', 'pattern'])
 
     #: Default entry format
     DEF_FMT = Format(style='{', pattern='{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}')
@@ -61,8 +60,8 @@ class Logger(_Logger):
         self.disable()
 
         # Configure format
-        fmt  = Formatter(fmt=fmt.pattern, style=fmt.style)
-        hdlr = StreamHandler()
+        fmt  = log.Formatter(fmt=fmt.pattern, style=fmt.style)
+        hdlr = log.StreamHandler()
         hdlr.setFormatter(fmt=fmt)
         self.addHandler(hdlr=hdlr)
 

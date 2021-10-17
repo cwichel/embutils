@@ -9,11 +9,10 @@ Stream implementation.
 :license:   The MIT License (MIT)
 """
 
+import abc
+import threading as th
 import time
-
-from abc import abstractmethod
-from threading import RLock
-from typing import Optional
+import typing as tp
 
 from ..utils import SDK_LOG, SDK_TP, AbstractSerialized, AbstractSerializedCodec, EventHook, SimpleThreadTask, sync
 from .device import Device
@@ -28,8 +27,8 @@ class AbstractSerializedStreamCodec(AbstractSerializedCodec):
     AbstractSerializedCodec variant for stream usage.
     This class includes the logic required to decode a serialized object from a byte stream.
     """
-    @abstractmethod
-    def decode_stream(self, device: Device) -> Optional[AbstractSerialized]:
+    @abc.abstractmethod
+    def decode_stream(self, device: Device) -> tp.Optional[AbstractSerialized]:
         """
         Decodes a serialized object from a byte stream.
 
@@ -99,7 +98,7 @@ class Stream:
         self.on_receive += lambda item: self._print_debug(item=item, received=True)
 
         # Multi-thread safety
-        self._lock = RLock()
+        self._lock = th.RLock()
 
         # Start thread
         self._active    = True

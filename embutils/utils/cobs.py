@@ -9,8 +9,8 @@ COBS encoding/decoding implementation.
 :license:   The MIT License (MIT)
 """
 
-from dataclasses import dataclass
-from typing import List
+import dataclasses as dc
+import typing as tp
 
 
 # -->> Definitions <<------------------
@@ -26,7 +26,7 @@ class COBS:
         COBS decoding exception.
         """
 
-    @dataclass
+    @dc.dataclass
     class Block:
         """
         COBS encoding block.
@@ -50,7 +50,7 @@ class COBS:
         :rtype: bytearray
         """
         # Prepare
-        blocks: List[COBS.Block] = []
+        blocks: tp.List[COBS.Block] = []
         base = data.copy()
         base.append(0x00)
 
@@ -89,7 +89,7 @@ class COBS:
         :raises COBS.DecodeException: Encoded data is invalid.
         """
         # Prepare
-        blocks: List[COBS.Block] = []
+        blocks: tp.List[COBS.Block] = []
         base = data.copy()
 
         # Decode

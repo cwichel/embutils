@@ -9,16 +9,12 @@ Event handling utilities.
 :license:   The MIT License (MIT)
 """
 
-from typing import Protocol
+import typing as tp
 
 
 # -->> Definitions <<------------------
-class EventHandlerCallback(Protocol):
-    """
-    Event handler callback signature:
-    Any -> None
-    """
-    def __call__(self, *args, **kwargs) -> None: ...
+#: CallBack definition. Any -> None
+CBAny2None = tp.Callable[..., None]
 
 
 # -->> API <<--------------------------
@@ -37,7 +33,7 @@ class EventHook:
         """
         self._callbacks = []
 
-    def __iadd__(self, callback: EventHandlerCallback) -> 'EventHook':
+    def __iadd__(self, callback: CBAny2None) -> 'EventHook':
         """
         Simplified callback subscription. Overrides the **+=** operator.
 
@@ -49,7 +45,7 @@ class EventHook:
         self.subscribe(callback=callback)
         return self
 
-    def __isub__(self, callback: EventHandlerCallback) -> 'EventHook':
+    def __isub__(self, callback: CBAny2None) -> 'EventHook':
         """
         Simplified callback unsubscription. Overrides the **-=** operator.
 
@@ -68,7 +64,7 @@ class EventHook:
         """
         return len(self._callbacks) == 0
 
-    def subscribe(self, callback: EventHandlerCallback) -> bool:
+    def subscribe(self, callback: CBAny2None) -> bool:
         """
         Subscribes a callback to the event hook.
 
@@ -82,7 +78,7 @@ class EventHook:
             return True
         return False
 
-    def unsubscribe(self, callback: EventHandlerCallback) -> bool:
+    def unsubscribe(self, callback: CBAny2None) -> bool:
         """
         Unsubscribes a callback from the event hook.
 

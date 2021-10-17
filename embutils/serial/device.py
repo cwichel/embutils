@@ -9,13 +9,12 @@ Serial device implementation classes.
 :license:   The MIT License (MIT)
 """
 
+import threading as th
 import time
-
-from threading import RLock
-from typing import List, Optional, Tuple
+import typing as tp
 
 import serial
-from serial.tools import list_ports
+import serial.tools.list_ports
 
 from ..utils import EventHook, IntEnum, SimpleThreadTask, sync, elapsed
 from ..utils import SDK_LOG, SDK_TP
@@ -56,7 +55,7 @@ class Device:
             settings = self.DEF_SETTINGS
 
         # Multi-thread safety
-        self._lock = RLock()
+        self._lock = th.RLock()
 
         # Create serial
         self._loop = looped
@@ -183,7 +182,7 @@ class Device:
         return 0
 
     @sync(lock_name="_lock")
-    def read(self, size: int = 1) -> Optional[bytearray]:
+    def read(self, size: int = 1) -> tp.Optional[bytearray]:
         """
         Reads a fixed number of bytes from the serial buffer. The process is
         stopped with error if a timeout is reached before completion.
@@ -202,7 +201,7 @@ class Device:
             return None
 
     @sync(lock_name="_lock")
-    def read_until(self, expected: bytes = b'\n', size: int = None) -> Optional[bytearray]:
+    def read_until(self, expected: bytes = b'\n', size: int = None) -> tp.Optional[bytearray]:
         """
         Reads bytes from the serial buffer until the expected sequence is found,
         the received bytes exceed the specified limit or a timeout is reached.
@@ -222,7 +221,7 @@ class Device:
             return None
 
     @staticmethod
-    def _id_from_port(port: str) -> Optional[int]:
+    def _id_from_port(port: str) -> tp.Optional[int]:
         """
         Retrieves the USB ID for the given port.
 
@@ -232,13 +231,13 @@ class Device:
         :rtype: int
         """
         target = None
-        devices = list_ports.comports()
+        devices = serial.tools.list_ports.comports()
         for dev in devices:
             target = dev if (dev.device == port) else target
         return ((target.vid << 16) | target.pid) if target else None
 
 
-class DeviceList(List[Device]):
+class DeviceList(tp.List[Device]):
     """
     Serial device list implementation.
     This class define mechanisms to scan, compare and filter lists of devices.
@@ -300,7 +299,7 @@ class DeviceList(List[Device]):
         dev_list = DeviceList()
 
         # Get devices
-        dev_scan = list_ports.comports()
+        dev_scan = serial.tools.list_ports.comports()
         for dev in dev_scan:
             # Not consider items without ID
             if dev.vid is None or dev.pid is None:
@@ -346,7 +345,7 @@ class DeviceScanner:
         SD_REMOVED_MULTI    = 0x05      # Multiple devices were unplugged
 
         @staticmethod
-        def get_event(old: DeviceList, new: DeviceList) -> Tuple['DeviceScanner.Event', DeviceList]:
+        def get_event(old: DeviceList, new: DeviceList) -> tp.Tuple['DeviceScanner.Event', DeviceList]:
             """
             Compares two serial device lists and return the differences.
 
