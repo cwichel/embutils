@@ -9,8 +9,9 @@ COBS encoding/decoding implementation.
 :license:   The MIT License (MIT)
 """
 
-import attr
 import typing as tp
+
+import attr
 
 
 # -->> Definitions <<------------------

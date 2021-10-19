@@ -10,7 +10,6 @@ Subprocess execution utilities.
 """
 
 import queue
-import pathlib as pl
 import subprocess as sp
 import sys
 import time

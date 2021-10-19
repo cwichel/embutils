@@ -9,11 +9,12 @@ Version handler class.
 :license:   The MIT License (MIT)
 """
 
-import attr
 import datetime as dt
 import os
 import pathlib as pl
 import re
+
+import attr
 
 from ..utils import execute
 
@@ -101,7 +102,7 @@ class VersionGit(Version):
         cmd = "git rev-parse --short HEAD"
         out = execute(cmd, cwd=f"{path}", pipe=False)
         out = (out.stderr + out.stdout).strip().lower()
-        if 'not a git' in out:
+        if "not a git" in out:
             self.build = self.UVER_BUILD
         else:
             self.build = int(out, 16)
@@ -118,7 +119,7 @@ class VersionSVN(Version):
 
         :param pl.Path path: Path to repo.
         """
-        cmd = f"svnversion ."
+        cmd = "svnversion ."
         out = execute(cmd, cwd=f"{path}", pipe=False)
         out = (out.stderr + out.stdout).strip().lower()
         if "unversioned directory" in out:
