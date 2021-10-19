@@ -49,7 +49,7 @@ class TestVersion(unittest.TestCase):
         Test Git build value retrieve operations.
         """
         ver = VersionGit()
-        path = Path("C:")
+        path = Path("C:/")
 
         # Check initial build value
         assert ver.build == ver.UVER_BUILD

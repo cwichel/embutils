@@ -10,6 +10,7 @@ Subprocess execution utilities.
 """
 
 import queue
+import pathlib as pl
 import subprocess as sp
 import sys
 import time
@@ -84,15 +85,16 @@ class StreamRedirect:
         self._ready = True
 
 
-def execute(cmd: str, pipe: bool = True) -> sp.CompletedProcess:
+def execute(cmd: str, cwd: str = None, pipe: bool = True) -> sp.CompletedProcess:
     """
     Execute the given command as a subprocess.
 
     :param str cmd:     Command to be executed.
+    :param str cwd:     Command working directory.
     :param bool pipe:   Pipe output to sys.
     """
     # Prepare
-    with sp.Popen(cmd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
+    with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
         # Execute
         if pipe:
             # Piping needed...
