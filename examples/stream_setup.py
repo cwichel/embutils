@@ -20,14 +20,14 @@ In this example:
 :license:   The MIT License (MIT)
 """
 
-from dataclasses import dataclass
+import attr
 from typing import Optional, Type
 
 from embutils.utils import AbstractSerialized, COBS, CRC
 from embutils.serial import AbstractSerializedStreamCodec, Device
 
 
-@dataclass
+@attr.s
 class SimplePacket(AbstractSerialized):
     """
     Simple packet implementation.
@@ -41,11 +41,11 @@ class SimplePacket(AbstractSerialized):
     #: CRC model
     CRC16 = CRC()
     #: Message source
-    source:         int
+    source:         int = attr.ib(converter=int)
     #: Message destination
-    destination:    int
+    destination:    int = attr.ib(converter=int)
     #: Message payload
-    payload:        bytearray
+    payload:        bytearray = attr.ib(converter=bytearray)
 
     @property
     def crc(self) -> int:

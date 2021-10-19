@@ -9,11 +9,10 @@ Version handler class.
 :license:   The MIT License (MIT)
 """
 
-import dataclasses as dc
+import attr
 import datetime as dt
 import os
 import pathlib as pl
-import platform as pf
 import re
 
 from ..utils import execute
@@ -24,16 +23,19 @@ PATH_THIS   = pl.Path(os.path.abspath(os.path.dirname(__file__)))
 
 
 # -->> API <<--------------------------
-@dc.dataclass
+@attr.s
 class Version:
     """
     Firmware version definition class.
     """
-    UVER_BUILD = 99999          #: Unversioned build number
-
-    major: int = 99             #: Version major
-    minor: int = 0              #: Version minor
-    build: int = UVER_BUILD     #: Version build
+    #: Unversioned build number
+    UVER_BUILD = 99999
+    #: Version major
+    major: int = attr.ib(default=99, converter=int)
+    #: Version minor
+    minor: int = attr.ib(default=0, converter=int)
+    #: Version build
+    build: int = attr.ib(default=UVER_BUILD, converter=int)
 
     def __str__(self) -> str:
         """
@@ -45,7 +47,7 @@ class Version:
         """
         Updates the build number for the current repo.
 
-        :param Path path: Path to repo.
+        :param pl.Path path: Path to repo.
         """
         # Unversioned: do nothing.
         _ = path
@@ -56,8 +58,8 @@ class Version:
         Stores the version number to the provided file.
         The version number will be stored in the format 'major.minor.build'.
 
-        :param Path file: Path were the version text file will be stored.
-        :param bool store_build: If true, the build will be stored. False by default.
+        :param pl.Path file:        Path were the version text file will be stored.
+        :param bool store_build:    If true, the build will be stored. False by default.
         """
         if not file.parent.exists():
             raise ValueError(f'The provided path is not reachable: {file}')
@@ -71,12 +73,12 @@ class Version:
         Loads the version number from the provided file.
         The version number needs to be in the format 'major.minor.build'.
 
-        :param Path file: Path to the version file.
+        :param pl.Path file: Path to the version file.
         """
         if not (file.is_file() and file.exists()):
-            raise ValueError(f'The provided path is not reachable: {file}')
-        with file.open(mode='r') as ver_file:
-            tmp = ver_file.read().split('.')
+            raise ValueError(f"The provided path is not reachable: {file}")
+        with file.open(mode="r") as ver_file:
+            tmp = ver_file.read().split(".")
             ver = cls(
                 major=int(tmp[0]),
                 minor=int(tmp[1]),
@@ -85,7 +87,7 @@ class Version:
             return ver
 
 
-@dc.dataclass
+@attr.s
 class VersionGit(Version):
     """
     Git version specialization.
@@ -94,11 +96,10 @@ class VersionGit(Version):
         """
         Updates the build number for the current repo.
 
-        :param Path path: Path to repo.
+        :param pl.Path path: Path to repo.
         """
-        win = 'win' in pf.system().lower()
-        cmd = f"cd {path} " + (f"&& {path.drive} " if win else "") + "&& git rev-parse --short HEAD"
-        out = execute(cmd, pipe=False)
+        cmd = "git rev-parse --short HEAD"
+        out = execute(cmd, cwd=f"{path}", pipe=False)
         out = (out.stderr + out.stdout).strip().lower()
         if 'not a git' in out:
             self.build = self.UVER_BUILD
@@ -106,7 +107,7 @@ class VersionGit(Version):
             self.build = int(out, 16)
 
 
-@dc.dataclass
+@attr.s
 class VersionSVN(Version):
     """
     SVN version specialization.
@@ -115,15 +116,15 @@ class VersionSVN(Version):
         """
         Updates the build number for the current repo.
 
-        :param Path path: Path to repo.
+        :param pl.Path path: Path to repo.
         """
-        cmd = f'svnversion {path}'
-        out = execute(cmd, pipe=False)
+        cmd = f"svnversion ."
+        out = execute(cmd, cwd=f"{path}", pipe=False)
         out = (out.stderr + out.stdout).strip().lower()
-        if 'unversioned directory' in out:
-            self.build =  self.UVER_BUILD
+        if "unversioned directory" in out:
+            self.build = self.UVER_BUILD
         else:
-            tmp = re.findall(pattern=r'\d+', string=out)
+            tmp = re.findall(pattern=r"\d+", string=out)
             self.build = int(tmp[-1])
 
 
@@ -131,10 +132,10 @@ def export_version_c(ver: Version, author: str, note: str, file: pl.Path) -> Non
     """
     Exports the version to a C header file.
 
-    :param Version ver: Version instance.
-    :param str author:  Author to be declared on the header file.
-    :param str note:    Note to be added on the file documentation.
-    :param Path file:   Path to version C header file.
+    :param Version ver:     Version instance.
+    :param str author:      Author to be declared on the header file.
+    :param str note:        Note to be added on the file documentation.
+    :param pl.Path file:    Path to version C header file.
     """
 
     if not (file.parent.exists() and file.parent.is_dir()):

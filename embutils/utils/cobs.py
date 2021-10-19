@@ -9,7 +9,7 @@ COBS encoding/decoding implementation.
 :license:   The MIT License (MIT)
 """
 
-import dataclasses as dc
+import attr
 import typing as tp
 
 
@@ -26,14 +26,17 @@ class COBS:
         COBS decoding exception.
         """
 
-    @dc.dataclass
+    @attr.s
     class Block:
         """
         COBS encoding block.
         """
-        code: int
-        data: bytearray
-        zero: bool = False
+        #: Block code
+        code: int       = attr.ib(converter=int)
+        #: Block data array
+        data: bytearray = attr.ib(converter=bytearray)
+        #: Flag. Defines if is required to add a zero at the end.
+        zero: bool      = attr.ib(converter=bool, default=False)
 
     @staticmethod
     def encode(data: bytearray = bytearray()) -> bytearray:
