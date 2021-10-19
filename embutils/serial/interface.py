@@ -111,17 +111,6 @@ class Interface:
             raise ValueError('The response timeout needs to be greater than zero.')
         self._timeout = timeout
 
-    def _process(self, item: AbstractSerialized) -> None:
-        """
-        Method used to handle the received items for processing.
-
-        :param AbstractSerialized item: item to be processed.
-        """
-        # Do special actions:
-
-        # Pass item to user:
-        self.on_receive.emit(item=item)
-
     def transmit(self,
                  send: AbstractSerialized,
                  logic: tp.Optional[CBSerialized2Bool] = None,
@@ -136,22 +125,71 @@ class Interface:
 
         Where the input is the item received from the device.
 
-        :param AbstractSerialized send:                     Item to be sent.
-        :param Callable[[AbstractSerialized], bool] logic:  Response logic. Defines if a response is detected.
-        :param float timeout:                               Response timeout. By default the interface setting.
+        :param AbstractSerialized send:     Packet to be sent.
+        :param CBSerialized2Bool logic:     Response logic. Defines if a response is detected. If none then only sends.
+        :param float timeout:               Response timeout. By default the interface setting.
 
         :returns: None if timeout or no response is detected, response item otherwise.
         :rtype: Optional[AbstractSerialized]
         """
-        # Manage "send only" messages...
-        if logic is None:
-            SDK_LOG.debug('Sending item...')
-            self._stream.send(item=send)
-            SDK_LOG.debug('Response not needed.')
-            return None
+        if logic:
+            return self._send_recv(send=send, logic=logic, timeout=timeout)
+        self._send_none(send=send)
+        return None
 
-        # Manage "send and receive" messages...
-        recv    = None
+    def stop(self) -> None:
+        """
+        Stops the stream process.
+        """
+        self._stream.stop()
+
+    def join(self) -> None:
+        """
+        Maintains the process alive while the interface is working. The loop will
+        exit if the interface serial process gets stopped.
+        """
+        while self._stream.is_alive:
+            time.sleep(self.PERIOD_JOIN_S)
+
+    def _process(self, item: AbstractSerialized) -> None:
+        """
+        Method used to handle the received items for processing.
+
+        :param AbstractSerialized item: item to be processed.
+        """
+        # Do special actions:
+
+        # Pass item to user:
+        self.on_receive.emit(item=item)
+
+    def _send_none(self,
+                   send: AbstractSerialized) -> None:
+        """
+        Sends an item and dont care about the response.
+
+        :param AbstractSerialized send:     Packet to be sent.
+        """
+        # Send item and return
+        SDK_LOG.debug('Sending item...')
+        self._stream.send(item=send)
+        SDK_LOG.debug('Response not needed.')
+
+    def _send_recv(self,
+                   send: AbstractSerialized,
+                   logic: CBSerialized2Bool,
+                   timeout: float = None) -> tp.Optional[AbstractSerialized]:
+        """
+        Sends an item and wait for response.
+
+        :param AbstractSerialized send:     Item to be sent.
+        :param CBSerialized2Bool logic:     Response logic. Defines if a response is detected. If none then only sends.
+        :param float timeout:               Response timeout. By default the interface setting.
+
+        :returns: None if timeout or no response is detected, response item otherwise.
+        :rtype: Optional[AbstractSerialized]
+        """
+        # Prepare data
+        recv = None
         timeout = self._timeout if (timeout is None) else timeout
 
         # Receive logic callback
@@ -178,17 +216,3 @@ class Interface:
         state = "Received" if recv else "Timeout"
         SDK_LOG.debug(f'Item response: {state} after {elapsed(start=tm_start):.03f}[s]')
         return recv
-
-    def stop(self) -> None:
-        """
-        Stops the stream process.
-        """
-        self._stream.stop()
-
-    def join(self) -> None:
-        """
-        Maintains the process alive while the interface is working. The loop will
-        exit if the interface serial process gets stopped.
-        """
-        while self._stream.is_alive:
-            time.sleep(self.PERIOD_JOIN_S)

@@ -28,10 +28,10 @@ def build_cubeide(name: str, config: str, project: pl.Path, workspace: pl.Path) 
         - You cannot build if the workspace is already in use.
         - Reference: https://gnu-mcu-eclipse.github.io/advanced/headless-builds/
 
-    :param str name:        Project name.
-    :param str config:      Build configuration to be used. Ex: Debug, Release.
-    :param Path project:    Path to CubeIDE project.
-    :param Path workspace:  Path to CubeIDE workspace.
+    :param str name:            Project name.
+    :param str config:          Build configuration to be used. Ex: Debug, Release.
+    :param pl.Path project:     Path to CubeIDE project.
+    :param pl.Path workspace:   Path to CubeIDE workspace.
     """
     cmd = f'stm32cubeidec --launcher.suppressErrors -nosplash ' \
           f'-application org.eclipse.cdt.managedbuilder.core.headlessbuild ' \
@@ -48,7 +48,7 @@ def build_iar(config: str, project: pl.Path) -> None:
         - IarBuild executable must be in the PATH.
 
     :param str config:      Build configuration to be used. Ex: Debug, Release.
-    :param Path project:    Path to EWARM project.
+    :param pl.Path project: Path to EWARM project.
     """
     cmd = f'IarBuild "{project}" -build "{config}"'
     execute(cmd=cmd)
