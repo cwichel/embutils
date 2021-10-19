@@ -101,11 +101,11 @@ class VersionGit(Version):
         """
         cmd = "git rev-parse --short HEAD"
         out = execute(cmd, cwd=f"{path}", pipe=False)
-        out = (out.stderr + out.stdout).strip().lower()
-        if "not a git" in out:
+        msg = (out.stderr + out.stdout).strip().lower()
+        if "not a git" in msg:
             self.build = self.UVER_BUILD
         else:
-            self.build = int(out, 16)
+            self.build = int(msg, 16)
 
 
 @attr.s
@@ -121,11 +121,11 @@ class VersionSVN(Version):
         """
         cmd = "svnversion ."
         out = execute(cmd, cwd=f"{path}", pipe=False)
-        out = (out.stderr + out.stdout).strip().lower()
-        if "unversioned directory" in out:
+        msg = (out.stderr + out.stdout).strip().lower()
+        if "unversioned directory" in msg:
             self.build = self.UVER_BUILD
         else:
-            tmp = re.findall(pattern=r"\d+", string=out)
+            tmp = re.findall(pattern=r"\d+", string=msg)
             self.build = int(tmp[-1])
 
 
