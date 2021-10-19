@@ -24,9 +24,9 @@ def bin_to_hex(src: pl.Path, off: int, out: tp.Optional[pl.Path] = None) -> inte
     """
     Convert a binary file into an HEX.
 
-    :param Path src: Path to source BIN file.
-    :param int  off: BIN file address offset.
-    :param Path out: Optional. If set, saves the generated hex file in the given path.
+    :param pl.Path src: Path to source BIN file.
+    :param int off:     BIN file address offset.
+    :param pl.Path out: Optional. If set, saves the generated hex file in the given path.
 
     :return: HEX file
     :rtype: intelhex.IntelHex
@@ -45,10 +45,10 @@ def merge_bin(src: tp.List[tp.Tuple[pl.Path, int]], out: tp.Optional[pl.Path] = 
     """
     Merge a group of binary files into an HEX.
 
-    :param list src: List of tuples that contain:
+    :param list src:    List of tuples that contain:
         - BIN file path.
         - BIN file address offset
-    :param Path out: Optional. If set, saves the generated hex file in the given path.
+    :param pl.Path out: Optional. If set, saves the generated hex file in the given path.
 
     :return: Merged HEX file.
     :rtype: intelhex.IntelHex
@@ -69,8 +69,8 @@ def merge_hex(src: tp.List[pl.Path], out: tp.Optional[pl.Path] = None) -> intelh
     """
     Merge a group of HEX files.
 
-    :param list src: List of paths to HEX files.
-    :param Path out: Optional. If set, saves the generated hex file in the given path.
+    :param list src:    List of paths to HEX files.
+    :param pl.Path out: Optional. If set, saves the generated hex file in the given path.
 
     :return: Merged HEX file.
     :rtype: intelhex.IntelHex
