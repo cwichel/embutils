@@ -92,7 +92,7 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
     :param TPPath cmd:  Command to be executed.
     :param TPPath cwd:  Command working directory.
     :param TPPath log:  File to store the execution logs.
-    :param bool pipe:   Pipe output to sys.
+    :param bool pipe:   Enable pipe output to terminal.
     """
     # Check paths
     cwd = path_validator(path=cwd, allow_none=True, check_reachable=True)
