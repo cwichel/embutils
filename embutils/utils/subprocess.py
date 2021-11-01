@@ -15,6 +15,7 @@ import sys
 import time
 import typing as tp
 
+from .path import TPPath, path_validator
 from .threading import SDK_TP, SimpleThreadTask
 
 
@@ -84,14 +85,19 @@ class StreamRedirect:
         self._ready = True
 
 
-def execute(cmd: str, cwd: str = None, pipe: bool = True) -> sp.CompletedProcess:
+def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True) -> sp.CompletedProcess:
     """
     Execute the given command as a subprocess.
 
-    :param str cmd:     Command to be executed.
-    :param str cwd:     Command working directory.
+    :param TPPath cmd:  Command to be executed.
+    :param TPPath cwd:  Command working directory.
+    :param TPPath log:  File to store the execution logs.
     :param bool pipe:   Pipe output to sys.
     """
+    # Check paths
+    cwd = path_validator(path=cwd, allow_none=True, check_reachable=True)
+    log = path_validator(path=log, allow_none=True, check_reachable=True)
+
     # Prepare
     with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
         # Execute
@@ -109,10 +115,25 @@ def execute(cmd: str, cwd: str = None, pipe: bool = True) -> sp.CompletedProcess
             # Get buffers
             err = s_err.buffer
             out = s_out.buffer
+
         else:
             # Not piping needed...
             out, err = proc.communicate()
             out = '' if (out is None) else out.decode()
             err = '' if (err is None) else err.decode()
-        # Return execution result
-        return sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
+
+        # Retrieve execution result
+        res = sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
+
+    # Store logs (if required)
+    if log is not None:
+        with log.open(mode='w') as f:
+            f.write(f"Date: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}"
+                    f"CWD : {cwd}\n"
+                    f"CMD : {cmd}\n"
+                    f"RET : {res.returncode}\n"
+                    f"LOG : \n{out}\n{err}"
+                    )
+
+    # Return result
+    return res
