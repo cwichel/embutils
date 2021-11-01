@@ -16,7 +16,7 @@ import re
 
 import attr
 
-from ..utils import execute
+from ..utils.subprocess import execute
 
 
 # -->> Definitions <<------------------

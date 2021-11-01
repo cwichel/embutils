@@ -14,7 +14,10 @@ import threading as th
 import time
 import typing as tp
 
-from ..utils import SDK_LOG, SDK_TP, AbstractSerialized, AbstractSerializedCodec, EventHook, SimpleThreadTask, sync
+from ..utils.events import EventHook
+from ..utils.logger import SDK_LOG
+from ..utils.serialized import AbstractSerialized, AbstractSerializedCodec
+from ..utils.threading import sync, SDK_TP, SimpleThreadTask
 from .device import Device
 
 

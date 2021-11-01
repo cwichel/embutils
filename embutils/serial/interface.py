@@ -14,7 +14,10 @@ applications commands.
 import time
 import typing as tp
 
-from ..utils import SDK_LOG, AbstractSerialized, EventHook, elapsed
+from ..utils.events import EventHook
+from ..utils.logger import SDK_LOG
+from ..utils.serialized import AbstractSerialized
+from ..utils.time import elapsed
 from .stream import Stream
 
 

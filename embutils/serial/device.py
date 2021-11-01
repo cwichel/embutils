@@ -16,8 +16,11 @@ import typing as tp
 import serial
 import serial.tools.list_ports
 
-from ..utils import EventHook, IntEnum, SimpleThreadTask, sync, elapsed
-from ..utils import SDK_LOG, SDK_TP
+from ..utils.events import EventHook
+from ..utils.enum import IntEnum
+from ..utils.logger import SDK_LOG
+from ..utils.threading import sync, SDK_TP, SimpleThreadTask
+from ..utils.time import elapsed
 
 
 # -->> Definitions <<------------------
