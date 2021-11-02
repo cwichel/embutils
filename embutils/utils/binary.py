@@ -9,10 +9,11 @@ Binary generation utilities.
 :license:   The MIT License (MIT)
 """
 
-import pathlib as pl
 import typing as tp
 
 import intelhex
+
+from .path import TPPath, path_validator
 
 
 # -->> Definitions <<------------------
@@ -20,39 +21,47 @@ RECORD_BYTES = 32
 
 
 # -->> API <<--------------------------
-def bin_to_hex(src: pl.Path, off: int, out: tp.Optional[pl.Path] = None) -> intelhex.IntelHex:
+def bin_to_hex(src: TPPath, out: TPPath = None, off: int = 0x08000000) -> intelhex.IntelHex:
     """
     Convert a binary file into an HEX.
 
-    :param pl.Path src: Path to source BIN file.
-    :param int off:     BIN file address offset.
-    :param pl.Path out: Optional. If set, saves the generated hex file in the given path.
+    :param TPPath src: Path to source BIN file.
+    :param TPPath out: Optional. If provided, saves the generated hex file in the given path.
+    :param int off:    BIN file address offset.
 
     :return: HEX file
     :rtype: intelhex.IntelHex
     """
+    # Check paths
+    src = path_validator(path=src, allow_none=False, check_reachable=True)
+    out = path_validator(path=out, allow_none=True, check_reachable=True)
+
     # Generate HEX
     tmp = intelhex.IntelHex()
     tmp.loadbin(fobj=f'{src}', offset=off)
 
     # Save if required
-    if isinstance(out, pl.Path):
+    if out is not None:
         tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
     return tmp
 
 
-def merge_bin(src: tp.List[tp.Tuple[pl.Path, int]], out: tp.Optional[pl.Path] = None) -> intelhex.IntelHex:
+def merge_bin(src: tp.List[tp.Tuple[TPPath, int]], out: TPPath = None) -> intelhex.IntelHex:
     """
     Merge a group of binary files into an HEX.
 
     :param list src:    List of tuples that contain:
         - BIN file path.
         - BIN file address offset
-    :param pl.Path out: Optional. If set, saves the generated hex file in the given path.
+    :param TPPath out:  Optional. If provided, saves the generated hex file in the given path.
 
     :return: Merged HEX file.
     :rtype: intelhex.IntelHex
     """
+    # Check paths
+    src = [[path_validator(path=addr, allow_none=False, check_reachable=True), idx] for addr, idx in src]
+    out = path_validator(path=out, allow_none=True, check_reachable=True)
+
     # Merge all BIN files
     tmp = intelhex.IntelHex()
     for file, addr in src:
@@ -60,21 +69,25 @@ def merge_bin(src: tp.List[tp.Tuple[pl.Path, int]], out: tp.Optional[pl.Path] = 
         tmp.merge(other=this, overlap='replace')
 
     # Save if required
-    if isinstance(out, pl.Path):
+    if out is not None:
         tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
     return tmp
 
 
-def merge_hex(src: tp.List[pl.Path], out: tp.Optional[pl.Path] = None) -> intelhex.IntelHex:
+def merge_hex(src: tp.List[TPPath], out: TPPath = None) -> intelhex.IntelHex:
     """
     Merge a group of HEX files.
 
     :param list src:    List of paths to HEX files.
-    :param pl.Path out: Optional. If set, saves the generated hex file in the given path.
+    :param TPPath out:  Optional. If provided, saves the generated hex file in the given path.
 
     :return: Merged HEX file.
     :rtype: intelhex.IntelHex
     """
+    # Check paths
+    src = [path_validator(path=item, allow_none=False, check_reachable=True) for item in src]
+    out = path_validator(path=out, allow_none=True, check_reachable=True)
+
     # Merge all HEX files
     tmp = intelhex.IntelHex()
     for file in src:
@@ -82,6 +95,6 @@ def merge_hex(src: tp.List[pl.Path], out: tp.Optional[pl.Path] = None) -> intelh
         tmp.merge(other=this, overlap='replace')
 
     # Save if required
-    if isinstance(out, pl.Path):
+    if out is not None:
         tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
     return tmp
