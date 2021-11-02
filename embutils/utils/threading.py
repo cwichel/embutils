@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-SDK threading utilities.
+SDK Threading utilities.
 
 :date:      2021
 :author:    Christian Wiche
@@ -266,4 +266,4 @@ class SimpleThreadTask(AbstractThreadTask):
 
 # -->> Instances <<--------------------
 #: Embutils internal thread pool
-SDK_TP = ThreadPool(size=5, name='EMBUTILS_Thread_')
+SDK_TP = ThreadPool(size=10, name='EMBUTILS_Thread_')

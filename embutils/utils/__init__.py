@@ -4,10 +4,10 @@ from .cobs import COBS
 from .crc import CRC
 from .enum import IntEnum
 from .events import EventHook
-from .logger import Logger, SDK_LOG
+from .logger import SDK_LOG, Logger
 from .math import closest_pow, closest_multi
 from .path import as_path, path_reachable, path_validator
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .subprocess import execute
-from .threading import AbstractThreadTask, SimpleThreadTask, ThreadPool, get_threads, sync, SDK_TP
+from .threading import SDK_TP, AbstractThreadTask, SimpleThreadTask, ThreadPool, get_threads, sync
 from .time import elapsed, timer
