@@ -60,9 +60,9 @@ def get_threads(name: str = None, alive: bool = False) -> tp.List[th.Thread]:
     """
     threads = th.enumerate()
     if alive:
-        threads = [thread for thread in threads if (thread.is_alive())]
+        threads = [thread for thread in threads if thread.is_alive()]
     if name is not None:
-        threads = [thread for thread in threads if (name.lower() in thread.name.lower())]
+        threads = [thread for thread in threads if name.lower() in thread.name.lower()]
     return threads
 
 

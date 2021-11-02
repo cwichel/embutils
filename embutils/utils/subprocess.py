@@ -127,13 +127,13 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
 
     # Store logs (if required)
     if log is not None:
-        with log.open(mode='w') as f:
-            f.write(f"Date: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}"
-                    f"CWD : {cwd}\n"
-                    f"CMD : {cmd}\n"
-                    f"RET : {res.returncode}\n"
-                    f"LOG : \n{out}\n{err}"
-                    )
+        with log.open(mode='w') as file:
+            file.write(f"Date: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}"
+                       f"CWD : {cwd}\n"
+                       f"CMD : {cmd}\n"
+                       f"RET : {res.returncode}\n"
+                       f"LOG : \n{out}\n{err}"
+                       )
 
     # Return result
     return res
