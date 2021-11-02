@@ -20,11 +20,11 @@ from .logger import SDK_LOG
 
 # -->> Definitions <<------------------
 #: TyPe definition. Any value.
-TPAny      = tp.TypeVar('TPAny')
+TPAny       = tp.TypeVar('TPAny')
 #: CallBack definition. Any -> Any
-CBAny2Any  = tp.Callable[..., TPAny]
+CBAny2Any   = tp.Callable[..., TPAny]
 #: CallBack definition. Any -> None
-CBAny2None = tp.Callable[..., None]
+CBAny2None  = tp.Callable[..., None]
 
 
 # -->> API <<--------------------------
@@ -48,21 +48,22 @@ def sync(lock_name: str) -> tp.Callable[[CBAny2Any], CBAny2Any]:
     return decorator
 
 
-def get_live_threads(name: str) -> tp.List[th.Thread]:
+def get_threads(name: str = None, alive: bool = False) -> tp.List[th.Thread]:
     """
     Return all the live threads.
 
-    :param str name:  If set, filter all the treads with names that contain the given value.
+    :param str name:    Filter. If provided, return threads that have or contain this name.
+    :param bool alive:  Filter. If enabled, return alive threads only.
 
     :returns: List with named threads.
     :rtype: list
     """
-    out = []
     threads = th.enumerate()
-    for thread in threads:
-        if name in thread.name:
-            out.append(thread)
-    return out
+    if alive:
+        threads = [thread for thread in threads if (thread.is_alive())]
+    if name is not None:
+        threads = [thread for thread in threads if (name.lower() in thread.name.lower())]
+    return threads
 
 
 class AbstractThreadTask(abc.ABC):
@@ -75,43 +76,6 @@ class AbstractThreadTask(abc.ABC):
         """
         Execution called by the ThreadWorkers on the ThreadPool implementation.
         """
-
-
-class SimpleThreadTask(AbstractThreadTask):
-    """
-    Simple thread task.
-    Accepts a function to be executed by a worker on the ThreadPool.
-    """
-    def __init__(self, task: CBAny2None, *args, name: str = 'Unnamed', **kwargs) -> None:
-        """
-        Class initialization.
-
-        :param Callable[..., None] task:    Task functionality.
-        :param str name:                    Task name.
-        :param args:                        Task arguments.
-        :param kwargs:                      Task keyword arguments.
-        """
-        # Check input
-        if not callable(task):
-            raise ValueError("The task is not a valid function")
-
-        # Store attributes
-        self._name   = name
-        self._task   = task
-        self._args   = args
-        self._kwargs = kwargs
-
-    def __repr__(self) -> str:
-        """
-        Representation string.
-        """
-        return f"{self.__class__.__name__}(name={self._name}, task={self._task.__name__})"
-
-    def execute(self) -> None:
-        """
-        Execution called by the ThreadWorkers on the ThreadPool implementation.
-        """
-        self._task(*self._args, **self._kwargs)
 
 
 class ThreadWorker(th.Thread):
@@ -261,6 +225,43 @@ class ThreadPool:
             worker.setDaemon(self._daemon)
             worker.start()
             self._workers.append(worker)
+
+
+class SimpleThreadTask(AbstractThreadTask):
+    """
+    Simple thread task.
+    Accepts a function to be executed by a worker on the ThreadPool.
+    """
+    def __init__(self, task: CBAny2None, *args, name: str = 'Unnamed', **kwargs) -> None:
+        """
+        Class initialization.
+
+        :param Callable[..., None] task:    Task functionality.
+        :param str name:                    Task name.
+        :param args:                        Task arguments.
+        :param kwargs:                      Task keyword arguments.
+        """
+        # Check input
+        if not callable(task):
+            raise ValueError("The task is not a valid function")
+
+        # Store attributes
+        self._name   = name
+        self._task   = task
+        self._args   = args
+        self._kwargs = kwargs
+
+    def __repr__(self) -> str:
+        """
+        Representation string.
+        """
+        return f"{self.__class__.__name__}(name={self._name}, task={self._task.__name__})"
+
+    def execute(self) -> None:
+        """
+        Execution called by the ThreadWorkers on the ThreadPool implementation.
+        """
+        self._task(*self._args, **self._kwargs)
 
 
 # -->> Instances <<--------------------

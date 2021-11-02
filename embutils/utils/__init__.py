@@ -9,5 +9,5 @@ from .math import closest_pow, closest_multi
 from .path import as_path, path_reachable, path_validator
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .subprocess import execute
-from .threading import AbstractThreadTask, SimpleThreadTask, ThreadPool, get_live_threads, sync, SDK_TP
+from .threading import AbstractThreadTask, SimpleThreadTask, ThreadPool, get_threads, sync, SDK_TP
 from .time import elapsed, timer
