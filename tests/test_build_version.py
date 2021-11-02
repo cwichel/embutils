@@ -14,7 +14,7 @@ import unittest
 
 from pathlib import Path
 
-from embutils.repo import VersionGit, export_version_c
+from embutils.repo import VersionGit, version_export_c
 
 
 # -->> Definitions <<------------------
@@ -34,15 +34,15 @@ class TestVersion(unittest.TestCase):
 
         # Unable to reach path to save version file
         with pytest.raises(ValueError):
-            ver.save(file=file)
+            ver.save(path=file)
 
         # Unable to find version file to load
         with pytest.raises(ValueError):
-            ver.load(file=file)
+            ver.load(path=file)
 
         # Unable to find path to generate version header
         with pytest.raises(ValueError):
-            export_version_c(ver=ver, author="Test", note="None", file=file.parent)
+            version_export_c(ver=ver, author="Test", note="None", path=file.parent)
 
     def test_02_git_build(self):
         """
@@ -72,14 +72,14 @@ class TestVersion(unittest.TestCase):
         # Generate and store version
         ver_base = VersionGit()
         ver_base.update_build()
-        ver_base.save(file=ver_file, store_build=True)
+        ver_base.save(path=ver_file, store_build=True)
 
         # Load and check version
-        ver_load = VersionGit.load(file=ver_file)
+        ver_load = VersionGit.load(path=ver_file)
         assert ver_base == ver_load
 
         # Export version header
-        export_version_c(ver=ver_load, author='test', note='version header file', file=ver_head)
+        version_export_c(ver=ver_load, author='test', note='version header file', path=ver_head)
         with ver_head.open('r') as f:
             data = f.read()
             assert ('test' in data) and ('version header file' in data)
