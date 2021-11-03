@@ -38,7 +38,7 @@ def ex_serial_scanner() -> None:
 
     """
     # Create a serial scanner instance
-    ss = DeviceScanner(period=0.05)
+    ss = DeviceScanner(period=0.5)
     ss.on_list_change += on_change_handler
 
     # Maintain this alive
