@@ -110,9 +110,9 @@ class COBS:
             del base[0:code]
             # Check block
             if block.data.find(0x00) != -1:
-                raise COBS.DecodeException('Zero byte found in input!')
+                raise COBS.DecodeException("Zero byte found in input!")
             if len(block.data) != (code - 1):
-                raise COBS.DecodeException('Not enough bytes to process!')
+                raise COBS.DecodeException("Not enough bytes to process!")
             # Append block
             blocks.append(block)
 

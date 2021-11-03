@@ -16,8 +16,11 @@ import typing as tp
 import serial
 import serial.tools.list_ports
 
-from ..utils import EventHook, IntEnum, SimpleThreadTask, sync, elapsed
-from ..utils import SDK_LOG, SDK_TP
+from ..utils.events import EventHook
+from ..utils.enum import IntEnum
+from ..utils.service import AbstractService
+from ..utils.threading import SimpleThreadTask, sync
+from ..utils.time import elapsed
 
 
 # -->> Definitions <<------------------
@@ -34,11 +37,11 @@ class Device:
 
     #: Default device settings
     DEF_SETTINGS = {
-        'baudrate': 115200,
-        'bytesize': 8,
-        'stopbits': 1,
-        'parity':   'N',
-        'timeout':  0.1
+        "baudrate": 115200,
+        "bytesize": 8,
+        "stopbits": 1,
+        "parity":   "N",
+        "timeout":  0.1
         }
 
     def __init__(self, port: str = None, looped: bool = False, settings: dict = None) -> None:
@@ -50,15 +53,13 @@ class Device:
         :param bool looped:     Enables the test mode (looped serial).
         :param dict settings:   Serial device configuration.
         """
-        # Prepare settings
+        # Device core
+        self._lock   = th.RLock()
+        self._looped = looped
         if not isinstance(settings, dict):
             settings = self.DEF_SETTINGS
-
-        # Multi-thread safety
-        self._lock = th.RLock()
-
         # Create serial
-        self._loop = looped
+        self._looped = looped
         if looped:
             self._serial = serial.serial_for_url(url="loop://", do_not_open=True, exclusive=True)
             self._id = self.DEF_ID
@@ -74,16 +75,14 @@ class Device:
             self._serial = serial.Serial()
             self._serial.port = port
             self._id = _id
-
         # Configure serial
         self._serial.apply_settings(d=settings)
-        SDK_LOG.info(f"Serial device created: {self.__repr__()}")
 
     def __repr__(self) -> str:
         """
         Representation string.
         """
-        return f"{self.__class__.__name__}(port={self.port}, id=0x{self.id:08X}, looped={self._loop})"
+        return f"{self.__class__.__name__}(port={self.port}, id=0x{self.id:08X}, looped={self._looped})"
 
     def __eq__(self, other: object) -> bool:
         """
@@ -138,15 +137,11 @@ class Device:
         try:
             # Check if port is already open
             if self.is_open:
-                SDK_LOG.info(f"Port {self.port} already open!")
                 return True
             # Try to open it otherwise
             self._serial.open()
-            SDK_LOG.info(f"Port {self.port} opened!")
             return True
-        except serial.SerialException as ex:
-            # Report open issue
-            SDK_LOG.error(f"Port {self.port} is unable to connect: {ex}")
+        except serial.SerialException:
             return False
 
     @sync(lock_name="_lock")
@@ -157,7 +152,6 @@ class Device:
         if self.is_open:
             self.flush()
             self._serial.close()
-            SDK_LOG.info(f"Port {self.port} closed!")
 
     @sync(lock_name="_lock")
     def flush(self) -> None:
@@ -196,12 +190,11 @@ class Device:
             if self.is_open:
                 return self._serial.read(size=size)
             return None
-        except serial.SerialException as ex:
-            SDK_LOG.error(f"Port {self.port} presented connection issues while reading: {ex}")
+        except serial.SerialException:
             return None
 
     @sync(lock_name="_lock")
-    def read_until(self, expected: bytes = b'\n', size: int = None) -> tp.Optional[bytearray]:
+    def read_until(self, expected: bytes = b"\n", size: int = None) -> tp.Optional[bytearray]:
         """
         Reads bytes from the serial buffer until the expected sequence is found,
         the received bytes exceed the specified limit or a timeout is reached.
@@ -216,8 +209,7 @@ class Device:
             if self.is_open:
                 return self._serial.read_until(expected=expected, size=size)
             return None
-        except serial.SerialException as ex:
-            SDK_LOG.error(f"Port {self.port} presented connection issues while reading: {ex}")
+        except serial.SerialException:
             return None
 
     @staticmethod
@@ -242,7 +234,7 @@ class DeviceList(tp.List[Device]):
     Serial device list implementation.
     This class define mechanisms to scan, compare and filter lists of devices.
     """
-    def diff(self, other: 'DeviceList') -> 'DeviceList':
+    def diff(self, other: "DeviceList") -> "DeviceList":
         """
         Get the differences between two serial device lists.
 
@@ -269,7 +261,7 @@ class DeviceList(tp.List[Device]):
                 diff.append(dev)
         return diff
 
-    def filter(self, port: str = None, dev_id: int = None) -> 'DeviceList':
+    def filter(self, port: str = None, dev_id: int = None) -> "DeviceList":
         """
         Filter serial devices from a given list.
 
@@ -289,7 +281,7 @@ class DeviceList(tp.List[Device]):
         return dev_list
 
     @staticmethod
-    def scan() -> 'DeviceList':
+    def scan() -> "DeviceList":
         """
         Scan the system and return a list with the connected serial devices.
 
@@ -308,13 +300,12 @@ class DeviceList(tp.List[Device]):
             try:
                 new = Device(port=dev.device)
                 dev_list.append(new)
-            except ValueError as ex:
-                SDK_LOG.debug(f"Unable to create a serial device: {ex}")
+            except ValueError:
                 continue
         return dev_list
 
 
-class DeviceScanner:
+class DeviceScanner(AbstractService):
     """
     Serial device scanner implementation.
     This class define a thread that allows to check periodically for changes on the
@@ -345,7 +336,7 @@ class DeviceScanner:
         SD_REMOVED_MULTI    = 0x05      # Multiple devices were unplugged
 
         @staticmethod
-        def get_event(old: DeviceList, new: DeviceList) -> tp.Tuple['DeviceScanner.Event', DeviceList]:
+        def get_event(old: DeviceList, new: DeviceList) -> tp.Tuple["DeviceScanner.Event", DeviceList]:
             """
             Compares two serial device lists and return the differences.
 
@@ -368,44 +359,24 @@ class DeviceScanner:
                 event = etype.SD_LIST_CHANGED
             return event, diff
 
-    def __init__(self, period: float = 0.5) -> None:
+    #: Task execution period.
+    TASK_PERIOD_S = 0.5
+
+    def __init__(self, *args, period: float = TASK_PERIOD_S, **kwargs) -> None:
         """
         Class initialization.
 
-        :param float period:    Scanner refresh period in seconds.
+        :param float period:    Define the periodicity of the scanner executions in seconds.
         """
-        # Define device lists
+        # Service core
+        super().__init__(*args, **kwargs)
+        self._period        = period
+        self._last_scan     = time.time()
         self._dev_list      = DeviceList()    # Devices connected
         self._dev_change    = DeviceList()    # List of devices that triggered the event
-
-        # Define scan period
-        self._scan_period = period
-
-        # Define events
+        # Service events
         self.on_scan_period = EventHook()
         self.on_list_change = EventHook()
-
-        # Start scanner
-        self._active = True
-        self._finished  = False
-        SDK_TP.enqueue(task=SimpleThreadTask(
-            name=f"{self.__class__.__name__}.process",
-            task=self._process
-            ))
-
-    def __del__(self) -> None:
-        """
-        Class destructor. Stops the scanner thread.
-        """
-        if self.is_alive:
-            self.stop()
-
-    @property
-    def is_alive(self) -> bool:
-        """
-        Returns if the scan thread is alive.
-        """
-        return self._active or not self._finished
 
     @property
     def devices(self) -> DeviceList:
@@ -414,14 +385,42 @@ class DeviceScanner:
         """
         return self._dev_list
 
-    def stop(self) -> None:
+    @property
+    def period(self) -> float:
         """
-        Stops the scanner thread.
+        Scanner period in seconds.
         """
-        self._active = False
-        while self.is_alive:
-            time.sleep(0.01)
-        SDK_LOG.info('Scanner stopped.')
+        return self._period
+
+    @period.setter
+    def period(self, value: float) -> None:
+        """
+        Scanner period setter.
+
+        :param float value: Period in seconds.
+        """
+        self._period = value
+
+    def _task(self) -> None:
+        """
+        Serial Scanner process:
+
+        #. Read the connected devices.
+        #. Check for changes on the connected devices.
+        #. Raise change event if required, updates current device list.
+
+        """
+        if elapsed(start=self._last_scan) > self._period:
+            self._last_scan = time.time()
+            self._scan()
+
+    def _on_start(self) -> None:
+        """
+        Run the first scan and start timer.
+        """
+        self._last_scan = time.time()
+        self._dev_list  = DeviceList.scan()
+        self._scan()
 
     def _scan(self) -> None:
         """
@@ -439,45 +438,15 @@ class DeviceScanner:
         if not self.on_list_change.empty:
             event, dev_diff = self.Event.get_event(old=self._dev_change, new=dev_list)
             if event != self.Event.SD_NO_EVENT:
-                SDK_TP.enqueue(task=SimpleThreadTask(
-                    name=f'{self.__class__.__name__}.on_list_change',
+                self._pool.enqueue(task=SimpleThreadTask(
+                    name=f"{self.__class__.__name__}.on_list_change",
                     task=lambda: self.on_list_change.emit(event=event, dev_diff=dev_diff)
                     ))
                 self._dev_change = dev_list
 
         # Update the connected devices list
         self._dev_list = dev_list
-        SDK_TP.enqueue(task=SimpleThreadTask(
-            name=f'{self.__class__.__name__}.on_scan_period',
+        self._pool.enqueue(task=SimpleThreadTask(
+            name=f"{self.__class__.__name__}.on_scan_period",
             task=self.on_scan_period.emit
             ))
-
-    def _process(self) -> None:
-        """
-        Scanner process:
-
-        #. Initialize the scanned devices list.
-        #. Ensures the periodic scanner execution.
-
-        """
-        SDK_LOG.info('Scanner started.')
-
-        # Initialize connected devices
-        self._dev_list = DeviceList.scan()
-
-        # Execute the first scan
-        self._scan()
-
-        # Do this periodically
-        last_update = time.time()
-        while self._active:
-            # Wait until the scan period is passed...
-            if elapsed(last_update) > self._scan_period:
-                last_update = time.time()
-                self._scan()
-
-            # Let some time pass
-            time.sleep(0.01)
-
-        # Inform finished
-        self._finished = True

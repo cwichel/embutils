@@ -15,7 +15,9 @@ Submodules
    embutils.utils.events
    embutils.utils.logger
    embutils.utils.math
+   embutils.utils.path
    embutils.utils.serialized
+   embutils.utils.service
    embutils.utils.subprocess
    embutils.utils.threading
    embutils.utils.time

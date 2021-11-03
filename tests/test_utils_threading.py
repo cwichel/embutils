@@ -13,7 +13,7 @@ import time
 import pytest
 import unittest
 
-from embutils.utils import SDK_LOG, ThreadPool, SimpleThreadTask, get_live_threads
+from embutils.utils import SDK_LOG, ThreadPool, SimpleThreadTask, get_threads
 
 
 # -->> Definitions <<------------------
@@ -46,7 +46,7 @@ class TestThreading(unittest.TestCase):
         assert tp.size == 5
 
         # Check number of workers
-        tn = get_live_threads(name="ThreadPoolTest02")
+        tn = get_threads(name="ThreadPoolTest02")
         assert len(tn) == tp.size
 
     def test_03_pool_daemon_check(self):
@@ -55,11 +55,11 @@ class TestThreading(unittest.TestCase):
         """
         # Check threads being created as daemon
         ThreadPool(size=5, name="ThreadPoolTest03_01", daemon=True)
-        tn = get_live_threads(name="ThreadPoolTest03_01")
+        tn = get_threads(name="ThreadPoolTest03_01")
         assert tn.pop().daemon is True
 
         tp = ThreadPool(size=5, name="ThreadPoolTest03_02", daemon=False)
-        tn = get_live_threads(name="ThreadPoolTest03_02")
+        tn = get_threads(name="ThreadPoolTest03_02")
         assert tn.pop().daemon is False
         tp.stop()
 
