@@ -16,7 +16,7 @@ import time
 import typing as tp
 
 from .path import TPPath, path_validator
-from .threading import SDK_TP, SimpleThreadTask
+from .threading import SDK_TP, ThreadPool, SimpleThreadTask
 
 
 # -->> Definitions <<------------------
@@ -28,19 +28,24 @@ class StreamRedirect:
     Stream redirect utility implementation.
     Allows to store and redirect a given stream.
     """
-    def __init__(self, name: str, stream_in: tp.IO[tp.AnyStr], stream_out: tp.IO[tp.AnyStr]) -> None:
+    def __init__(self,
+                 name: str, stream_in: tp.IO[tp.AnyStr], stream_out: tp.IO[tp.AnyStr],
+                 pool: ThreadPool = SDK_TP
+                 ) -> None:
         """
         Class initialization.
 
         :param str name:                Stream redirection name (used for naming threads).
         :param IO[AnyStr] stream_in:    Input stream. Will be stored on buffer and redirected to output.
         :param IO[AnyStr] stream_out:   Output stream.
+        :param ThreadPool pool:         Thread pool to be used by the stream redirection.
         """
         self._name  = name
-        self._buff  = []
-        self._queue = queue.Queue()
         self._src   = stream_in
         self._out   = stream_out
+        self._pool  = pool
+        self._buff  = []
+        self._queue = queue.Queue()
         self._ready = False
         self._start()
 
@@ -62,8 +67,8 @@ class StreamRedirect:
         """
         Initializes the redirection read/write threads.
         """
-        SDK_TP.enqueue(SimpleThreadTask(name=f"{self.__class__.__name__}_{self._name}_read", task=self._read))
-        SDK_TP.enqueue(SimpleThreadTask(name=f"{self.__class__.__name__}_{self._name}_write", task=self._write))
+        self._pool.enqueue(SimpleThreadTask(name=f"{self.__class__.__name__}_{self._name}_read", task=self._read))
+        self._pool.enqueue(SimpleThreadTask(name=f"{self.__class__.__name__}_{self._name}_write", task=self._write))
 
     def _write(self) -> None:
         """
