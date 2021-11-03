@@ -41,7 +41,7 @@ def reverse_bits(value: int, size: int = None) -> int:
     if not size:
         size = value.bit_length()
     val = value & bitmask(bit=(size - 1), fill=True)
-    aux = f'{val:0{size:d}b}'
+    aux = f"{val:0{size:d}b}"
     return int(aux[::-1], base=2)
 
 
@@ -58,5 +58,5 @@ def reverse_bytes(value: int, size: int = None) -> int:
     if not size:
         size = (value.bit_length() + 7) // 8
     val = value & bitmask(bit=((8 * size) - 1), fill=True)
-    aux = val.to_bytes(length=size, byteorder='big')
-    return int.from_bytes(bytes=aux[::-1], byteorder='big')
+    aux = val.to_bytes(length=size, byteorder="big")
+    return int.from_bytes(bytes=aux[::-1], byteorder="big")

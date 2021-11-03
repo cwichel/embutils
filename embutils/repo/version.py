@@ -11,16 +11,19 @@ Version handler class.
 
 import datetime as dt
 import os
-import pathlib as pl
 import re
 
 import attr
 
-from ..utils import execute
+from ..utils.path import TPPath, as_path, path_validator
+from ..utils.subprocess import execute
 
 
 # -->> Definitions <<------------------
-PATH_THIS   = pl.Path(os.path.abspath(os.path.dirname(__file__)))
+#: Source path
+PATH_THIS = as_path(os.path.abspath(os.path.dirname(__file__)))
+#: TeMPLate path
+PATH_TMPL = PATH_THIS / "templates"
 
 
 # -->> API <<--------------------------
@@ -31,6 +34,7 @@ class Version:
     """
     #: Unversioned build number
     UVER_BUILD = 99999
+
     #: Version major
     major: int = attr.ib(default=99, converter=int)
     #: Version minor
@@ -42,49 +46,47 @@ class Version:
         """
         Version as string: major.minor.build
         """
-        return f'{self.major}.{self.minor}.{self.build}'
+        return f"{self.major}.{self.minor}.{self.build}"
 
-    def update_build(self, path: pl.Path) -> None:
+    def update_build(self, path: TPPath) -> None:
         """
         Updates the build number for the current repo.
 
-        :param pl.Path path: Path to repo.
+        :param TPPath path: Path to repo.
         """
         # Unversioned: do nothing.
         _ = path
         self.build = self.UVER_BUILD
 
-    def save(self, file: pl.Path, store_build: bool = False) -> None:
+    def save(self, path: TPPath, store_build: bool = False) -> None:
         """
         Stores the version number to the provided file.
-        The version number will be stored in the format 'major.minor.build'.
+        The version number will be stored in the format "major.minor.build".
 
-        :param pl.Path file:        Path were the version text file will be stored.
+        :param TPPath path:         Path were the version text file will be stored.
         :param bool store_build:    If true, the build will be stored. False by default.
         """
-        if not file.parent.exists():
-            raise ValueError(f'The provided path is not reachable: {file}')
-        with file.open(mode='w') as ver_file:
-            build = self.build if (store_build and self.build is not None) else 'X'
-            ver_file.write(f'{self.major}.{self.minor}.{build}')
+        path = path_validator(path=path, allow_none=False, check_reachable=True)
+        with path.open(mode="w") as file:
+            build = self.build if (store_build and self.build is not None) else "X"
+            file.write(f"{self.major}.{self.minor}.{build}")
 
     @classmethod
-    def load(cls, file: pl.Path) -> 'Version':
+    def load(cls, path: TPPath) -> "Version":
         """
         Loads the version number from the provided file.
-        The version number needs to be in the format 'major.minor.build'.
+        The version number needs to be in the format "major.minor.build".
 
-        :param pl.Path file: Path to the version file.
+        :param TPPath path:         Path to the version file.
         """
-        if not (file.is_file() and file.exists()):
-            raise ValueError(f"The provided path is not reachable: {file}")
-        with file.open(mode="r") as ver_file:
+        path = path_validator(path=path, allow_none=False, check_reachable=True)
+        with path.open(mode="r") as ver_file:
             tmp = ver_file.read().split(".")
             ver = cls(
-                major=int(tmp[0]),
-                minor=int(tmp[1]),
-                build=int(tmp[2]) if (tmp[2].upper() != 'X') else Version.UVER_BUILD
-                )
+                    major=int(tmp[0]),
+                    minor=int(tmp[1]),
+                    build=int(tmp[2]) if (tmp[2].upper() != "X") else Version.UVER_BUILD
+                    )
             return ver
 
 
@@ -93,14 +95,13 @@ class VersionGit(Version):
     """
     Git version specialization.
     """
-    def update_build(self, path: pl.Path = pl.Path(os.getcwd())) -> None:
+    def update_build(self, path: TPPath = os.getcwd()) -> None:
         """
         Updates the build number for the current repo.
 
-        :param pl.Path path: Path to repo.
+        :param TPPath path: Path to repository.
         """
-        cmd = "git rev-parse --short HEAD"
-        out = execute(cmd, cwd=f"{path}", pipe=False)
+        out = execute(cmd="git rev-parse --short HEAD", cwd=f"{path}", pipe=False)
         msg = (out.stderr + out.stdout).strip().lower()
         if "not a git" in msg:
             self.build = self.UVER_BUILD
@@ -113,14 +114,14 @@ class VersionSVN(Version):
     """
     SVN version specialization.
     """
-    def update_build(self, path: pl.Path = pl.Path(os.getcwd())) -> None:
+
+    def update_build(self, path: TPPath = os.getcwd()) -> None:
         """
         Updates the build number for the current repo.
 
-        :param pl.Path path: Path to repo.
+        :param TPPath path: Path to repository.
         """
-        cmd = "svnversion ."
-        out = execute(cmd, cwd=f"{path}", pipe=False)
+        out = execute(cmd="svnversion .", cwd=f"{path}", pipe=False)
         msg = (out.stderr + out.stdout).strip().lower()
         if "unversioned directory" in msg:
             self.build = self.UVER_BUILD
@@ -129,24 +130,25 @@ class VersionSVN(Version):
             self.build = int(tmp[-1])
 
 
-def export_version_c(ver: Version, author: str, note: str, file: pl.Path) -> None:
+def version_export_c(path: TPPath, ver: Version, author: str, note: str) -> None:
     """
     Exports the version to a C header file.
 
+    :param TPPath path:     Path to store the generated C header file.
     :param Version ver:     Version instance.
     :param str author:      Author to be declared on the header file.
     :param str note:        Note to be added on the file documentation.
-    :param pl.Path file:    Path to version C header file.
+
     """
+    # Check target path
+    path = path_validator(path=path, allow_none=False, check_reachable=True)
 
-    if not (file.parent.exists() and file.parent.is_dir()):
-        raise ValueError(f'The provided path is not reachable: {file}')
+    tmpl = PATH_TMPL / "template_version_c.h"
+    base = tmpl.open(mode="r").read()
 
-    template = (PATH_THIS / 'version_template.h').open(mode='r').read()
-    template = template.format(
-        file=file.name, author=author, note=note, date=f'{dt.datetime.now():%x %X}',
-        major=ver.major, minor=ver.minor,
-        build=f'0x{ver.build:X}',
-        version=f'"{ver.major}.{ver.minor}.{ver.build}"'
-        )
-    file.open('w').write(template)
+    with path.open(mode="w") as file:
+        file.write(base.format(
+            file=path.name, author=author, note=note, date=f"{dt.datetime.now():%x %X}",
+            major=ver.major, minor=ver.minor, build=f"0x{ver.build:X}",
+            version=f'"{ver.major}.{ver.minor}.{ver.build}"'
+            ))

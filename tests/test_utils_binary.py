@@ -76,7 +76,7 @@ class TestVersion(unittest.TestCase):
         last = 0
         sources = []
         for file, content in self.FILES:
-            fhex = file.parent / f'{file.name}.hex'
+            fhex = file.parent / f"{file.name}.hex"
             bin_to_hex(src=file, off=(self.OFFSET + last)).write_hex_file(fhex)
             sources.append(fhex)
             last += len(content)
@@ -91,7 +91,7 @@ class TestVersion(unittest.TestCase):
         Check merged files against sources.
         """
         last = 0
-        fhex = intelhex.IntelHex(source=f'{file}')
+        fhex = intelhex.IntelHex(source=f"{file}")
         for file, content in self.FILES:
             assert fhex.gets(addr=(self.OFFSET + last), length=len(content)).decode() == content
             last += len(content)

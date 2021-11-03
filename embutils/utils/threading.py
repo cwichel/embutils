@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-SDK threading utilities.
+Threading utilities.
 
 :date:      2021
 :author:    Christian Wiche
@@ -15,16 +15,16 @@ import queue
 import threading as th
 import typing as tp
 
-from .logger import SDK_LOG
+from .logger import SDK_LOG, Logger
 
 
 # -->> Definitions <<------------------
 #: TyPe definition. Any value.
-TPAny      = tp.TypeVar('TPAny')
+TPAny       = tp.TypeVar("TPAny")
 #: CallBack definition. Any -> Any
-CBAny2Any  = tp.Callable[..., TPAny]
+CBAny2Any   = tp.Callable[..., TPAny]
 #: CallBack definition. Any -> None
-CBAny2None = tp.Callable[..., None]
+CBAny2None  = tp.Callable[..., None]
 
 
 # -->> API <<--------------------------
@@ -48,21 +48,22 @@ def sync(lock_name: str) -> tp.Callable[[CBAny2Any], CBAny2Any]:
     return decorator
 
 
-def get_live_threads(name: str) -> tp.List[th.Thread]:
+def get_threads(name: str = None, alive: bool = False) -> tp.List[th.Thread]:
     """
     Return all the live threads.
 
-    :param str name:  If set, filter all the treads with names that contain the given value.
+    :param str name:    Filter. If provided, return threads that have or contain this name.
+    :param bool alive:  Filter. If enabled, return alive threads only.
 
     :returns: List with named threads.
     :rtype: list
     """
-    out = []
     threads = th.enumerate()
-    for thread in threads:
-        if name in thread.name:
-            out.append(thread)
-    return out
+    if alive:
+        threads = [thread for thread in threads if thread.is_alive()]
+    if name is not None:
+        threads = [thread for thread in threads if name.lower() in thread.name.lower()]
+    return threads
 
 
 class AbstractThreadTask(abc.ABC):
@@ -77,62 +78,30 @@ class AbstractThreadTask(abc.ABC):
         """
 
 
-class SimpleThreadTask(AbstractThreadTask):
-    """
-    Simple thread task.
-    Accepts a function to be executed by a worker on the ThreadPool.
-    """
-    def __init__(self, task: CBAny2None, *args, name: str = 'Unnamed', **kwargs) -> None:
-        """
-        Class initialization.
-
-        :param Callable[..., None] task:    Task functionality.
-        :param str name:                    Task name.
-        :param args:                        Task arguments.
-        :param kwargs:                      Task keyword arguments.
-        """
-        # Check input
-        if not callable(task):
-            raise ValueError("The task is not a valid function")
-
-        # Store attributes
-        self._name   = name
-        self._task   = task
-        self._args   = args
-        self._kwargs = kwargs
-
-    def __repr__(self) -> str:
-        """
-        Representation string.
-        """
-        return f"{self.__class__.__name__}(name={self._name}, task={self._task.__name__})"
-
-    def execute(self) -> None:
-        """
-        Execution called by the ThreadWorkers on the ThreadPool implementation.
-        """
-        self._task(*self._args, **self._kwargs)
-
-
 class ThreadWorker(th.Thread):
     """
     Thread pool worker.
     This represents a single thread on the pool. The thread is set as daemon or not based on
     the pool configurations.
     """
-    def __init__(self, name: str, tasks: queue.Queue, timeout: float) -> None:
+    def __init__(self,
+                 name: str,
+                 tasks: queue.Queue, timeout: float,
+                 logger: Logger = SDK_LOG) -> None:
         """
         Class initialization.
 
         :param str name:        Worker name.
         :param Queue tasks:     Queue to get the tasks from.
         :param float timeout:   Timeout for waiting for a task.
+        :param Logger logger:   Logger used to register worker events.
         """
         super().__init__(name=name)
         self._active    = True
         self._queue     = tasks
         self._timeout   = timeout
-        SDK_LOG.debug(f"Worker thread {self.name} created.")
+        self._logger    = logger
+        self._logger.debug(f"Worker thread {self.name} created.")
 
     def stop(self) -> None:
         """
@@ -149,7 +118,7 @@ class ThreadWorker(th.Thread):
 
         """
         # Worker execution
-        SDK_LOG.debug(f"Worker thread {self.name} started.")
+        self._logger.debug(f"Worker thread {self.name} started.")
         while self._active:
             try:
                 task = self._queue.get(timeout=self._timeout)
@@ -157,16 +126,18 @@ class ThreadWorker(th.Thread):
                     try:
                         task.execute()
                     except Exception as ex:
-                        SDK_LOG.info(f"Caught exception while running task:\n"
-                                     f"> Task   : {task}\n"
-                                     f"> Raised : {ex.__class__.__name__} {ex}")
+                        self._logger.info(
+                                    f"Caught exception while running task:\n"
+                                    f"> Task   : {task}\n"
+                                    f"> Raised : {ex.__class__.__name__} {ex}"
+                                    )
                     finally:
                         self._queue.task_done()
             except queue.Empty:
                 pass
 
         # Worker termination
-        SDK_LOG.debug(f"Worker thread {self.name} terminated.")
+        self._logger.debug(f"Worker thread {self.name} terminated.")
 
 
 class ThreadPool:
@@ -174,7 +145,10 @@ class ThreadPool:
     Simple thread pool implementation.
     Use queues to coordinate tasks among a set of worker threads.
     """
-    def __init__(self, size: int, name: str, timeout: float = 0.1, daemon: bool = True) -> None:
+    def __init__(self,
+                 size: int, name: str,
+                 timeout: float = 0.1, daemon: bool = True,
+                 logger: Logger = SDK_LOG) -> None:
         """
         Class initialization.
 
@@ -185,6 +159,7 @@ class ThreadPool:
                                 threads to terminate when terminate() is called.
         :param bool daemon:     Set to true if the threads should immediately terminate when the
                                 main thread exists.
+        :param Logger logger:   Logger used to register worker events.
         """
         # Input checking
         if size < 1:
@@ -194,9 +169,10 @@ class ThreadPool:
 
         # Set attributes
         self._size      = size
-        self._daemon    = daemon
         self._prefix    = name
         self._timeout   = timeout
+        self._daemon    = daemon
+        self._logger    = logger
         self._rlock     = th.RLock()
         self._tasks     = queue.Queue()
         self._workers:  tp.List[ThreadWorker] = []
@@ -228,7 +204,7 @@ class ThreadPool:
         """
         return sum([worker.is_alive() for worker in self._workers])
 
-    @sync(lock_name='_rlock')
+    @sync(lock_name="_rlock")
     def enqueue(self, task: AbstractThreadTask) -> None:
         """
         Enqueue a task on the thread pool to be executed by the workers.
@@ -241,14 +217,14 @@ class ThreadPool:
         # Enqueue
         self._tasks.put(task)
 
-    @sync(lock_name='_rlock')
+    @sync(lock_name="_rlock")
     def stop(self) -> None:
         """
         Wait for the task queue to be completed and stop all the workers.
         """
-        SDK_LOG.debug("Waiting for all the tasks to be handled...")
+        self._logger.debug("Waiting for all the tasks to be handled...")
         self._tasks.join()
-        SDK_LOG.debug("Terminating worker threads...")
+        self._logger.debug("Terminating worker threads...")
         for worker in self._workers:
             worker.stop()
 
@@ -257,12 +233,55 @@ class ThreadPool:
         Create all the pool workers.
         """
         while len(self._workers) < self._size:
-            worker = ThreadWorker(name=f"{self._prefix}_{(len(self._workers) + 1)}", tasks=self._tasks, timeout=self._timeout)
+            worker = ThreadWorker(
+                        name=f"{self._prefix}_{(len(self._workers) + 1)}",
+                        tasks=self._tasks, timeout=self._timeout,
+                        logger=self._logger
+                        )
             worker.setDaemon(self._daemon)
             worker.start()
             self._workers.append(worker)
 
 
+class SimpleThreadTask(AbstractThreadTask):
+    """
+    Simple thread task.
+    Accepts a function to be executed by a worker on the ThreadPool.
+    """
+    def __init__(self,
+                 task: CBAny2None, *args,
+                 name: str = "Unnamed", **kwargs) -> None:
+        """
+        Class initialization.
+
+        :param Callable[..., None] task:    Task functionality.
+        :param str name:                    Task name.
+        :param args:                        Task arguments.
+        :param kwargs:                      Task keyword arguments.
+        """
+        # Check input
+        if not callable(task):
+            raise ValueError("The task is not a valid function")
+
+        # Store attributes
+        self._name   = name
+        self._task   = task
+        self._args   = args
+        self._kwargs = kwargs
+
+    def __repr__(self) -> str:
+        """
+        Representation string.
+        """
+        return f"{self.__class__.__name__}(name={self._name}, task={self._task.__name__})"
+
+    def execute(self) -> None:
+        """
+        Execution called by the ThreadWorkers on the ThreadPool implementation.
+        """
+        self._task(*self._args, **self._kwargs)
+
+
 # -->> Instances <<--------------------
 #: Embutils internal thread pool
-SDK_TP = ThreadPool(size=5, name='EMBUTILS_Thread_')
+SDK_TP = ThreadPool(size=10, name="EMBUTILS_Thread_")

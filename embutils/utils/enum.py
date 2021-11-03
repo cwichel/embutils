@@ -25,16 +25,16 @@ class IntEnum(enum.IntEnum):
         """
         Representation string.
         """
-        return f'{self.__class__.__name__}({self.__str__()})'
+        return f"{self.__class__.__name__}({self.__str__()})"
 
     def __str__(self) -> str:
         """
         Class object as string.
         """
-        return f'{self.name}(0x{self.value:X})'
+        return f"{self.name}(0x{self.value:X})"
 
     @classmethod
-    def from_int(cls, value: int) -> 'IntEnum':
+    def from_int(cls, value: int) -> "IntEnum":
         """
         Converts, if possible, the input value to an enum object.
 
@@ -47,7 +47,7 @@ class IntEnum(enum.IntEnum):
         """
         if cls.has_value(value=value):
             return cls(value)
-        raise ValueError(f'Value 0x{value:02X} is not defined.')
+        raise ValueError(f"Value 0x{value:02X} is not defined.")
 
     @classmethod
     def has_value(cls, value: int) -> bool:

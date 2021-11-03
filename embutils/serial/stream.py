@@ -10,11 +10,13 @@ Stream implementation.
 """
 
 import abc
-import threading as th
 import time
 import typing as tp
 
-from ..utils import SDK_LOG, SDK_TP, AbstractSerialized, AbstractSerializedCodec, EventHook, SimpleThreadTask, sync
+from ..utils.events import EventHook
+from ..utils.serialized import AbstractSerialized, AbstractSerializedCodec
+from ..utils.service import AbstractService
+from ..utils.threading import SimpleThreadTask
 from .device import Device
 
 
@@ -41,7 +43,7 @@ class AbstractSerializedStreamCodec(AbstractSerializedCodec):
         """
 
 
-class Stream:
+class Stream(AbstractService):
     """
     This class is used to send and receive serialized objects through a serial device
     in asynchronous way. When a new item is received this class will notify the system
@@ -71,53 +73,42 @@ class Stream:
             def <callback>()
 
     """
-    #: Stream pull period
-    PERIOD_PULL_S = 0.005
+    #: Stream reconnect period
+    RECONNECT_PERIOD_S = 0.5
 
-    #: Stream reconnect try period
-    PERIOD_RECONNECT_S = 0.5
-
-    def __init__(self, device: Device, codec: AbstractSerializedStreamCodec) -> None:
+    def __init__(self, *args, device: Device, codec: AbstractSerializedStreamCodec, **kwargs) -> None:
         """
         Class initialization.
 
         :param Device device:                       Serial device handler.
         :param AbstractSerializedStreamCodec codec: Serialized objects codec handler.
         """
-        # Initialize
-        self._device = device
-        self._codec  = codec
-
-        # Events
+        # Service core
+        super().__init__(*args, **kwargs)
+        self._device        = device
+        self._codec         = codec
+        # Service events
         self.on_receive     = EventHook()
         self.on_connect     = EventHook()
         self.on_reconnect   = EventHook()
         self.on_disconnect  = EventHook()
-
-        # Debug prints for received
-        self.on_receive += lambda item: self._print_debug(item=item, received=True)
-
-        # Multi-thread safety
-        self._lock = th.RLock()
-
-        # Start thread
-        self._active    = True
-        self._finished  = False
-        self._paused    = False     # enables pause?
-        self._in_pause  = False     # tells if we are actually on pause state
-        SDK_TP.enqueue(task=SimpleThreadTask(
-            name=f"{self.__class__.__name__}.process",
-            task=self._process
-            ))
+        # Handle public events
+        self.on_receive     += lambda item: self._transfer_debug(item=item, received=True)
 
     def __del__(self) -> None:
         """
         Class destructor.
         Stops the stream and the associated serial device.
         """
-        if self.is_alive:
-            self.stop()
+        super().__del__()
         del self._device
+
+    @property
+    def codec(self) -> AbstractSerializedStreamCodec:
+        """
+        Serialized objects codec handler.
+        """
+        return self._codec
 
     @property
     def device(self) -> Device:
@@ -127,7 +118,6 @@ class Stream:
         return self._device
 
     @device.setter
-    @sync(lock_name="_lock")
     def device(self, device: Device) -> None:
         """
         Serial device handler setter.
@@ -144,73 +134,17 @@ class Stream:
             self._device = device
         self.resume()
 
-    @property
-    def codec(self) -> AbstractSerializedStreamCodec:
-        """
-        Serialized objects codec handler.
-        """
-        return self._codec
-
-    @property
-    def is_alive(self) -> bool:
-        """
-        Returns if the stream thread is alive.
-        """
-        return self._active or not self._finished
-
-    @property
-    def is_working(self) -> bool:
-        """
-        Returns if the stream thread is working (not paused).
-        """
-        return self.is_alive and self._device.is_open and not self._paused
-
-    @sync(lock_name="_lock")
     def send(self, item: AbstractSerialized) -> None:
         """
         Send a serializable item through the serial device.
 
         :param AbstractSerialized item: Item to send.
         """
-        if self.is_working:
-            self._print_debug(item=item, received=False)
+        if self.is_running:
+            self._transfer_debug(item=item, received=False)
             self._device.write(data=self._codec.encode(data=item))
 
-    @sync(lock_name="_lock")
-    def resume(self) -> None:
-        """
-        Resume the stream transmission.
-        """
-        if self.is_alive and self._device.open():
-            self._device.flush()
-            self._paused = False
-            self._in_pause = False
-            SDK_LOG.info('Stream resumed.')
-
-    @sync(lock_name="_lock")
-    def pause(self) -> None:
-        """
-        Pauses the stream transmission.
-        """
-        if self.is_working:
-            self._paused = True
-            while not self._in_pause:
-                time.sleep(0.01)
-            self._device.close()
-            SDK_LOG.info('Stream paused.')
-
-    @sync(lock_name="_lock")
-    def stop(self) -> None:
-        """
-        Stops the stream transmission and kills the thread.
-        """
-        self._active = False
-        while self.is_alive:
-            time.sleep(0.01)
-        self._device.close()
-        SDK_LOG.info('Stream stopped.')
-
-    def _process(self) -> None:
+    def _task(self) -> None:
         """
         Stream process:
 
@@ -219,93 +153,90 @@ class Stream:
         #. Handle disconnection status.
 
         """
-        SDK_LOG.info('Stream started.')
-
-        # Connect to device if not connected
-        if not self._device.is_open and self._reconnect():
-            SDK_TP.enqueue(task=SimpleThreadTask(
-                name=f"{self.__class__.__name__}.on_connect",
-                task=self.on_connect.emit
-                ))
-
-        # Do this periodically
-        while self._active:
-            # Handle pause
-            if self._paused:
-                self._process_paused()
-                continue
-            # Handle reading
-            self._process_active()
-
-        # Inform finished
-        self._finished = True
-
-    def _process_paused(self):
-        """
-        Handle process pause state.
-        """
-        # Inform that pause started
-        if not self._in_pause:
-            self._in_pause = True
-
-        # Delay...
-        time.sleep(0.01)
-
-    def _process_active(self):
-        """
-        Handle process active state.
-        """
         # Try to receive data, if failed go to reconnection loop
         try:
             item = self._codec.decode_stream(device=self._device)
             if item:
-                SDK_TP.enqueue(task=SimpleThreadTask(
+                self._pool.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_received",
                     task=lambda: self.on_receive.emit(item=item)
                     ))
 
         except ConnectionError:
             # Device disconnected...
-            SDK_LOG.info(f'Device disconnected: {self._device}')
-            SDK_TP.enqueue(task=SimpleThreadTask(
+            self._logger.info(f"Device disconnected: {self._device}")
+            self._pool.enqueue(task=SimpleThreadTask(
                 name=f"{self.__class__.__name__}.on_disconnect",
                 task=self.on_disconnect.emit
                 ))
-            if self._reconnect():
-                SDK_TP.enqueue(task=SimpleThreadTask(
+            if self._device_connect():
+                self._pool.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_reconnect",
                     task=self.on_reconnect.emit
                     ))
 
-        # Delay...
-        time.sleep(self.PERIOD_PULL_S)
-
-    def _reconnect(self) -> bool:
+    def _on_start(self) -> None:
         """
-        Performs a reconnection attempt with the serial device.
+        Ensures device connected on service start.
+        """
+        self._device_init()
 
-        :returns: True if reconnection succeeded, false otherwise.
+    def _on_resume(self) -> None:
+        """
+        Ensures device connected on service resume.
+        """
+        self._device_init(start=False)
+
+    def _on_pause(self) -> None:
+        """
+        Closes device when paused.
+        """
+        self._device.close()
+
+    def _on_end(self) -> None:
+        """
+        Closes device when service gets terminated.
+        """
+        self._device.close()
+
+    def _device_init(self, start: bool = True) -> None:
+        """
+        Initializes the serial device.
+
+        :param bool start:  True if used on start handler. False otherwise.
+        """
+        if not self._device.is_open:
+            connected = self._device_connect()
+            if connected and start:
+                self._pool.enqueue(task=SimpleThreadTask(
+                    name=f"{self.__class__.__name__}.on_connect",
+                    task=self.on_connect.emit
+                    ))
+
+    def _device_connect(self) -> bool:
+        """
+        Perform connection attempts on the serial device while the service is running.
+
+        :returns: True if connection succeeded, false otherwise.
         :rtype: bool
         """
-        status = False
+        self._logger.info(f"Attempting connection to {self._device}")
         self._device.close()
-        SDK_LOG.info(f'Starting connection attempt on {self._device}')
-        while self._active:
+        while self.is_running:
             if self._device.open():
-                SDK_LOG.info(f'Device {self._device} connected.')
-                status = True
-                break
-            SDK_LOG.info(f'Connection attempt on {self._device} failed.')
-            time.sleep(self.PERIOD_RECONNECT_S)
-        return status
+                self._device.flush()
+                self._logger.info(f"Connected to {self._device}")
+                return True
+            self._logger.info(f"Connection attempt on {self._device} failed.")
+            time.sleep(self.RECONNECT_PERIOD_S)
+        return False
 
-    @staticmethod
-    def _print_debug(item: AbstractSerialized, received: bool) -> None:
+    def _transfer_debug(self, item: AbstractSerialized, received: bool) -> None:
         """
-        Prints the received/sent items on the SDK logger:
+        Print the sent/received items on the logger:
 
         :param AbstractSerialized item: Item that is being sent/received.
         :param bool received:           Flag to indicate if we are sending/receiving the item.
         """
-        action = 'recv' if received else 'sent'
-        SDK_LOG.debug(f'Item {action}: {item}')
+        action = "recv" if received else "sent"
+        self._logger.debug(f"Item {action}: {item}")

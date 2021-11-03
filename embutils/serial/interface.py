@@ -14,7 +14,9 @@ applications commands.
 import time
 import typing as tp
 
-from ..utils import SDK_LOG, AbstractSerialized, EventHook, elapsed
+from ..utils.logger import SDK_LOG, Logger
+from ..utils.serialized import AbstractSerialized
+from ..utils.time import elapsed
 from .stream import Stream
 
 
@@ -55,36 +57,28 @@ class Interface:
     """
     #: Interface command pull period
     PERIOD_PULL_S = 0.005
-
-    #: Interface join period
-    PERIOD_JOIN_S = 0.5
-
     #: Interface command response timeout
     TIMEOUT_RESPONSE_S = 0.5
 
-    def __init__(self, stream: Stream) -> None:
+    def __init__(self, stream: Stream, logger: Logger = SDK_LOG) -> None:
         """
         Class initialization.
 
-        :param Stream stream:   Stream used to run the interface
+        :param Stream stream:   Stream used to run the interface.
+        :param Logger logger:   Logger to be used by the interface.
         """
+        # System related
+        self._logger = logger
         # Response timeout configuration
         self._timeout = self.TIMEOUT_RESPONSE_S
-
-        # Public events
-        self.on_receive     = EventHook()
-        self.on_connect     = EventHook()
-        self.on_reconnect   = EventHook()
-        self.on_disconnect  = EventHook()
-
-        # Initialize stream and attach callbacks
+        # Initialize stream
         self._stream = stream
-        self._stream.on_connect     += self.on_connect.emit
-        self._stream.on_reconnect   += self.on_reconnect.emit
-        self._stream.on_disconnect  += self.on_disconnect.emit
-        self._stream.on_receive     += self._process
-
-        SDK_LOG.info(f'Interface initialized on: {self._stream.device}')
+        # Attach stream events
+        self.on_connect     = self._stream.on_connect
+        self.on_reconnect   = self._stream.on_reconnect
+        self.on_disconnect  = self._stream.on_disconnect
+        self.on_receive     = self._stream.on_receive
+        self._logger.info(f"Interface initialized on: {self._stream.device}")
 
     @property
     def stream(self) -> Stream:
@@ -108,7 +102,7 @@ class Interface:
         :param float timeout: Timeout in seconds.
         """
         if timeout <= 0.0:
-            raise ValueError('The response timeout needs to be greater than zero.')
+            raise ValueError("The response timeout needs to be greater than zero.")
         self._timeout = timeout
 
     def transmit(self,
@@ -148,19 +142,7 @@ class Interface:
         Maintains the process alive while the interface is working. The loop will
         exit if the interface serial process gets stopped.
         """
-        while self._stream.is_alive:
-            time.sleep(self.PERIOD_JOIN_S)
-
-    def _process(self, item: AbstractSerialized) -> None:
-        """
-        Method used to handle the received items for processing.
-
-        :param AbstractSerialized item: item to be processed.
-        """
-        # Do special actions:
-
-        # Pass item to user:
-        self.on_receive.emit(item=item)
+        self._stream.join()
 
     def _send_none(self,
                    send: AbstractSerialized) -> None:
@@ -170,9 +152,9 @@ class Interface:
         :param AbstractSerialized send:     Packet to be sent.
         """
         # Send item and return
-        SDK_LOG.debug('Sending item...')
+        self._logger.debug("Sending item...")
         self._stream.send(item=send)
-        SDK_LOG.debug('Response not needed.')
+        self._logger.debug("Response not needed.")
 
     def _send_recv(self,
                    send: AbstractSerialized,
@@ -202,11 +184,11 @@ class Interface:
         self.on_receive += on_received
 
         # Prepare and send
-        SDK_LOG.debug('Sending item...')
+        self._logger.debug("Sending item...")
         self._stream.send(item=send)
 
         # Wait for response
-        SDK_LOG.debug('Waiting for response...')
+        self._logger.debug("Waiting for response...")
         tm_start = time.time()
         while not recv and (elapsed(tm_start) < timeout):
             time.sleep(self.PERIOD_PULL_S)
@@ -214,5 +196,5 @@ class Interface:
 
         # Check data
         state = "Received" if recv else "Timeout"
-        SDK_LOG.debug(f'Item response: {state} after {elapsed(start=tm_start):.03f}[s]')
+        self._logger.debug(f"Item response: {state} after {elapsed(start=tm_start):.03f}[s]")
         return recv

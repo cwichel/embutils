@@ -26,7 +26,7 @@ class AbstractSerialized(abc.ABC):
         """
         Representation string.
         """
-        return f'{self.__class__.__name__}(serialized=0x{self.serialize().hex()})'
+        return f"{self.__class__.__name__}(serialized=0x{self.serialize().hex()})"
 
     def __eq__(self, other: object) -> bool:
         """
@@ -53,14 +53,14 @@ class AbstractSerialized(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def deserialize(cls, data: bytearray) -> tp.Optional['AbstractSerialized']:
+    def deserialize(cls, data: bytearray) -> tp.Optional["AbstractSerialized"]:
         """
         Deserializes an object from a bytearray.
 
         :param bytearray data: Data to extract the object from.
 
         :returns: Deserialized object if available, None otherwise.
-        :rtype: Optional['AbstractSerialized']
+        :rtype: Optional["AbstractSerialized"]
         """
 
 
