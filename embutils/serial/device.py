@@ -18,9 +18,8 @@ import serial.tools.list_ports
 
 from ..utils.events import EventHook
 from ..utils.enum import IntEnum
-from ..utils.logger import SDK_LOG, Logger
 from ..utils.service import AbstractService
-from ..utils.threading import SDK_TP, ThreadPool, SimpleThreadTask, sync
+from ..utils.threading import SimpleThreadTask, sync
 from ..utils.time import elapsed
 
 
@@ -45,7 +44,7 @@ class Device:
         'timeout':  0.1
         }
 
-    def __init__(self, port: str = None, looped: bool = False, settings: dict = None, logger: Logger = SDK_LOG) -> None:
+    def __init__(self, port: str = None, looped: bool = False, settings: dict = None) -> None:
         """
         Device configuration.
         Applies the serial device settings to the selected port.
@@ -53,12 +52,10 @@ class Device:
         :param str port:        Port name.
         :param bool looped:     Enables the test mode (looped serial).
         :param dict settings:   Serial device configuration.
-        :param Logger logger:   Logger to be used by the service.
         """
         # Device core
         self._lock   = th.RLock()
         self._looped = looped
-        self._logger = logger
         if not isinstance(settings, dict):
             settings = self.DEF_SETTINGS
         # Create serial
@@ -80,7 +77,6 @@ class Device:
             self._id = _id
         # Configure serial
         self._serial.apply_settings(d=settings)
-        self._logger.info(f"Serial device created: {self.__repr__()}")
 
     def __repr__(self) -> str:
         """
@@ -141,15 +137,11 @@ class Device:
         try:
             # Check if port is already open
             if self.is_open:
-                self._logger.info(f"Port {self.port} already open!")
                 return True
             # Try to open it otherwise
             self._serial.open()
-            self._logger.info(f"Port {self.port} opened!")
             return True
-        except serial.SerialException as ex:
-            # Report open issue
-            self._logger.error(f"Port {self.port} is unable to connect: {ex}")
+        except serial.SerialException:
             return False
 
     @sync(lock_name="_lock")
@@ -160,7 +152,6 @@ class Device:
         if self.is_open:
             self.flush()
             self._serial.close()
-            self._logger.info(f"Port {self.port} closed!")
 
     @sync(lock_name="_lock")
     def flush(self) -> None:
@@ -199,8 +190,7 @@ class Device:
             if self.is_open:
                 return self._serial.read(size=size)
             return None
-        except serial.SerialException as ex:
-            self._logger.error(f"Port {self.port} presented connection issues while reading: {ex}")
+        except serial.SerialException:
             return None
 
     @sync(lock_name="_lock")
@@ -219,8 +209,7 @@ class Device:
             if self.is_open:
                 return self._serial.read_until(expected=expected, size=size)
             return None
-        except serial.SerialException as ex:
-            self._logger.error(f"Port {self.port} presented connection issues while reading: {ex}")
+        except serial.SerialException:
             return None
 
     @staticmethod
@@ -370,21 +359,17 @@ class DeviceScanner(AbstractService):
                 event = etype.SD_LIST_CHANGED
             return event, diff
 
-    #: Task execution delay.
-    TASK_DELAY_S = 0.01
     #: Task execution period.
     TASK_PERIOD_S = 0.5
 
-    def __init__(self, period: float = TASK_PERIOD_S, pool: ThreadPool = SDK_TP, logger: Logger = SDK_LOG) -> None:
+    def __init__(self, *args, period: float = TASK_PERIOD_S, **kwargs) -> None:
         """
         Class initialization.
 
         :param float period:    Define the periodicity of the scanner executions in seconds.
-        :param ThreadPool pool: Thread pool to be used by the service.
-        :param Logger logger:   Logger to be used by the service.
         """
         # Service core
-        super().__init__(pool=pool, logger=logger)
+        super().__init__(*args, **kwargs)
         self._period        = period
         self._last_scan     = 0
         self._dev_list      = DeviceList()    # Devices connected

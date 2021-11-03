@@ -14,10 +14,9 @@ import time
 import typing as tp
 
 from ..utils.events import EventHook
-from ..utils.logger import SDK_LOG, Logger
 from ..utils.serialized import AbstractSerialized, AbstractSerializedCodec
 from ..utils.service import AbstractService
-from ..utils.threading import SDK_TP, ThreadPool, SimpleThreadTask
+from ..utils.threading import SimpleThreadTask
 from .device import Device
 
 
@@ -74,25 +73,18 @@ class Stream(AbstractService):
             def <callback>()
 
     """
-    #: Task execution delay.
-    TASK_DELAY_S = 0.001
-    #: Stream reconnect try period
+    #: Stream reconnect period
     RECONNECT_PERIOD_S = 0.5
 
-    def __init__(self,
-                 device: Device, codec: AbstractSerializedStreamCodec,
-                 delay: float = TASK_DELAY_S, pool: ThreadPool = SDK_TP, logger: Logger = SDK_LOG) -> None:
+    def __init__(self, *args, device: Device, codec: AbstractSerializedStreamCodec, **kwargs) -> None:
         """
         Class initialization.
 
         :param Device device:                       Serial device handler.
         :param AbstractSerializedStreamCodec codec: Serialized objects codec handler.
-        :param float delay:                         Define the time between service executions in seconds.
-        :param ThreadPool pool:                     Thread pool to be used by the service.
-        :param Logger logger:                       Logger to be used by the service.
         """
         # Service core
-        super().__init__(delay=delay, pool=pool, logger=logger)
+        super().__init__(*args, **kwargs)
         self._device        = device
         self._codec         = codec
         # Service events
