@@ -9,7 +9,9 @@ Service implementation.
 :license:   The MIT License (MIT)
 """
 
+import abc
 import threading as th
+import time
 import typing as tp
 
 from .logger import SDK_LOG, Logger
@@ -22,48 +24,42 @@ CBNone2None = tp.Callable[[], None]
 
 
 # -->> API <<--------------------------
-class Service:
+class AbstractService(abc.ABC):
     """
-    Service implementation.
-    This class simplifies the services definition and handling for the SDK. 
+    Service definition abstraction.
+    Use this class to simplify the service definition and handling.
     """
-    def __init__(self,
-                 task: CBNone2None, start: CBNone2None = None, end: CBNone2None = None,
-                 pool: ThreadPool = SDK_TP, logger: Logger = SDK_LOG) -> None:
+    #: Task execution delay.
+    TASK_DELAY_S = 0.001
+
+    def __init__(self, delay: float = TASK_DELAY_S, pool: ThreadPool = SDK_TP, logger: Logger = SDK_LOG) -> None:
         """
         Class initialization.
 
-        :param CBNone2None task:    Service main task callback.
-        :param CBNone2None start:   Service start callback.
-        :param CBNone2None end:     Service ending callback.
-        :param ThreadPool pool:     Thread pool to be used by the service.
-        :param Logger logger:       Logger to be used by the service.
+        :param float delay:     Time between service task executions.
+        :param ThreadPool pool: Thread pool to be used by the service.
+        :param Logger logger:   Logger to be used by the service.
         """
-        # Function to handle empty callbacks
-        def do_nothing(): pass
-
         # System related
-        self._pool    = pool
-        self._logger  = logger
-        # Configure execution callbacks
-        self._task    = task
-        self._start   = start if (end is not None) else do_nothing()
-        self._end     = end if (end is not None) else do_nothing()
+        self._pool      = pool
+        self._logger    = logger
         # Configure service operation
-        self._alive   = th.Event()
-        self._ended   = th.Event()
-        self._working = th.Event()
-        self._running = th.Event()
+        self._delay     = delay
+        self._alive     = True
+        self._resumed   = False
+        self._ended     = th.Event()        # Set when the service gets terminated.
+        self._running   = th.Event()        # Set when the service is running.
+        self._executed  = th.Event()        # Set after every main task execution.
         # Start
-        self._alive.set()
         self._running.set()
         self._pool.enqueue(task=SimpleThreadTask(
-            name=f"{self.__class__.__name__}.service",
-            task=self._process
+            name=f"{self.__class__.__name__}",
+            task=self._service
             ))
 
     def __del__(self):
         """
+        Class destructor.
         Ensures to stop the service correctly on deletion.
         """
         self.stop()
@@ -74,33 +70,57 @@ class Service:
         """
         Returns if the service is alive.
         """
-        return self._alive.is_set()
+        return self._alive
 
     @property
     def is_running(self) -> bool:
         """
         Returns if the service is running.
         """
-        return self._alive.is_set() and self._running.is_set()
+        return self._alive and self._running.is_set()
+
+    @property
+    def delay(self) -> float:
+        """
+        Service main task execution delay in seconds.
+        """
+        return self._delay
+
+    @delay.setter
+    def delay(self, value: float) -> None:
+        """
+        Service main task execution delay setter.
+
+        :param float value: Delay in seconds.
+        """
+        self._delay = value
 
     def resume(self) -> None:
         """
         Resumes the service execution.
         """
-        self._running.set()
+        if not self._running.is_set():
+            self._resumed = True
+            self._running.set()
+            self._logger.info(f"{self.__class__.__name__} resumed")
 
     def pause(self) -> None:
         """
-        Pauses the service loop and waits until the internal task is finished.
+        Pauses the service execution.
         """
-        self._running.clear()
-        self._working.wait()
+        if self._running.is_set():
+            self._executed.wait()
+            self._running.clear()
+            self._on_pause()
+            self._logger.info(f"{self.__class__.__name__} paused")
 
     def stop(self) -> None:
         """
-        Ask the service to stop its execution.
+        Stops the service execution.
         """
-        self._alive.clear()
+        self._alive   = False
+        self._resumed = False
+        self._running.set()
 
     def join(self) -> None:
         """
@@ -108,7 +128,7 @@ class Service:
         """
         self._ended.wait()
 
-    def _process(self) -> None:
+    def _service(self) -> None:
         """
         Service process execution.
 
@@ -117,20 +137,52 @@ class Service:
         #. Runs the ending code and return.
         """
         # Start service execution
-        self._logger.info(f"{self.__class__.__name__}.service started")
-        self._ended.clear()
-        self._start()
-
+        self._logger.info(f"{self.__class__.__name__} started")
+        self._on_start()
         # Execution loop
-        while self._alive.is_set():
+        while self._alive:
+            # Handle pause / resume
             self._running.wait()
+            if self._resumed:
+                self._on_resume()
+                self._resumed = False
+            # Handle termination
+            if not self._alive:
+                break
+            # Run main task
             try:
-                self._working.clear()
+                self._executed.clear()
                 self._task()
             finally:
-                self._working.set()
-
+                self._executed.set()
+                time.sleep(self._delay)
         # Run service ending code
-        self._end()
+        self._on_end()
         self._ended.set()
-        self._logger.info(f"{self.__class__.__name__}.service ended")
+        self._logger.info(f"{self.__class__.__name__} ended")
+
+    @abc.abstractmethod
+    def _task(self) -> None:
+        """
+        Service core task/logic.
+        """
+
+    def _on_start(self) -> None:
+        """
+        Optional. Called on service start.
+        """
+
+    def _on_resume(self) -> None:
+        """
+        Optional. Called on service resume.
+        """
+
+    def _on_pause(self) -> None:
+        """
+        Optional. Called on service pause.
+        """
+
+    def _on_end(self) -> None:
+        """
+        Optional. Called upon service termination.
+        """
