@@ -73,11 +73,11 @@ class SimplePacket(AbstractSerialized):
         """
         return bytearray(
             self._core() +
-            self.crc.to_bytes(length=2, byteorder='little', signed=False)
+            self.crc.to_bytes(length=2, byteorder="little", signed=False)
             )
 
     @classmethod
-    def deserialize(cls, data: bytearray) -> Optional['SimplePacket']:
+    def deserialize(cls, data: bytearray) -> Optional["SimplePacket"]:
         """
         Deserialize the packet from the input bytes.
         """
@@ -87,7 +87,7 @@ class SimplePacket(AbstractSerialized):
 
         # Deserialize the data into a frame
         data_len = data[2]
-        frame_crc = int.from_bytes(bytes=data[-2:], byteorder='little', signed=False)
+        frame_crc = int.from_bytes(bytes=data[-2:], byteorder="little", signed=False)
         frame = SimplePacket(
             source=data[0],
             destination=data[1],
@@ -146,7 +146,7 @@ class COBSStreamFramingCodec(AbstractSerializedStreamCodec):
         if byte != 0x00:
             # Yes -> Byte is not stuff... frame incoming
             data = bytearray(recv)
-            recv = device.read_until(expected=b'\x00')
+            recv = device.read_until(expected=b"\x00")
             if recv is None:
                 raise ConnectionError(f"Connection error while reading from {device}")
 

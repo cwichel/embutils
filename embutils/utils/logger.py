@@ -35,12 +35,12 @@ class Logger(log.Logger):
         WARNING     = log.WARNING
 
     #: Logger entries format definition
-    Format = coll.namedtuple('Format', ['style', 'pattern'])
+    Format = coll.namedtuple("Format", ["style", "pattern"])
 
     #: Default entry format
-    DEF_FMT = Format(style='{', pattern='{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}')
+    DEF_FMT = Format(style="{", pattern="{created:.05f}: {name:<8s}: {levelname:<8s}: {module:<20s}: {message:s}")
 
-    def __init__(self, name: str = '', level: Level = Level.DEBUG, fmt: Format = DEF_FMT) -> None:
+    def __init__(self, name: str = "", level: Level = Level.DEBUG, fmt: Format = DEF_FMT) -> None:
         """
         Logger configuration.
         Applies the log entries formatting and initial log level.
@@ -88,4 +88,4 @@ class Logger(log.Logger):
 
 # -->> Instances <<--------------------
 #: Embutils internal logger
-SDK_LOG = Logger(name='EMBUTILS')
+SDK_LOG = Logger(name="EMBUTILS")

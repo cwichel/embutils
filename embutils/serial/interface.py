@@ -78,7 +78,7 @@ class Interface:
         self.on_reconnect   = self._stream.on_reconnect
         self.on_disconnect  = self._stream.on_disconnect
         self.on_receive     = self._stream.on_receive
-        self._logger.info(f'Interface initialized on: {self._stream.device}')
+        self._logger.info(f"Interface initialized on: {self._stream.device}")
 
     @property
     def stream(self) -> Stream:
@@ -102,7 +102,7 @@ class Interface:
         :param float timeout: Timeout in seconds.
         """
         if timeout <= 0.0:
-            raise ValueError('The response timeout needs to be greater than zero.')
+            raise ValueError("The response timeout needs to be greater than zero.")
         self._timeout = timeout
 
     def transmit(self,
@@ -152,9 +152,9 @@ class Interface:
         :param AbstractSerialized send:     Packet to be sent.
         """
         # Send item and return
-        self._logger.debug('Sending item...')
+        self._logger.debug("Sending item...")
         self._stream.send(item=send)
-        self._logger.debug('Response not needed.')
+        self._logger.debug("Response not needed.")
 
     def _send_recv(self,
                    send: AbstractSerialized,
@@ -184,11 +184,11 @@ class Interface:
         self.on_receive += on_received
 
         # Prepare and send
-        self._logger.debug('Sending item...')
+        self._logger.debug("Sending item...")
         self._stream.send(item=send)
 
         # Wait for response
-        self._logger.debug('Waiting for response...')
+        self._logger.debug("Waiting for response...")
         tm_start = time.time()
         while not recv and (elapsed(tm_start) < timeout):
             time.sleep(self.PERIOD_PULL_S)
@@ -196,5 +196,5 @@ class Interface:
 
         # Check data
         state = "Received" if recv else "Timeout"
-        self._logger.debug(f'Item response: {state} after {elapsed(start=tm_start):.03f}[s]')
+        self._logger.debug(f"Item response: {state} after {elapsed(start=tm_start):.03f}[s]")
         return recv

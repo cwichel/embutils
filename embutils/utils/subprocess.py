@@ -54,7 +54,7 @@ class StreamRedirect:
         """
         Stream buffer.
         """
-        return ''.join(self._buff)
+        return "".join(self._buff)
 
     def wait_ready(self) -> None:
         """
@@ -81,7 +81,7 @@ class StreamRedirect:
         """
         Parses and copies every line of the input stream.
         """
-        for line in iter(self._src.readline, b''):
+        for line in iter(self._src.readline, b""):
             line = line.decode()
             self._buff.append(line)
             self._queue.put(line)
@@ -124,15 +124,15 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
         else:
             # Not piping needed...
             out, err = proc.communicate()
-            out = '' if (out is None) else out.decode()
-            err = '' if (err is None) else err.decode()
+            out = "" if (out is None) else out.decode()
+            err = "" if (err is None) else err.decode()
 
         # Retrieve execution result
         res = sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
 
     # Store logs (if required)
     if log is not None:
-        with log.open(mode='w') as file:
+        with log.open(mode="w") as file:
             file.write(f"Date: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}"
                        f"CWD : {cwd}\n"
                        f"CMD : {cmd}\n"

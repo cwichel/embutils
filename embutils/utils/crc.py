@@ -64,11 +64,11 @@ class CRC:
         Representation string.
         """
         size = 2 * ((self._size + 7) // 8)
-        msg = f'{self.__class__.__name__}(name={self._name}, size={self._size}, ' \
-              f'poly=0x{self._poly:0{size:d}X}, ' \
-              f'crc_in=0x{self._crc_init:0{size:d}X}, ' \
-              f'xor_out=0x{self._xor_out:0{size:d}X}, ' \
-              f'ref_in={self._rev_in}, ref_out={self._rev_out})'
+        msg = f"{self.__class__.__name__}(name={self._name}, size={self._size}, " \
+              f"poly=0x{self._poly:0{size:d}X}, " \
+              f"crc_in=0x{self._crc_init:0{size:d}X}, " \
+              f"xor_out=0x{self._xor_out:0{size:d}X}, " \
+              f"ref_in={self._rev_in}, ref_out={self._rev_out})"
         return msg
 
     # Read only properties

@@ -150,7 +150,7 @@ def _version_update(ver: str) -> None:
         old = _version_get()
         if "post" in old:
             tmp = old.split(".")
-            old = '.'.join(tmp[:-1])
+            old = ".".join(tmp[:-1])
             num = int(tmp[-1].replace("post", "")) + 1
         ver = f"{old}.post{num}"
 
@@ -163,7 +163,7 @@ def _version_update(ver: str) -> None:
     upd = PROJ_PATH / "__init__.py"
     new = f"__version__ = '{_version_get()}'"
     with upd.open(mode="r") as file:
-        lines = file.read().split('\n')
-        lines = [(line if ('__version__' not in line) else new) for line in lines]
+        lines = file.read().split("\n")
+        lines = [(line if ("__version__" not in line) else new) for line in lines]
     with upd.open(mode="w") as file:
-        file.write('\n'.join(lines))
+        file.write("\n".join(lines))

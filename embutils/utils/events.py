@@ -33,7 +33,7 @@ class EventHook:
         """
         self._callbacks = []
 
-    def __iadd__(self, callback: CBAny2None) -> 'EventHook':
+    def __iadd__(self, callback: CBAny2None) -> "EventHook":
         """
         Simplified callback subscription. Overrides the **+=** operator.
 
@@ -45,7 +45,7 @@ class EventHook:
         self.subscribe(callback=callback)
         return self
 
-    def __isub__(self, callback: CBAny2None) -> 'EventHook':
+    def __isub__(self, callback: CBAny2None) -> "EventHook":
         """
         Simplified callback unsubscription. Overrides the **-=** operator.
 

@@ -38,11 +38,11 @@ def bin_to_hex(src: TPPath, out: TPPath = None, off: int = 0x08000000) -> intelh
 
     # Generate HEX
     tmp = intelhex.IntelHex()
-    tmp.loadbin(fobj=f'{src}', offset=off)
+    tmp.loadbin(fobj=f"{src}", offset=off)
 
     # Save if required
     if out is not None:
-        tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
+        tmp.write_hex_file(f=f"{out}", byte_count=RECORD_BYTES)
     return tmp
 
 
@@ -66,11 +66,11 @@ def merge_bin(src: tp.List[tp.Tuple[TPPath, int]], out: TPPath = None) -> intelh
     tmp = intelhex.IntelHex()
     for file, addr in src:
         this = bin_to_hex(src=file, off=addr)
-        tmp.merge(other=this, overlap='replace')
+        tmp.merge(other=this, overlap="replace")
 
     # Save if required
     if out is not None:
-        tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
+        tmp.write_hex_file(f=f"{out}", byte_count=RECORD_BYTES)
     return tmp
 
 
@@ -91,10 +91,10 @@ def merge_hex(src: tp.List[TPPath], out: TPPath = None) -> intelhex.IntelHex:
     # Merge all HEX files
     tmp = intelhex.IntelHex()
     for file in src:
-        this = intelhex.IntelHex(source=f'{file}')
-        tmp.merge(other=this, overlap='replace')
+        this = intelhex.IntelHex(source=f"{file}")
+        tmp.merge(other=this, overlap="replace")
 
     # Save if required
     if out is not None:
-        tmp.write_hex_file(f=f'{out}', byte_count=RECORD_BYTES)
+        tmp.write_hex_file(f=f"{out}", byte_count=RECORD_BYTES)
     return tmp

@@ -16,7 +16,7 @@ import typing as tp
 
 # -->> Definitions <<------------------
 #: TyPe definition. Any value.
-TPAny      = tp.TypeVar('TPAny')
+TPAny      = tp.TypeVar("TPAny")
 #: CallBack definition. Any -> Any
 CBAny2Any  = tp.Callable[..., TPAny]
 

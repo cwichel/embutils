@@ -20,7 +20,7 @@ from .logger import SDK_LOG, Logger
 
 # -->> Definitions <<------------------
 #: TyPe definition. Any value.
-TPAny       = tp.TypeVar('TPAny')
+TPAny       = tp.TypeVar("TPAny")
 #: CallBack definition. Any -> Any
 CBAny2Any   = tp.Callable[..., TPAny]
 #: CallBack definition. Any -> None
@@ -204,7 +204,7 @@ class ThreadPool:
         """
         return sum([worker.is_alive() for worker in self._workers])
 
-    @sync(lock_name='_rlock')
+    @sync(lock_name="_rlock")
     def enqueue(self, task: AbstractThreadTask) -> None:
         """
         Enqueue a task on the thread pool to be executed by the workers.
@@ -217,7 +217,7 @@ class ThreadPool:
         # Enqueue
         self._tasks.put(task)
 
-    @sync(lock_name='_rlock')
+    @sync(lock_name="_rlock")
     def stop(self) -> None:
         """
         Wait for the task queue to be completed and stop all the workers.
@@ -250,7 +250,7 @@ class SimpleThreadTask(AbstractThreadTask):
     """
     def __init__(self,
                  task: CBAny2None, *args,
-                 name: str = 'Unnamed', **kwargs) -> None:
+                 name: str = "Unnamed", **kwargs) -> None:
         """
         Class initialization.
 
@@ -284,4 +284,4 @@ class SimpleThreadTask(AbstractThreadTask):
 
 # -->> Instances <<--------------------
 #: Embutils internal thread pool
-SDK_TP = ThreadPool(size=10, name='EMBUTILS_Thread_')
+SDK_TP = ThreadPool(size=10, name="EMBUTILS_Thread_")

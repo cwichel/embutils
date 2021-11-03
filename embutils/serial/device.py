@@ -37,11 +37,11 @@ class Device:
 
     #: Default device settings
     DEF_SETTINGS = {
-        'baudrate': 115200,
-        'bytesize': 8,
-        'stopbits': 1,
-        'parity':   'N',
-        'timeout':  0.1
+        "baudrate": 115200,
+        "bytesize": 8,
+        "stopbits": 1,
+        "parity":   "N",
+        "timeout":  0.1
         }
 
     def __init__(self, port: str = None, looped: bool = False, settings: dict = None) -> None:
@@ -194,7 +194,7 @@ class Device:
             return None
 
     @sync(lock_name="_lock")
-    def read_until(self, expected: bytes = b'\n', size: int = None) -> tp.Optional[bytearray]:
+    def read_until(self, expected: bytes = b"\n", size: int = None) -> tp.Optional[bytearray]:
         """
         Reads bytes from the serial buffer until the expected sequence is found,
         the received bytes exceed the specified limit or a timeout is reached.
@@ -234,7 +234,7 @@ class DeviceList(tp.List[Device]):
     Serial device list implementation.
     This class define mechanisms to scan, compare and filter lists of devices.
     """
-    def diff(self, other: 'DeviceList') -> 'DeviceList':
+    def diff(self, other: "DeviceList") -> "DeviceList":
         """
         Get the differences between two serial device lists.
 
@@ -261,7 +261,7 @@ class DeviceList(tp.List[Device]):
                 diff.append(dev)
         return diff
 
-    def filter(self, port: str = None, dev_id: int = None) -> 'DeviceList':
+    def filter(self, port: str = None, dev_id: int = None) -> "DeviceList":
         """
         Filter serial devices from a given list.
 
@@ -281,7 +281,7 @@ class DeviceList(tp.List[Device]):
         return dev_list
 
     @staticmethod
-    def scan() -> 'DeviceList':
+    def scan() -> "DeviceList":
         """
         Scan the system and return a list with the connected serial devices.
 
@@ -336,7 +336,7 @@ class DeviceScanner(AbstractService):
         SD_REMOVED_MULTI    = 0x05      # Multiple devices were unplugged
 
         @staticmethod
-        def get_event(old: DeviceList, new: DeviceList) -> tp.Tuple['DeviceScanner.Event', DeviceList]:
+        def get_event(old: DeviceList, new: DeviceList) -> tp.Tuple["DeviceScanner.Event", DeviceList]:
             """
             Compares two serial device lists and return the differences.
 
@@ -371,7 +371,7 @@ class DeviceScanner(AbstractService):
         # Service core
         super().__init__(*args, **kwargs)
         self._period        = period
-        self._last_scan     = 0
+        self._last_scan     = time.time()
         self._dev_list      = DeviceList()    # Devices connected
         self._dev_change    = DeviceList()    # List of devices that triggered the event
         # Service events
@@ -439,7 +439,7 @@ class DeviceScanner(AbstractService):
             event, dev_diff = self.Event.get_event(old=self._dev_change, new=dev_list)
             if event != self.Event.SD_NO_EVENT:
                 self._pool.enqueue(task=SimpleThreadTask(
-                    name=f'{self.__class__.__name__}.on_list_change',
+                    name=f"{self.__class__.__name__}.on_list_change",
                     task=lambda: self.on_list_change.emit(event=event, dev_diff=dev_diff)
                     ))
                 self._dev_change = dev_list
@@ -447,6 +447,6 @@ class DeviceScanner(AbstractService):
         # Update the connected devices list
         self._dev_list = dev_list
         self._pool.enqueue(task=SimpleThreadTask(
-            name=f'{self.__class__.__name__}.on_scan_period',
+            name=f"{self.__class__.__name__}.on_scan_period",
             task=self.on_scan_period.emit
             ))

@@ -22,8 +22,8 @@ def on_change_handler(event: DeviceScanner.Event, dev_diff: DeviceList) -> None:
     :param SerialDeviceScanner.Event event: Serial device scanner Event.
     :param SerialDeviceList dev_diff: Event change list.
     """
-    dev = '\r\n\t'.join(f'{item}' for item in dev_diff)
-    msg = f'{event.__repr__()}\r\n\t{dev}'
+    dev = "\r\n\t".join(f"{item}" for item in dev_diff)
+    msg = f"{event.__repr__()}\r\n\t{dev}"
     print(msg)
 
 
@@ -47,6 +47,6 @@ def ex_serial_scanner() -> None:
 
 
 # Example Execution =============================
-if __name__ == '__main__':
+if __name__ == "__main__":
     SDK_LOG.enable()
     ex_serial_scanner()

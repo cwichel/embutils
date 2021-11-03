@@ -14,13 +14,8 @@ import typing as tp
 
 
 # -->> Definitions <<------------------
-#: Binary compatible path sources.
-_PathBaseBin    = (bytes, bytearray)
-#: All compatible path sources.
-_PathBase       = (str, pl.Path) + _PathBaseBin
-
-#: TyPe definition. .
-TPPath          = tp.Union[_PathBase]
+#: TyPe definition. Path sources.
+TPPath = tp.Union[bytes, bytearray, str, pl.Path]
 
 
 # -->> API <<--------------------------
@@ -36,12 +31,13 @@ def as_path(path: tp.Any) -> pl.Path:
     :raises ValueError: Input can't be converted to Path.
     """
     # Avoid not compatible types
-    if not isinstance(path, _PathBase):
+    if not isinstance(path, tp.get_args(TPPath)):
         raise ValueError(f"Parameter with value '{path}' can't be converted to path.")
     # Convert
-    if isinstance(path, _PathBaseBin):
-        return pl.Path(path.decode(errors='ignore'))
-    return pl.Path(path)
+    try:
+        return pl.Path(path)
+    except TypeError:
+        return pl.Path(path.decode(errors="ignore"))
 
 
 def path_reachable(path: pl.Path) -> bool:

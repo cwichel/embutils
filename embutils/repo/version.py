@@ -46,7 +46,7 @@ class Version:
         """
         Version as string: major.minor.build
         """
-        return f'{self.major}.{self.minor}.{self.build}'
+        return f"{self.major}.{self.minor}.{self.build}"
 
     def update_build(self, path: TPPath) -> None:
         """
@@ -61,21 +61,21 @@ class Version:
     def save(self, path: TPPath, store_build: bool = False) -> None:
         """
         Stores the version number to the provided file.
-        The version number will be stored in the format 'major.minor.build'.
+        The version number will be stored in the format "major.minor.build".
 
         :param TPPath path:         Path were the version text file will be stored.
         :param bool store_build:    If true, the build will be stored. False by default.
         """
         path = path_validator(path=path, allow_none=False, check_reachable=True)
-        with path.open(mode='w') as file:
-            build = self.build if (store_build and self.build is not None) else 'X'
-            file.write(f'{self.major}.{self.minor}.{build}')
+        with path.open(mode="w") as file:
+            build = self.build if (store_build and self.build is not None) else "X"
+            file.write(f"{self.major}.{self.minor}.{build}")
 
     @classmethod
-    def load(cls, path: TPPath) -> 'Version':
+    def load(cls, path: TPPath) -> "Version":
         """
         Loads the version number from the provided file.
-        The version number needs to be in the format 'major.minor.build'.
+        The version number needs to be in the format "major.minor.build".
 
         :param TPPath path:         Path to the version file.
         """
@@ -85,7 +85,7 @@ class Version:
             ver = cls(
                     major=int(tmp[0]),
                     minor=int(tmp[1]),
-                    build=int(tmp[2]) if (tmp[2].upper() != 'X') else Version.UVER_BUILD
+                    build=int(tmp[2]) if (tmp[2].upper() != "X") else Version.UVER_BUILD
                     )
             return ver
 
@@ -144,11 +144,11 @@ def version_export_c(path: TPPath, ver: Version, author: str, note: str) -> None
     path = path_validator(path=path, allow_none=False, check_reachable=True)
 
     tmpl = PATH_TMPL / "template_version_c.h"
-    base = tmpl.open(mode='r').read()
+    base = tmpl.open(mode="r").read()
 
     with path.open(mode="w") as file:
         file.write(base.format(
-            file=path.name, author=author, note=note, date=f'{dt.datetime.now():%x %X}',
-            major=ver.major, minor=ver.minor, build=f'0x{ver.build:X}',
+            file=path.name, author=author, note=note, date=f"{dt.datetime.now():%x %X}",
+            major=ver.major, minor=ver.minor, build=f"0x{ver.build:X}",
             version=f'"{ver.major}.{ver.minor}.{ver.build}"'
             ))
