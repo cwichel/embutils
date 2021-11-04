@@ -19,7 +19,6 @@ from embutils.utils import SDK_LOG, elapsed
 
 
 # -->> Definitions <<------------------
-SDK_LOG.enable()
 
 
 # -->> Test API <<---------------------
@@ -82,4 +81,5 @@ class TestStream(unittest.TestCase):
 
 # -->> Test Execution <<---------------
 if __name__ == '__main__':
+    SDK_LOG.enable()
     unittest.main()

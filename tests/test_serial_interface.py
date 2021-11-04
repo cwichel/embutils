@@ -19,7 +19,6 @@ from embutils.utils import SDK_LOG
 
 
 # -->> Definitions <<------------------
-SDK_LOG.enable()
 
 
 # -->> Test API <<---------------------
@@ -102,4 +101,5 @@ class TestInterface(unittest.TestCase):
 
 # -->> Test Execution <<---------------
 if __name__ == '__main__':
+    SDK_LOG.enable()
     unittest.main()

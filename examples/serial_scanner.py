@@ -11,10 +11,12 @@ Serial scanner usage example.
 
 from embutils.serial import DeviceList, DeviceScanner
 from embutils.utils import SDK_LOG
-import time
 
 
-# Example Definitions ===========================
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 def on_change_handler(event: DeviceScanner.Event, changes: DeviceList) -> None:
     """
     Process the serial device change event.
@@ -40,13 +42,10 @@ def ex_serial_scanner() -> None:
     # Create a serial scanner instance
     ss = DeviceScanner(period=0.5)
     ss.on_list_change += on_change_handler
-
-    # Maintain this alive
-    while True:
-        time.sleep(0.01)
+    ss.join()
 
 
-# Example Execution =============================
+# -->> Execution <<--------------------
 if __name__ == "__main__":
     SDK_LOG.enable()
     ex_serial_scanner()
