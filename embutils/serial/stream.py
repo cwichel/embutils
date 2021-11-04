@@ -14,9 +14,10 @@ import time
 import typing as tp
 
 from ..utils.events import EventHook
+from ..utils.logger import SDK_LOG
+from ..utils.threading import SDK_TP, SimpleThreadTask
 from ..utils.serialized import AbstractSerialized, AbstractSerializedCodec
 from ..utils.service import AbstractService
-from ..utils.threading import SimpleThreadTask
 from .device import Device
 
 
@@ -76,7 +77,7 @@ class Stream(AbstractService):
     #: Stream reconnect period
     RECONNECT_PERIOD_S = 0.5
 
-    def __init__(self, *args, device: Device, codec: AbstractSerializedStreamCodec, **kwargs) -> None:
+    def __init__(self, device: Device, codec: AbstractSerializedStreamCodec, **kwargs) -> None:
         """
         Class initialization.
 
@@ -84,7 +85,7 @@ class Stream(AbstractService):
         :param AbstractSerializedStreamCodec codec: Serialized objects codec handler.
         """
         # Service core
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
         self._device        = device
         self._codec         = codec
         # Service events
@@ -92,7 +93,7 @@ class Stream(AbstractService):
         self.on_connect     = EventHook()
         self.on_reconnect   = EventHook()
         self.on_disconnect  = EventHook()
-        # Handle public events
+        # Internal event handlers
         self.on_receive     += lambda item: self._transfer_debug(item=item, received=True)
 
     def __del__(self) -> None:
@@ -157,20 +158,20 @@ class Stream(AbstractService):
         try:
             item = self._codec.decode_stream(device=self._device)
             if item:
-                self._pool.enqueue(task=SimpleThreadTask(
+                SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_received",
                     task=lambda: self.on_receive.emit(item=item)
                     ))
 
         except ConnectionError:
             # Device disconnected...
-            self._logger.info(f"Device disconnected: {self._device}")
-            self._pool.enqueue(task=SimpleThreadTask(
+            SDK_LOG.info(f"Device disconnected: {self._device}")
+            SDK_TP.enqueue(task=SimpleThreadTask(
                 name=f"{self.__class__.__name__}.on_disconnect",
                 task=self.on_disconnect.emit
                 ))
             if self._device_connect():
-                self._pool.enqueue(task=SimpleThreadTask(
+                SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_reconnect",
                     task=self.on_reconnect.emit
                     ))
@@ -208,7 +209,7 @@ class Stream(AbstractService):
         if not self._device.is_open:
             connected = self._device_connect()
             if connected and start:
-                self._pool.enqueue(task=SimpleThreadTask(
+                SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_connect",
                     task=self.on_connect.emit
                     ))
@@ -220,14 +221,14 @@ class Stream(AbstractService):
         :returns: True if connection succeeded, false otherwise.
         :rtype: bool
         """
-        self._logger.info(f"Attempting connection to {self._device}")
+        SDK_LOG.info(f"Attempting connection to {self._device}")
         self._device.close()
         while self.is_running:
             if self._device.open():
                 self._device.flush()
-                self._logger.info(f"Connected to {self._device}")
+                SDK_LOG.info(f"Connected to {self._device}")
                 return True
-            self._logger.info(f"Connection attempt on {self._device} failed.")
+            SDK_LOG.info(f"Connection attempt on {self._device} failed.")
             time.sleep(self.RECONNECT_PERIOD_S)
         return False
 
@@ -239,4 +240,4 @@ class Stream(AbstractService):
         :param bool received:           Flag to indicate if we are sending/receiving the item.
         """
         action = "recv" if received else "sent"
-        self._logger.debug(f"Item {action}: {item}")
+        SDK_LOG.debug(f"Item {action}: {item}")

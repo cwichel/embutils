@@ -19,7 +19,7 @@ import serial.tools.list_ports
 from ..utils.events import EventHook
 from ..utils.enum import IntEnum
 from ..utils.service import AbstractService
-from ..utils.threading import SimpleThreadTask, sync
+from ..utils.threading import SDK_TP, SimpleThreadTask, sync
 from ..utils.time import elapsed
 
 
@@ -357,14 +357,14 @@ class DeviceScanner(AbstractService):
     #: Task execution period.
     TASK_PERIOD_S = 0.5
 
-    def __init__(self, *args, period: float = TASK_PERIOD_S, **kwargs) -> None:
+    def __init__(self, period: float = TASK_PERIOD_S, **kwargs) -> None:
         """
         Class initialization.
 
         :param float period:    Define the periodicity of the scanner executions in seconds.
         """
         # Service core
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
         self._period    = period
         self._last_scan = time.time()
         self._devices   = DeviceList()    # Devices connected
@@ -433,7 +433,7 @@ class DeviceScanner(AbstractService):
         if not self.on_list_change.empty:
             event, changes = self.Event.get_event(old=self._changes, new=devices)
             if event != self.Event.SD_NO_EVENT:
-                self._pool.enqueue(task=SimpleThreadTask(
+                SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_list_change",
                     task=lambda: self.on_list_change.emit(event=event, changes=changes)
                     ))
@@ -441,7 +441,7 @@ class DeviceScanner(AbstractService):
 
         # Update the connected devices list
         self._devices = devices
-        self._pool.enqueue(task=SimpleThreadTask(
+        SDK_TP.enqueue(task=SimpleThreadTask(
             name=f"{self.__class__.__name__}.on_scan_period",
             task=self.on_scan_period.emit
             ))
