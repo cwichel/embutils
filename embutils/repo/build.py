@@ -41,7 +41,6 @@ def build_cubeide(name: str, config: str, project: TPPath, workspace: TPPath, in
     project     = path_validator(path=project, allow_none=False, check_reachable=True)
     workspace   = path_validator(path=workspace, allow_none=False, check_reachable=True)
     log         = path_validator(path=log, allow_none=True, check_reachable=True)
-
     # Build
     idx = "-no-indexer" if not indexer else ""
     cmd = f"stm32cubeidec --launcher.suppressErrors -nosplash {idx} " \
@@ -70,7 +69,6 @@ def build_iar(config: str, project: TPPath,
     # Validate paths
     project = path_validator(path=project, allow_none=False, check_reachable=True)
     log = path_validator(path=log, allow_none=True, check_reachable=True)
-
     # Build
     cmd = f'IarBuild "{project}" -build "{config}"'
     res = execute(cmd=cmd, pipe=pipe, log=log)

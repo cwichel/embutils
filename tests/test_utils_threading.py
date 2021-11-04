@@ -8,6 +8,7 @@ Threading utilities testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+
 import time
 
 import pytest
@@ -17,7 +18,6 @@ from embutils.utils import SDK_LOG, ThreadPool, SimpleThreadTask, get_threads
 
 
 # -->> Definitions <<------------------
-SDK_LOG.enable()
 
 
 # -->> Test API <<---------------------
@@ -90,4 +90,5 @@ class TestThreading(unittest.TestCase):
 
 # -->> Test Execution <<---------------
 if __name__ == '__main__':
+    SDK_LOG.enable()
     unittest.main()

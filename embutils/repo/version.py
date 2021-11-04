@@ -34,7 +34,6 @@ class Version:
     """
     #: Unversioned build number
     UVER_BUILD = 99999
-
     #: Version major
     major: int = attr.ib(default=99, converter=int)
     #: Version minor
@@ -142,10 +141,8 @@ def version_export_c(path: TPPath, ver: Version, author: str, note: str) -> None
     """
     # Check target path
     path = path_validator(path=path, allow_none=False, check_reachable=True)
-
     tmpl = PATH_TMPL / "template_version_c.h"
     base = tmpl.open(mode="r").read()
-
     with path.open(mode="w") as file:
         file.write(base.format(
             file=path.name, author=author, note=note, date=f"{dt.datetime.now():%x %X}",

@@ -15,7 +15,7 @@ import queue
 import threading as th
 import typing as tp
 
-from .logger import SDK_LOG, Logger
+from .logger import SDK_LOG
 
 
 # -->> Definitions <<------------------
@@ -84,24 +84,19 @@ class ThreadWorker(th.Thread):
     This represents a single thread on the pool. The thread is set as daemon or not based on
     the pool configurations.
     """
-    def __init__(self,
-                 name: str,
-                 tasks: queue.Queue, timeout: float,
-                 logger: Logger = SDK_LOG) -> None:
+    def __init__(self, name: str, tasks: queue.Queue, timeout: float) -> None:
         """
         Class initialization.
 
         :param str name:        Worker name.
         :param Queue tasks:     Queue to get the tasks from.
         :param float timeout:   Timeout for waiting for a task.
-        :param Logger logger:   Logger used to register worker events.
         """
         super().__init__(name=name)
         self._active    = True
         self._queue     = tasks
         self._timeout   = timeout
-        self._logger    = logger
-        self._logger.debug(f"Worker thread {self.name} created.")
+        SDK_LOG.debug(f"Worker thread {self.name} created.")
 
     def stop(self) -> None:
         """
@@ -118,7 +113,7 @@ class ThreadWorker(th.Thread):
 
         """
         # Worker execution
-        self._logger.debug(f"Worker thread {self.name} started.")
+        SDK_LOG.debug(f"Worker thread {self.name} started.")
         while self._active:
             try:
                 task = self._queue.get(timeout=self._timeout)
@@ -126,7 +121,7 @@ class ThreadWorker(th.Thread):
                     try:
                         task.execute()
                     except Exception as ex:
-                        self._logger.info(
+                        SDK_LOG.info(
                                     f"Caught exception while running task:\n"
                                     f"> Task   : {task}\n"
                                     f"> Raised : {ex.__class__.__name__} {ex}"
@@ -137,7 +132,7 @@ class ThreadWorker(th.Thread):
                 pass
 
         # Worker termination
-        self._logger.debug(f"Worker thread {self.name} terminated.")
+        SDK_LOG.debug(f"Worker thread {self.name} terminated.")
 
 
 class ThreadPool:
@@ -145,10 +140,7 @@ class ThreadPool:
     Simple thread pool implementation.
     Use queues to coordinate tasks among a set of worker threads.
     """
-    def __init__(self,
-                 size: int, name: str,
-                 timeout: float = 0.1, daemon: bool = True,
-                 logger: Logger = SDK_LOG) -> None:
+    def __init__(self, size: int, name: str, timeout: float = 0.1, daemon: bool = True) -> None:
         """
         Class initialization.
 
@@ -159,7 +151,6 @@ class ThreadPool:
                                 threads to terminate when terminate() is called.
         :param bool daemon:     Set to true if the threads should immediately terminate when the
                                 main thread exists.
-        :param Logger logger:   Logger used to register worker events.
         """
         # Input checking
         if size < 1:
@@ -172,7 +163,6 @@ class ThreadPool:
         self._prefix    = name
         self._timeout   = timeout
         self._daemon    = daemon
-        self._logger    = logger
         self._rlock     = th.RLock()
         self._tasks     = queue.Queue()
         self._workers:  tp.List[ThreadWorker] = []
@@ -222,9 +212,9 @@ class ThreadPool:
         """
         Wait for the task queue to be completed and stop all the workers.
         """
-        self._logger.debug("Waiting for all the tasks to be handled...")
+        SDK_LOG.debug("Waiting for all the tasks to be handled...")
         self._tasks.join()
-        self._logger.debug("Terminating worker threads...")
+        SDK_LOG.debug("Terminating worker threads...")
         for worker in self._workers:
             worker.stop()
 
@@ -236,7 +226,6 @@ class ThreadPool:
             worker = ThreadWorker(
                         name=f"{self._prefix}_{(len(self._workers) + 1)}",
                         tasks=self._tasks, timeout=self._timeout,
-                        logger=self._logger
                         )
             worker.setDaemon(self._daemon)
             worker.start()
