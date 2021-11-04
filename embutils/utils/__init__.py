@@ -9,6 +9,7 @@ from .math import closest_pow, closest_multi
 from .path import as_path, path_reachable, path_validator
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .service import AbstractService
+from .stream import StreamRedirect
 from .subprocess import execute
 from .threading import SDK_TP, AbstractThreadTask, SimpleThreadTask, ThreadPool, get_threads, sync
 from .time import elapsed, timer

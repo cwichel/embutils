@@ -19,7 +19,7 @@ import serial.tools.list_ports
 from ..utils.events import EventHook
 from ..utils.enum import IntEnum
 from ..utils.service import AbstractService
-from ..utils.threading import SimpleThreadTask, sync
+from ..utils.threading import SDK_TP, SimpleThreadTask, sync
 from ..utils.time import elapsed
 
 
@@ -234,7 +234,7 @@ class DeviceList(tp.List[Device]):
     Serial device list implementation.
     This class define mechanisms to scan, compare and filter lists of devices.
     """
-    def diff(self, other: "DeviceList") -> "DeviceList":
+    def compare(self, other: "DeviceList") -> "DeviceList":
         """
         Get the differences between two serial device lists.
 
@@ -243,19 +243,14 @@ class DeviceList(tp.List[Device]):
         :returns: List containing the differences.
         :rtype: DeviceList
         """
+        # Handle no difference
         if self == other:
             return DeviceList()
-
-        # Define base and comparison target
-        if len(self) > len(other):
-            base = self
-            comp = other
-        else:
-            base = other
-            comp = self
-
         # Perform comparison
+        aux = len(self) > len(other)
         diff = DeviceList()
+        base = self if aux else other
+        comp = other if aux else self
         for dev in base:
             if dev not in comp:
                 diff.append(dev)
@@ -321,7 +316,7 @@ class DeviceScanner(AbstractService):
     #.  **on_list_change:** This event is emitted when a change is detected
         on the connected device list. Subscribe using callbacks with syntax::
 
-            def <callback>(event: SerialDeviceScanner.Event, devices: SerialDeviceList)
+            def <callback>(event: SerialDeviceScanner.Event, changes: SerialDeviceList)
 
     """
     class Event(IntEnum):
@@ -347,33 +342,33 @@ class DeviceScanner(AbstractService):
             :rtype: Tuple[DeviceScanner.Event, DeviceList]
             """
             # Get difference list and define event
-            diff  = old.diff(other=new)
-            etype = DeviceScanner.Event
-            if not diff:
-                event = etype.SD_NO_EVENT
+            change = old.compare(other=new)
+            event  = DeviceScanner.Event
+            if not change:
+                event = event.SD_NO_EVENT
             elif len(new) > len(old):
-                event = etype.SD_PLUGGED_MULTI if (len(diff) > 1) else etype.SD_PLUGGED_SINGLE
+                event = event.SD_PLUGGED_MULTI if (len(change) > 1) else event.SD_PLUGGED_SINGLE
             elif len(old) > len(new):
-                event = etype.SD_REMOVED_MULTI if (len(diff) > 1) else etype.SD_REMOVED_SINGLE
+                event = event.SD_REMOVED_MULTI if (len(change) > 1) else event.SD_REMOVED_SINGLE
             else:
-                event = etype.SD_LIST_CHANGED
-            return event, diff
+                event = event.SD_LIST_CHANGED
+            return event, change
 
     #: Task execution period.
     TASK_PERIOD_S = 0.5
 
-    def __init__(self, *args, period: float = TASK_PERIOD_S, **kwargs) -> None:
+    def __init__(self, period: float = TASK_PERIOD_S, **kwargs) -> None:
         """
         Class initialization.
 
         :param float period:    Define the periodicity of the scanner executions in seconds.
         """
         # Service core
-        super().__init__(*args, **kwargs)
-        self._period        = period
-        self._last_scan     = time.time()
-        self._dev_list      = DeviceList()    # Devices connected
-        self._dev_change    = DeviceList()    # List of devices that triggered the event
+        super().__init__(**kwargs)
+        self._period    = period
+        self._last_scan = time.time()
+        self._devices   = DeviceList()    # Devices connected
+        self._changes   = DeviceList()    # List of devices that triggered the event (changes)
         # Service events
         self.on_scan_period = EventHook()
         self.on_list_change = EventHook()
@@ -383,7 +378,7 @@ class DeviceScanner(AbstractService):
         """
         Connected serial devices list.
         """
-        return self._dev_list
+        return self._devices
 
     @property
     def period(self) -> float:
@@ -419,7 +414,7 @@ class DeviceScanner(AbstractService):
         Run the first scan and start timer.
         """
         self._last_scan = time.time()
-        self._dev_list  = DeviceList.scan()
+        self._devices  = DeviceList.scan()
         self._scan()
 
     def _scan(self) -> None:
@@ -432,21 +427,21 @@ class DeviceScanner(AbstractService):
 
         """
         # Get the connected devices
-        dev_list = DeviceList.scan()
+        devices = DeviceList.scan()
 
         # If the change callback has items, inform the differences
         if not self.on_list_change.empty:
-            event, dev_diff = self.Event.get_event(old=self._dev_change, new=dev_list)
+            event, changes = self.Event.get_event(old=self._changes, new=devices)
             if event != self.Event.SD_NO_EVENT:
-                self._pool.enqueue(task=SimpleThreadTask(
+                SDK_TP.enqueue(task=SimpleThreadTask(
                     name=f"{self.__class__.__name__}.on_list_change",
-                    task=lambda: self.on_list_change.emit(event=event, dev_diff=dev_diff)
+                    task=lambda: self.on_list_change.emit(event=event, changes=changes)
                     ))
-                self._dev_change = dev_list
+                self._changes = devices
 
         # Update the connected devices list
-        self._dev_list = dev_list
-        self._pool.enqueue(task=SimpleThreadTask(
+        self._devices = devices
+        SDK_TP.enqueue(task=SimpleThreadTask(
             name=f"{self.__class__.__name__}.on_scan_period",
             task=self.on_scan_period.emit
             ))

@@ -18,6 +18,7 @@ Submodules
    embutils.utils.path
    embutils.utils.serialized
    embutils.utils.service
+   embutils.utils.stream
    embutils.utils.subprocess
    embutils.utils.threading
    embutils.utils.time

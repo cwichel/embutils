@@ -14,8 +14,8 @@ import threading as th
 import time
 import typing as tp
 
-from .logger import SDK_LOG, Logger
-from .threading import SDK_TP, ThreadPool, SimpleThreadTask
+from .logger import SDK_LOG
+from .threading import SDK_TP, SimpleThreadTask
 
 
 # -->> Definitions <<------------------
@@ -32,17 +32,12 @@ class AbstractService(abc.ABC):
     #: Task execution delay.
     TASK_DELAY_S = 0.001
 
-    def __init__(self, delay: float = TASK_DELAY_S, pool: ThreadPool = SDK_TP, logger: Logger = SDK_LOG) -> None:
+    def __init__(self, delay: float = TASK_DELAY_S) -> None:
         """
         Class initialization.
 
         :param float delay:     Time between service task executions.
-        :param ThreadPool pool: Thread pool to be used by the service.
-        :param Logger logger:   Logger to be used by the service.
         """
-        # System related
-        self._pool      = pool
-        self._logger    = logger
         # Configure service operation
         self._delay     = delay
         self._alive     = True
@@ -52,7 +47,7 @@ class AbstractService(abc.ABC):
         self._executed  = th.Event()        # Set after every main task execution.
         # Start
         self._running.set()
-        self._pool.enqueue(task=SimpleThreadTask(
+        SDK_TP.enqueue(task=SimpleThreadTask(
             name=f"{self.__class__.__name__}",
             task=self._service
             ))
@@ -102,7 +97,7 @@ class AbstractService(abc.ABC):
         if not self._running.is_set():
             self._resumed = True
             self._running.set()
-            self._logger.info(f"{self.__class__.__name__} resumed")
+            SDK_LOG.info(f"{self.__class__.__name__} resumed")
 
     def pause(self) -> None:
         """
@@ -112,7 +107,7 @@ class AbstractService(abc.ABC):
             self._executed.wait()
             self._running.clear()
             self._on_pause()
-            self._logger.info(f"{self.__class__.__name__} paused")
+            SDK_LOG.info(f"{self.__class__.__name__} paused")
 
     def stop(self) -> None:
         """
@@ -137,7 +132,7 @@ class AbstractService(abc.ABC):
         #. Runs the ending code and return.
         """
         # Start service execution
-        self._logger.info(f"{self.__class__.__name__} started")
+        SDK_LOG.info(f"{self.__class__.__name__} started")
         self._on_start()
         # Execution loop
         while self._alive:
@@ -159,7 +154,7 @@ class AbstractService(abc.ABC):
         # Run service ending code
         self._on_end()
         self._ended.set()
-        self._logger.info(f"{self.__class__.__name__} ended")
+        SDK_LOG.info(f"{self.__class__.__name__} ended")
 
     @abc.abstractmethod
     def _task(self) -> None:

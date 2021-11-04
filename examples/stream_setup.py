@@ -20,13 +20,18 @@ In this example:
 :license:   The MIT License (MIT)
 """
 
-import attr
 from typing import Optional, Type
+
+import attr
 
 from embutils.utils import AbstractSerialized, COBS, CRC
 from embutils.serial import AbstractSerializedStreamCodec, Device
 
 
+# -->> Definitions <<------------------
+
+
+# -->> API <<--------------------------
 @attr.s
 class SimplePacket(AbstractSerialized):
     """
