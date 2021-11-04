@@ -15,14 +15,14 @@ import time
 
 
 # Example Definitions ===========================
-def on_change_handler(event: DeviceScanner.Event, dev_diff: DeviceList) -> None:
+def on_change_handler(event: DeviceScanner.Event, changes: DeviceList) -> None:
     """
     Process the serial device change event.
 
     :param SerialDeviceScanner.Event event: Serial device scanner Event.
-    :param SerialDeviceList dev_diff: Event change list.
+    :param SerialDeviceList changes: Event change list.
     """
-    dev = "\r\n\t".join(f"{item}" for item in dev_diff)
+    dev = "\r\n\t".join(f"{item}" for item in changes)
     msg = f"{event.__repr__()}\r\n\t{dev}"
     print(msg)
 
