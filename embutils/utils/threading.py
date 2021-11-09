@@ -15,16 +15,11 @@ import queue
 import threading as th
 import typing as tp
 
+from .common import TPAny, CBAny2Any, CBAny2None
 from .logger import SDK_LOG
 
 
 # -->> Definitions <<------------------
-#: TyPe definition. Any value.
-TPAny       = tp.TypeVar("TPAny")
-#: CallBack definition. Any -> Any
-CBAny2Any   = tp.Callable[..., TPAny]
-#: CallBack definition. Any -> None
-CBAny2None  = tp.Callable[..., None]
 
 
 # -->> API <<--------------------------

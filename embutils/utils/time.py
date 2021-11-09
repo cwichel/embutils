@@ -13,12 +13,10 @@ import functools as fc
 import time
 import typing as tp
 
+from .common import TPAny, CBAny2Any
+
 
 # -->> Definitions <<------------------
-#: TyPe definition. Any value.
-TPAny      = tp.TypeVar("TPAny")
-#: CallBack definition. Any -> Any
-CBAny2Any  = tp.Callable[..., TPAny]
 
 
 # -->> API <<--------------------------
