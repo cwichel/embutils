@@ -12,15 +12,12 @@ Service implementation.
 import abc
 import threading as th
 import time
-import typing as tp
 
 from .logger import SDK_LOG
 from .threading import SDK_TP, SimpleThreadTask
 
 
 # -->> Definitions <<------------------
-#: CallBack definition. None -> None
-CBNone2None = tp.Callable[[], None]
 
 
 # -->> API <<--------------------------

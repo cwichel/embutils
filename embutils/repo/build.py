@@ -23,7 +23,7 @@ def build_cubeide(name: str, config: str, project: TPPath, workspace: TPPath, in
     """
     Calls the STM32 CubeIDE headless builder on the specified project.
 
-    ::note:
+    :note:
 
         - stm32cubeidec executable must be in the PATH.
         - You cannot build if the workspace is already in use.
@@ -57,7 +57,7 @@ def build_iar(config: str, project: TPPath,
     """
     Calls the IAR headless builder on the specified project.
 
-    ::note:
+    :note:
 
         - IarBuild executable must be in the PATH.
 

@@ -10,6 +10,7 @@ Submodules
    embutils.utils.binary
    embutils.utils.bytes
    embutils.utils.cobs
+   embutils.utils.common
    embutils.utils.crc
    embutils.utils.enum
    embutils.utils.events
