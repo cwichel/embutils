@@ -66,7 +66,7 @@ class Version:
         :param bool store_build:    If true, the build will be stored. False by default.
         """
         path = path_validator(path=path, allow_none=False, check_reachable=True)
-        with path.open(mode="w") as file:
+        with path.open(mode="w", encoding="utf-8") as file:
             build = self.build if (store_build and self.build is not None) else "X"
             file.write(f"{self.major}.{self.minor}.{build}")
 
@@ -79,7 +79,7 @@ class Version:
         :param TPPath path:         Path to the version file.
         """
         path = path_validator(path=path, allow_none=False, check_reachable=True)
-        with path.open(mode="r") as ver_file:
+        with path.open(mode="r", encoding="utf-8") as ver_file:
             tmp = ver_file.read().split(".")
             ver = cls(
                     major=int(tmp[0]),
@@ -143,7 +143,7 @@ def version_export_c(path: TPPath, ver: Version, author: str, note: str) -> None
     path = path_validator(path=path, allow_none=False, check_reachable=True)
     tmpl = PATH_TMPL / "template_version_c.h"
     base = tmpl.open(mode="r").read()
-    with path.open(mode="w") as file:
+    with path.open(mode="w", encoding="utf-8") as file:
         file.write(base.format(
             file=path.name, author=author, note=note, date=f"{dt.datetime.now():%x %X}",
             major=ver.major, minor=ver.minor, build=f"0x{ver.build:X}",
