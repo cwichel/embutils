@@ -63,7 +63,7 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
 
     # Store logs (if required)
     if log is not None:
-        with log.open(mode="w") as file:
+        with log.open(mode="w", encoding="utf-8") as file:
             file.write(f"Date: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}\n"
                        f"CWD : {cwd}\n"
                        f"CMD : {cmd}\n"

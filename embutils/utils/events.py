@@ -9,12 +9,10 @@ Event handling utilities.
 :license:   The MIT License (MIT)
 """
 
-import typing as tp
+from .common import CBAny2None
 
 
 # -->> Definitions <<------------------
-#: CallBack definition. Any -> None
-CBAny2None = tp.Callable[..., None]
 
 
 # -->> API <<--------------------------
