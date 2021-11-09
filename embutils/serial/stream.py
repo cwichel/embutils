@@ -232,7 +232,8 @@ class Stream(AbstractService):
             time.sleep(self.RECONNECT_PERIOD_S)
         return False
 
-    def _transfer_debug(self, item: AbstractSerialized, received: bool) -> None:
+    @staticmethod
+    def _transfer_debug(item: AbstractSerialized, received: bool) -> None:
         """
         Print the sent/received items on the logger:
 
