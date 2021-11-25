@@ -9,6 +9,7 @@ Common SDK definitions.
 :license:   The MIT License (MIT)
 """
 
+import pathlib as pl
 import typing as tp
 
 
@@ -18,6 +19,12 @@ import typing as tp
 # -->> Definitions <<------------------
 #: TyPe definition. Any value.
 TPAny       = tp.TypeVar("TPAny")
+
+#: TyPe definition. Path sources.
+TPText      = tp.TypeVar("TPText", bytes, bytearray, str)
+
+#: TyPe definition. Path sources.
+TPPath      = tp.TypeVar("TPPath", bytes, bytearray, str, pl.Path)
 
 #: CallBack definition. Any -> Any
 CBAny2Any   = tp.Callable[..., TPAny]
@@ -30,3 +37,4 @@ CBNone2None = tp.Callable[[], None]
 
 
 # -->> API <<--------------------------
+

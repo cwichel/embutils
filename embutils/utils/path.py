@@ -12,14 +12,14 @@ Path checking utilities.
 import pathlib as pl
 import typing as tp
 
+from .common import TPAny, TPPath
+
 
 # -->> Definitions <<------------------
-#: TyPe definition. Path sources.
-TPPath = tp.Union[bytes, bytearray, str, pl.Path]
 
 
 # -->> API <<--------------------------
-def as_path(path: tp.Any) -> pl.Path:
+def as_path(path: TPAny) -> pl.Path:
     """
     Try to convert the input to a path.
 
@@ -31,7 +31,7 @@ def as_path(path: tp.Any) -> pl.Path:
     :raises ValueError: Input can't be converted to Path.
     """
     # Avoid not compatible types
-    if not isinstance(path, tp.get_args(TPPath)):
+    if not isinstance(path, TPPath.__constraints__):
         raise ValueError(f"Parameter with value '{path}' can't be converted to path.")
     # Convert
     try:
