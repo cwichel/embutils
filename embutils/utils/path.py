@@ -19,111 +19,168 @@ from .common import TPAny, TPPath
 
 
 # -->> API <<--------------------------
-def as_path(path: TPAny) -> pl.Path:
+class PathError(OSError):
+    """ Path generic error. """
+    def __init__(self, *args, **kwargs):  # real signature unknown
+        pass
+
+
+class PathExistenceError(OSError):
+    """ Path dont exist. """
+    def __init__(self, *args, **kwargs):  # real signature unknown
+        pass
+
+
+class PathReachableError(OSError):
+    """ Path cant be reached. """
+    def __init__(self, *args, **kwargs):  # real signature unknown
+        pass
+
+
+class Path(pl.Path):
     """
-    Try to convert the input to a path.
-
-    :param tp.Any path:     Value to be converted to path.
-
-    :return: Path
-    :rtype: pl.Path
-
-    :raises ValueError: Input can't be converted to Path.
+    Path class extensions.
     """
-    # Avoid not compatible types
-    if not isinstance(path, TPPath.__constraints__):
-        raise ValueError(f"Parameter with value '{path}' can't be converted to path.")
-    # Convert
-    try:
-        return pl.Path(path)
-    except TypeError:
-        return pl.Path(path.decode(errors="ignore"))
+    def __new__(cls, path: TPAny = "") -> 'Path':
+        """
+        Extends the Path initialization supported types.
 
+        :param TPAny path:      Value to be interpreted as path.
 
-def path_reachable(path: pl.Path) -> bool:
-    """
-    Check if a path is reachable.
+        :return: Path object.
+        :rtype: pl.Path
 
-    :param pl.Path path:    Path to be reached.
+        :raises TypeError:  Input type cant be converted to a path.
+        """
+        # Avoid not compatible types
+        if not isinstance(path, TPPath.__constraints__):
+            raise TypeError(f"Argument should be a compatible type ({TPPath.__constraints__}). {type(path)} is not supported.")
 
-    :return: True if the path or its parent exist.
-    :rtype: bool
-    """
-    return path.exists() or path.parent.exists()
+        # Convert
+        try:
+            obj = pl.Path(path)
+        except TypeError:
+            obj = pl.Path(path.decode(errors="ignore"))
 
+        # Add extra functionalities
+        setattr(obj.__class__, Path.reachable.__name__, Path.reachable)
+        setattr(obj.__class__, Path.validate.__name__, staticmethod(Path.validate))
+        setattr(obj.__class__, Path.validate_dir.__name__, staticmethod(Path.validate_dir))
+        setattr(obj.__class__, Path.validate_file.__name__, staticmethod(Path.validate_file))
+        return obj
 
-def path_validator(path: tp.Any, allow_none: bool = True,
-                   check_existence: bool = False,
-                   check_reachable: bool = False) -> tp.Optional[pl.Path]:
-    """
-    Validate if the given parameter is a path.
+    def reachable(self) -> bool:
+        """
+        Checks if the path is reachable.
 
-    :param tp.Any path:             Path to be validated.
-    :param bool allow_none:         Allow None inputs.
-    :param bool check_existence:    Check if the path exists.
-    :param bool check_reachable:    Check if the path is reachable.
+        :returns: True if reachable, false otherwise.
+        :rtype: bool
+        """
+        return self.exists() or self.parent.exists()
 
-    :return: Path
-    :rtype: pl.Path
+    @staticmethod
+    def validate(
+            path:       TPAny = None,
+            none_ok:    bool = False,
+            reachable:  bool = False,
+            must_exist: bool = False
+            ) -> tp.Optional['Path']:
+        """
+        Validates the provided input.
 
-    :raises ValueError: Input can't be converted to path or is not reachable.
-    """
-    # Check if input is none
-    if path is None:
-        if allow_none:
+        :param TPAny path:          Path to be converted / validated.
+        :param bool none_ok:        Allows None input.
+        :param bool reachable:      Path must be reachable.
+        :param bool must_exist:     Path must exist.
+
+        :return: Verified path.
+        :rtype: Path
+
+        :raises TypeError:          Input type cant be converted to a path.
+        :raises ValueError:         Provided path is not supported.
+        :raises PathReachableError: Path cant be reached.
+        :raises PathExistenceError: Path doesnt exist.
+        """
+        # Check if input is none
+        if path is None:
+            if none_ok:
+                return None
+            raise ValueError("Validation failed: None is not accepted as path.")
+
+        # Validate
+        path = Path(path=path)
+        if reachable and not path.reachable():
+            raise PathReachableError(f"Validation failed: {path} is not reachable.")
+        if must_exist and not path.exists():
+            raise PathExistenceError(f"Validation failed: {path} doesnt exist.")
+
+        return path
+
+    @staticmethod
+    def validate_dir(
+            path:       TPAny = None,
+            none_ok:    bool = False,
+            must_exist: bool = False,
+            create: bool = False,
+            ) -> tp.Optional['Path']:
+        """
+        Validate the directory path.
+
+        :param TPAny path:          Path to be converted / validated.
+        :param bool none_ok:        Allows None input.
+        :param bool must_exist:     Path must exist.
+        :param bool create:         create directory if doesn't exist.
+
+        :return: Verified path.
+        :rtype: Path
+
+        :raises TypeError:          Input type cant be converted to a path.
+        :raises ValueError:         Provided path is not supported.
+        :raises PathError:          Path is not a directory.
+        :raises PathReachableError: Path cant be reached.
+        :raises PathExistenceError: Path doesnt exist.
+        """
+        # Validate base path
+        path = Path.validate(path=path, none_ok=none_ok, reachable=True)
+        if path is None:
             return None
-        raise ValueError("Parameter 'None' is not accepted as path.")
-    # Validate
-    path = as_path(path=path)
-    if check_reachable and not path_reachable(path=path):
-        raise ValueError(f"'{path}' is not reachable.")
-    if check_existence and not path.exists():
-        raise ValueError(f"'{path}' doesnt exist.")
-    return path
+        # Directory creation
+        if create:
+            path.mkdir(exist_ok=True)
+        # Directory check specifics
+        if path.exists() and not path.is_dir():
+            raise PathError(f"Validation failed: {path} exists but is not a directory.")
+        if must_exist and not path.exists():
+            raise PathExistenceError(f"Validation failed: {path} doesnt exist.")
+        return path
 
+    @staticmethod
+    def validate_file(
+            path:       TPAny = None,
+            none_ok:    bool = False,
+            must_exist: bool = False,
+            ) -> tp.Optional['Path']:
+        """
+        Validate the file path.
 
-def dir_validator(path: tp.Any, allow_none: bool = False, required: bool = False, create: bool = False) -> tp.Optional[pl.Path]:
-    """
-    Validate the directory path.
+        :param TPAny path:          Path to be converted / validated.
+        :param bool none_ok:        Allows None input.
+        :param bool must_exist:     Path must exist.
 
-    :param tp.Any path:         Directory path to be validated.
-    :param bool allow_none:     Allow None inputs.
-    :param bool required:       Directory must exist.
-    :param bool create:         Directory can be created if reachable but not found. .
+        :return: Verified path.
+        :rtype: Path
 
-    :return: Path
-    :rtype: pl.Path
-
-    :raises ValueError: Input invalid, directory not reachable or don't exist, path is not a directory.
-    """
-    path = path_validator(path=path, allow_none=allow_none, check_reachable=True)
-    if path is None:
-        return None
-    if create:
-        path.mkdir(exist_ok=True)
-    if path.exists() and not path.is_dir():
-        raise ValueError(f"'{path}' is not a directory.")
-    if required and not path.exists():
-        raise ValueError(f"'{path}' doesnt exist.")
-    return path
-
-
-def file_validator(path: tp.Any, allow_none: bool = False, required: bool = False) -> tp.Optional[pl.Path]:
-    """
-    Validate the file path.
-
-    :param tp.Any path:         Directory path to be validated.
-    :param bool allow_none:     Allow None inputs.
-    :param bool required:       File must exist.
-
-    :return: Path
-    :rtype: pl.Path
-
-    :raises ValueError: Input invalid, file not reachable or don't exist, path is not a file.
-    """
-    path = path_validator(path=path, allow_none=allow_none, check_reachable=True, check_existence=required)
-    if path is None:
-        return None
-    if path.exists() and not path.is_file():
-        raise ValueError(f"Path '{path}' is not a file.")
-    return path
+        :raises TypeError:          Input type cant be converted to a path.
+        :raises ValueError:         Provided path is not supported.
+        :raises PathError:          Path is not a file.
+        :raises PathReachableError: Path cant be reached.
+        :raises PathExistenceError: Path doesnt exist.
+        """
+        # Validate base path
+        path = Path.validate(path=path, none_ok=none_ok, reachable=True, must_exist=must_exist)
+        if path is None:
+            return None
+        # File check specifics
+        if path.exists() and not path.is_file():
+            raise PathError(f"Validation failed: {path} exists but is not a file.")
+        return path

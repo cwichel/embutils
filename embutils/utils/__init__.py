@@ -7,7 +7,7 @@ from .enum import IntEnum
 from .events import EventHook
 from .logger import SDK_LOG, Logger
 from .math import closest_multi, closest_pow
-from .path import as_path, path_reachable, path_validator, file_validator, dir_validator
+from .path import Path, PathError, PathExistenceError, PathReachableError
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .service import AbstractService
 from .stream import StreamRedirect

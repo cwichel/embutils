@@ -12,9 +12,7 @@ Binary file utilities testing.
 import intelhex
 import unittest
 
-from pathlib import Path
-
-from embutils.utils import bin_to_hex, merge_bin, merge_hex
+from embutils.utils import Path, bin_to_hex, merge_bin, merge_hex
 
 
 # -->> Definitions <<------------------
