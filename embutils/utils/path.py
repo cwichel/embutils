@@ -82,20 +82,23 @@ def path_validator(path: tp.Any, allow_none: bool = True,
     return path
 
 
-def dir_validator(path: tp.Any, required: bool = False, create: bool = False):
+def dir_validator(path: tp.Any, allow_none: bool = False, required: bool = False, create: bool = False) -> tp.Optional[pl.Path]:
     """
     Validate the directory path.
 
-    :param tp.Any path:     Directory path to be validated.
-    :param bool required:   Directory must exist.
-    :param bool create:     Directory can be created if reachable but not found. .
+    :param tp.Any path:         Directory path to be validated.
+    :param bool allow_none:     Allow None inputs.
+    :param bool required:       Directory must exist.
+    :param bool create:         Directory can be created if reachable but not found. .
 
     :return: Path
     :rtype: pl.Path
 
     :raises ValueError: Input invalid, directory not reachable or don't exist, path is not a directory.
     """
-    path = path_validator(path=path, allow_none=False, check_reachable=True)
+    path = path_validator(path=path, allow_none=allow_none, check_reachable=True)
+    if path is None:
+        return None
     if create:
         path.mkdir(exist_ok=True)
     if path.exists() and not path.is_dir():
@@ -105,19 +108,22 @@ def dir_validator(path: tp.Any, required: bool = False, create: bool = False):
     return path
 
 
-def file_validator(path: tp.Any, required: bool = False):
+def file_validator(path: tp.Any, allow_none: bool = False, required: bool = False) -> tp.Optional[pl.Path]:
     """
     Validate the file path.
 
-    :param tp.Any path:     File path to be validated.
-    :param bool required:   File must exist.
+    :param tp.Any path:         Directory path to be validated.
+    :param bool allow_none:     Allow None inputs.
+    :param bool required:       File must exist.
 
     :return: Path
     :rtype: pl.Path
 
     :raises ValueError: Input invalid, file not reachable or don't exist, path is not a file.
     """
-    path = path_validator(path=path, allow_none=False, check_reachable=True, check_existence=required)
+    path = path_validator(path=path, allow_none=allow_none, check_reachable=True, check_existence=required)
+    if path is None:
+        return None
     if path.exists() and not path.is_file():
         raise ValueError(f"Path '{path}' is not a file.")
     return path

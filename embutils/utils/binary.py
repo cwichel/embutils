@@ -13,7 +13,7 @@ import typing as tp
 
 import intelhex
 
-from .path import TPPath, path_validator
+from .path import TPPath, file_validator
 
 
 # -->> Definitions <<------------------
@@ -33,8 +33,8 @@ def bin_to_hex(src: TPPath, out: TPPath = None, off: int = 0x08000000) -> intelh
     :rtype: intelhex.IntelHex
     """
     # Check paths
-    src = path_validator(path=src, allow_none=False, check_reachable=True)
-    out = path_validator(path=out, allow_none=True, check_reachable=True)
+    src = file_validator(path=src, allow_none=False, required=True)
+    out = file_validator(path=out, allow_none=True)
     # Generate HEX
     tmp = intelhex.IntelHex()
     tmp.loadbin(fobj=f"{src}", offset=off)
@@ -57,8 +57,8 @@ def merge_bin(src: tp.List[tp.Tuple[TPPath, int]], out: TPPath = None) -> intelh
     :rtype: intelhex.IntelHex
     """
     # Check paths
-    src = [[path_validator(path=addr, allow_none=False, check_reachable=True), idx] for addr, idx in src]
-    out = path_validator(path=out, allow_none=True, check_reachable=True)
+    src = [[file_validator(path=src, allow_none=False, required=True), idx] for addr, idx in src]
+    out = file_validator(path=out, allow_none=True)
     # Merge all BIN files
     tmp = intelhex.IntelHex()
     for file, addr in src:
@@ -81,8 +81,8 @@ def merge_hex(src: tp.List[TPPath], out: TPPath = None) -> intelhex.IntelHex:
     :rtype: intelhex.IntelHex
     """
     # Check paths
-    src = [path_validator(path=item, allow_none=False, check_reachable=True) for item in src]
-    out = path_validator(path=out, allow_none=True, check_reachable=True)
+    src = [file_validator(path=src, allow_none=False, required=True) for item in src]
+    out = file_validator(path=out, allow_none=True)
     # Merge all HEX files
     tmp = intelhex.IntelHex()
     for file in src:
