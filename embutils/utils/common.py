@@ -40,4 +40,3 @@ CBNone2None = tp.Callable[[], None]
 
 
 # -->> API <<--------------------------
-

@@ -20,9 +20,9 @@ from .common import TPAny, TPByte, TPPath
 
 # -->> API <<--------------------------
 class FileTypeError(OSError):
-    """ File type is not the expected. """
-    def __init__(self, *args, **kwargs):  # real signature unknown
-        pass
+    """
+    File type is not the expected.
+    """
 
 
 class Path(pl.Path):
