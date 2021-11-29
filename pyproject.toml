@@ -20,19 +20,19 @@ classifiers = [
     ]
 
 [tool.poetry.scripts]
-version         = 'scripts.poetry:run_version'
-test            = 'scripts.poetry:run_test'
 docs            = 'scripts.poetry:run_docs'
 html            = 'scripts.poetry:run_html'
+test            = 'scripts.poetry:run_test'
+version         = 'scripts.poetry:run_version'
 check_coverage  = 'scripts.poetry:run_check_coverage'
 check_linter    = 'scripts.poetry:run_check_linter'
 check_types     = 'scripts.poetry:run_check_types'
-
 
 [tool.poetry.dependencies]
 python = "^3.7"
 pyserial = "^3.5"
 intelhex = "^2.3.0"
+attrs = "^21.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"
