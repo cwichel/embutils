@@ -58,7 +58,8 @@ class Version:
         :raises ValueError: Input is not a string or contents don't match a version pattern.
         """
         # Avoid not compatible types
-        if not isinstance(text, TPText.__constraints__):
+        constraints = getattr(TPText, "__constraints__")
+        if not isinstance(text, constraints):
             raise ValueError(f"Parameter with value '{text}' can't be converted to text.")
 
         # Ensure format and search

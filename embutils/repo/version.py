@@ -235,7 +235,7 @@ class CCppVersionExporter(AbstractVersionExporter):
         # Check file
         path = Path.validate_file(path=path, none_ok=False, default=self.FILENAME)
         if path.suffix.lower() not in self.SUFFIXES:
-            raise FileTypeError(f"Header path doesn't have the right suffix ({self.SUFFIXES}): {path}.")
+            raise FileTypeError(f"Header path doesnt have the right suffix ({self.SUFFIXES}): {path}.")
 
         # Generate header
         with path.open(mode="w", encoding="utf-8") as file:

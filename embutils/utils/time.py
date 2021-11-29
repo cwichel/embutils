@@ -53,7 +53,7 @@ class Timer:
         """
         This class don't require any input from the user to be initialized.
         """
-        self._start = 0
+        self._start = 0.0
         self.start()
 
     def start(self) -> float:

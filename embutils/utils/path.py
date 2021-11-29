@@ -29,7 +29,7 @@ class Path(pl.Path):
     """
     Path class extensions.
     """
-    def __new__(cls, path: TPAny = "") -> 'Path':
+    def __new__(cls, *args, path: TPAny = "", **kwargs) -> 'Path':
         """
         Extends the Path initialization supported types.
 
@@ -41,8 +41,9 @@ class Path(pl.Path):
         :raises TypeError:  Input type cant be converted to a path.
         """
         # Avoid not compatible types
-        if not isinstance(path, TPPath.__constraints__):
-            raise TypeError(f"Argument should be a compatible type ({TPPath.__constraints__}). {type(path)} is not supported.")
+        constraints = getattr(TPPath, "__constraints__")
+        if not isinstance(path, constraints):
+            raise TypeError(f"Argument should be a compatible type ({constraints}). {type(path)} is not supported.")
 
         # Convert
         try:
