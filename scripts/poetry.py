@@ -14,6 +14,7 @@ import os
 import shutil
 import sys
 import toml
+import typing as tp
 
 from embutils.utils import Path, execute
 
@@ -39,27 +40,6 @@ VER_OPT = ["minor", "major", "patch", "post", "prepatch", "preminor", "premajor"
 
 
 # -->> API <<------------------------------------------------------------------
-def run_version() -> None:
-    """
-    This script update the toml and init file version strings.
-    """
-    # Parse arguments
-    parser = ap.ArgumentParser()
-    parser.add_argument("version", type=str)
-    args = parser.parse_args(args=sys.argv[1:])
-
-    # Run
-    _version_update(ver=args.version.lower())
-
-
-def run_test() -> None:
-    """
-    Run the project tests.
-    """
-    path = PATH_ROOT / "tests"
-    execute(cmd=f"pytest {path}")
-
-
 def run_docs() -> None:
     """
     Run the documentation build process.
@@ -69,6 +49,12 @@ def run_docs() -> None:
     path_source = path_docs / "_source"
     path_build  = path_docs / "_build/html"
     docs_make   = path_docs / "make"
+
+    # Update the requirements
+    req_file = path_docs / "requirements.txt"
+    req_data = _requirements_get(inc_dev=True)
+    with req_file.open(mode="w", encoding="utf-8") as file:
+        file.write("\n".join(req_data))
 
     # Generate documentation sources
     if path_source.exists():
@@ -97,6 +83,27 @@ def run_html() -> None:
     execute(cmd=f"python -m http.server -d {PATH_ROOT / target}")
 
 
+def run_test() -> None:
+    """
+    Run the project tests.
+    """
+    path = PATH_ROOT / "tests"
+    execute(cmd=f"pytest {path}")
+
+
+def run_version() -> None:
+    """
+    This script update the toml and init file version strings.
+    """
+    # Parse arguments
+    parser = ap.ArgumentParser()
+    parser.add_argument("version", type=str)
+    args = parser.parse_args(args=sys.argv[1:])
+
+    # Run
+    _version_update(ver=args.version.lower())
+
+
 def run_check_coverage() -> None:
     """
     Runs coverage over project tests.
@@ -123,6 +130,30 @@ def run_check_types() -> None:
     Runs a type checker over code.
     """
     execute(cmd=f"mypy {PROJ_NAME}")
+
+
+def _requirements_get(inc_dev: bool = False, inc_extra: str = None) -> tp.List[str]:
+    """
+    Extract requirements from poetry.
+
+    :param bool inc_dev:    Enable the export of development requirements.
+    :param str inc_extra:   Enable the export of one or more extra requirements.
+
+    :return: Requirements list.
+    :rtype: tp.List[str]
+    """
+    # Prepare command
+    cmd = "poetry export --without-hashes"
+    cmd += " --dev" if inc_dev else ""
+    cmd += f" --extras \"{inc_extra}\"" if inc_extra else ""
+
+    # Get requirements
+    ret = execute(cmd=cmd, pipe=False)
+    if ret.returncode != 0:
+        raise ValueError(ret.stderr)
+
+    # Parse and return
+    return [line.split(";")[0] for line in ret.stdout.strip().split("\r\n")]
 
 
 def _version_get() -> str:
