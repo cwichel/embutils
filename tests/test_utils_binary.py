@@ -12,16 +12,14 @@ Binary file utilities testing.
 import intelhex
 import unittest
 
-from pathlib import Path
-
-from embutils.utils import bin_to_hex, merge_bin, merge_hex
+from embutils.utils import Path, bin_to_hex, merge_bin, merge_hex
 
 
 # -->> Definitions <<------------------
 
 
 # -->> Test API <<---------------------
-class TestVersion(unittest.TestCase):
+class TestBinary(unittest.TestCase):
     """
     Test binary files utilities.
     """
@@ -35,7 +33,7 @@ class TestVersion(unittest.TestCase):
         """
         Generate base files used on the test.
         """
-        super(TestVersion, self).__init__(*args, **kwargs)
+        super(TestBinary, self).__init__(*args, **kwargs)
         self._generate()
 
     def __del__(self):
@@ -86,7 +84,7 @@ class TestVersion(unittest.TestCase):
         merge_hex(out=f3, src=sources)
         self._check_merged(file=f3)
 
-    def _check_merged(self, file: Path) -> None:
+    def _check_merged(self, file: Path):
         """
         Check merged files against sources.
         """
@@ -96,7 +94,7 @@ class TestVersion(unittest.TestCase):
             assert fhex.gets(addr=(self.OFFSET + last), length=len(content)).decode() == content
             last += len(content)
 
-    def _generate(self) -> None:
+    def _generate(self):
         """
         Generate test files.
         """
@@ -104,7 +102,7 @@ class TestVersion(unittest.TestCase):
             with file.open(mode='wb') as f:
                 f.write(content.encode())
 
-    def _clean(self) -> None:
+    def _clean(self):
         """
         Clean generated test files.
         """

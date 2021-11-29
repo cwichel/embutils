@@ -15,13 +15,13 @@ import shutil
 import sys
 import toml
 
-from embutils.utils import as_path, execute
+from embutils.utils import Path, execute
 
 
 # -->> Definitions <<----------------------------------------------------------
 # Base paths
 #: Script path
-PATH_THIS = as_path(os.path.abspath(os.path.dirname(__file__)))
+PATH_THIS = Path(os.path.abspath(os.path.dirname(__file__)))
 #: Root path
 PATH_ROOT = PATH_THIS.parent
 

@@ -16,7 +16,7 @@ import typing as tp
 
 from ..utils.logger import SDK_LOG
 from ..utils.serialized import AbstractSerialized
-from ..utils.time import elapsed
+from ..utils.time import Timer
 from .stream import Stream
 
 
@@ -186,12 +186,12 @@ class Interface:
 
         # Wait for response
         SDK_LOG.debug("Waiting for response...")
-        tm_start = time.time()
-        while not recv and (elapsed(tm_start) < timeout):
+        tim = Timer()
+        while not recv and (tim.elapsed() < timeout):
             time.sleep(self.PERIOD_PULL_S)
         self.on_receive -= on_received
 
         # Check data
         state = "Received" if recv else "Timeout"
-        SDK_LOG.debug(f"Item response: {state} after {elapsed(start=tm_start):.03f}[s]")
+        SDK_LOG.debug(f"Item response: {state} after {tim.elapsed():.03f}[s]")
         return recv

@@ -15,7 +15,7 @@ import unittest
 from examples.stream_setup import SimplePacket, COBSStreamFramingCodec
 
 from embutils.serial import Device, Stream
-from embutils.utils import SDK_LOG, elapsed
+from embutils.utils import SDK_LOG, Timer
 
 
 # -->> Definitions <<------------------
@@ -72,11 +72,11 @@ class TestStream(unittest.TestCase):
         # Run
         ss.on_connect += on_connected
         ss.on_receive += on_received
-        start = time.time()
+        tim = Timer()
         while not is_ready:
-            time.sleep(0.1)
-            if elapsed(start=start) > 1.0:
+            if tim.elapsed() > 1.0:
                 assert False
+            time.sleep(0.1)
 
 
 # -->> Test Execution <<---------------

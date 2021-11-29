@@ -13,7 +13,7 @@ import subprocess as sp
 import sys
 import time
 
-from .path import TPPath, path_validator
+from .path import TPPath, Path
 from .stream import StreamRedirect
 
 
@@ -31,8 +31,8 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
     :param bool pipe:   Enable pipe output to terminal.
     """
     # Check paths
-    cwd = path_validator(path=cwd, allow_none=True, check_reachable=True)
-    log = path_validator(path=log, allow_none=True, check_reachable=True)
+    cwd = Path.validate_dir(path=cwd, none_ok=True)
+    log = Path.validate_dir(path=log, none_ok=True)
 
     # Prepare
     with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:

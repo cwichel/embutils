@@ -60,4 +60,4 @@ class IntEnum(enum.IntEnum):
         :rtype: bool
         """
         # pylint: disable=E1101
-        return value in cls._value2member_map_
+        return value in getattr(cls, "_value2member_map_")

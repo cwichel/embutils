@@ -9,7 +9,7 @@ Project build utilities.
 :license:   The MIT License (MIT)
 """
 
-from ..utils.path import TPPath, path_validator
+from ..utils.path import TPPath, Path
 from ..utils.subprocess import execute
 
 
@@ -38,9 +38,10 @@ def build_cubeide(name: str, config: str, project: TPPath, workspace: TPPath, in
     :param bool pipe:           Enable pipe output to terminal.
     """
     # Validate paths
-    project     = path_validator(path=project, allow_none=False, check_reachable=True)
-    workspace   = path_validator(path=workspace, allow_none=False, check_reachable=True)
-    log         = path_validator(path=log, allow_none=True, check_reachable=True)
+    workspace   = Path.validate_dir(path=workspace)
+    project     = Path.validate_dir(path=project, must_exist=True)
+    log         = Path.validate_dir(path=log, none_ok=True)
+
     # Build
     idx = "-no-indexer" if not indexer else ""
     cmd = f"stm32cubeidec --launcher.suppressErrors -nosplash {idx} " \
@@ -67,8 +68,9 @@ def build_iar(config: str, project: TPPath,
     :param bool pipe:           Enable pipe output to terminal.
     """
     # Validate paths
-    project = path_validator(path=project, allow_none=False, check_reachable=True)
-    log = path_validator(path=log, allow_none=True, check_reachable=True)
+    project = Path.validate_dir(path=project, must_exist=True)
+    log = Path.validate_dir(path=log, none_ok=True)
+
     # Build
     cmd = f'IarBuild "{project}" -build "{config}"'
     res = execute(cmd=cmd, pipe=pipe, log=log)
