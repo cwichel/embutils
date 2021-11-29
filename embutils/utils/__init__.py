@@ -7,11 +7,11 @@ from .enum import IntEnum
 from .events import EventHook
 from .logger import SDK_LOG, Logger
 from .math import closest_multi, closest_pow
-from .path import Path, PathError, PathExistenceError, PathReachableError
+from .path import Path, FileTypeError
 from .serialized import AbstractSerialized, AbstractSerializedCodec
 from .service import AbstractService
 from .stream import StreamRedirect
 from .subprocess import execute
 from .threading import SDK_TP, AbstractThreadTask, SimpleThreadTask, ThreadPool, get_threads, sync
-from .time import elapsed, timer
+from .time import Timer, timer
 from .version import Version

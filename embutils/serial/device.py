@@ -10,7 +10,6 @@ Serial device implementation classes.
 """
 
 import threading as th
-import time
 import typing as tp
 
 import serial
@@ -20,7 +19,7 @@ from ..utils.events import EventHook
 from ..utils.enum import IntEnum
 from ..utils.service import AbstractService
 from ..utils.threading import SDK_TP, SimpleThreadTask, sync
-from ..utils.time import elapsed
+from ..utils.time import Timer
 
 
 # -->> Definitions <<------------------
@@ -365,8 +364,8 @@ class DeviceScanner(AbstractService):
         """
         # Service core
         super().__init__(**kwargs)
+        self._timer     = Timer()
         self._period    = period
-        self._last_scan = time.time()
         self._devices   = DeviceList()    # Devices connected
         self._changes   = DeviceList()    # List of devices that triggered the event (changes)
         # Service events
@@ -405,16 +404,16 @@ class DeviceScanner(AbstractService):
         #. Raise change event if required, updates current device list.
 
         """
-        if elapsed(start=self._last_scan) > self._period:
-            self._last_scan = time.time()
+        if self._timer.elapsed() > self._period:
+            self._timer.start()
             self._scan()
 
     def _on_start(self) -> None:
         """
         Run the first scan and start timer.
         """
-        self._last_scan = time.time()
-        self._devices  = DeviceList.scan()
+        self._devices = DeviceList.scan()
+        self._timer.start()
         self._scan()
 
     def _scan(self) -> None:

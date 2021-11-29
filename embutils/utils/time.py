@@ -35,23 +35,48 @@ def timer(name: str = None, logger: CBAny2Any = print, precision: int = 6) -> tp
     def decorator(func: CBAny2Any) -> CBAny2Any:
         @fc.wraps(func)
         def wrapper(*args, **kwargs) -> TPAny:
-            start = time.time()
+            tim = Timer()
             ret = func(*args, **kwargs)
-            total = elapsed(start)
+            tot = tim.elapsed()
             if logger is not None:
-                logger(f"{name}: Execution time: {total:.{precision}f}[s]")
+                logger(f"{name}: Execution time: {tot:.{precision}f}[s]")
             return ret
         return wrapper
     return decorator
 
 
-def elapsed(start: float) -> float:
+class Timer:
     """
-    Computes the elapsed time since the given timestamp.
-
-    :param float start: Start timestamp.
-
-    :returns: Time elapsed.
-    :rtype: float
+    Simple process timer.
     """
-    return time.time() - start
+    def __init__(self) -> None:
+        """
+        This class don't require any input from the user to be initialized.
+        """
+        self._start = 0
+        self.start()
+
+    def start(self) -> float:
+        """
+        Updates the timer start timestamp.
+
+        :returns: Start time.
+        :rtype: float
+        """
+        self._start = time.perf_counter()
+        return self._start
+
+    def elapsed(self, update: bool = False) -> float:
+        """
+        Computes the time elapsed since the latest timer start.
+
+        :param bool update: Computes elapsed time and updated the start time.
+
+        :returns: Time elapsed.
+        :rtype: float
+        """
+        now = time.perf_counter()
+        ret = now - self._start
+        if update:
+            self._start = now
+        return ret
