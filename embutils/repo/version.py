@@ -17,7 +17,7 @@ import attr
 
 from ..utils.common import TPPath
 from ..utils.math import closest_multi
-from ..utils.path import Path
+from ..utils.path import Path, FileTypeError
 from ..utils.subprocess import execute
 from ..utils.version import Version
 
@@ -44,7 +44,6 @@ class AbstractVersionExporter(abc.ABC):
         :param TPPath path:     Target file path.
         :param str author:      Exported file owner.
         """
-        ...
 
 
 class AbstractVersionUpdater(abc.ABC):
@@ -60,7 +59,6 @@ class AbstractVersionUpdater(abc.ABC):
         :param Version version: Version to be exported.
         :param TPPath path:     Target file path.
         """
-        ...
 
 
 class AbstractVersionStorage(abc.ABC):
@@ -76,7 +74,6 @@ class AbstractVersionStorage(abc.ABC):
         :param Version version: Version that will be updated after load.
         :param TPPath path:     Source file path.
         """
-        ...
 
     @abc.abstractmethod
     def save(self, version: Version, path: TPPath) -> None:
@@ -86,7 +83,6 @@ class AbstractVersionStorage(abc.ABC):
         :param Version version: Version to be stored.
         :param TPPath path:     Target file path.
         """
-        ...
 
 
 @attr.s
@@ -239,7 +235,7 @@ class CCppVersionExporter(AbstractVersionExporter):
         # Check file
         path = Path.validate_file(path=path, none_ok=False, default=self.FILENAME)
         if path.suffix.lower() not in self.SUFFIXES:
-            raise FileNotFoundError(f"Header path doesn't have the right suffix ({self.SUFFIXES}): {path}.")
+            raise FileTypeError(f"Header path doesn't have the right suffix ({self.SUFFIXES}): {path}.")
 
         # Generate header
         with path.open(mode="w", encoding="utf-8") as file:
