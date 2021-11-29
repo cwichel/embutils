@@ -12,7 +12,7 @@ Path checking utilities.
 import pathlib as pl
 import typing as tp
 
-from .common import TPAny, TPPath
+from .common import TPAny, TPByte, TPPath
 
 
 # -->> Definitions <<------------------
@@ -29,33 +29,37 @@ class Path(pl.Path):
     """
     Path class extensions.
     """
-    def __new__(cls, *args, path: TPAny = "", **kwargs) -> 'Path':
+    def __new__(cls, *args, **kwargs) -> 'Path':
         """
-        Extends the Path initialization supported types.
-
-        :param TPAny path:      Value to be interpreted as path.
+        Extends the Path initialization to new supported types.
 
         :return: Path object.
         :rtype: pl.Path
 
         :raises TypeError:  Input type cant be converted to a path.
         """
+        tp_byte = getattr(TPByte, "__constraints__")
+        tp_path = getattr(TPPath, "__constraints__")
+
         # Avoid not compatible types
-        constraints = getattr(TPPath, "__constraints__")
-        if not isinstance(path, constraints):
-            raise TypeError(f"Argument should be a compatible type ({constraints}). {type(path)} is not supported.")
+        path  = []
+        for item in args:
+            # Check type
+            if not isinstance(item, tp_path):
+                raise TypeError(f"Argument should be a compatible type ({tp_path}). {type(item)} is not supported.")
+            # Convert
+            if isinstance(item, tp_byte):
+                path.append(bytes(item).decode(errors="ignore"))
+            else:
+                path.append(str(item))
 
-        # Convert
-        try:
-            obj = pl.Path(path)
-        except TypeError:
-            obj = pl.Path(path.decode(errors="ignore"))
-
-        # Add extra functionalities
+        # Generate object and add extra functionalities
+        obj = pl.Path(*tuple(path))
         setattr(obj.__class__, Path.reachable.__name__, Path.reachable)
         setattr(obj.__class__, Path.validate.__name__, staticmethod(Path.validate))
         setattr(obj.__class__, Path.validate_dir.__name__, staticmethod(Path.validate_dir))
         setattr(obj.__class__, Path.validate_file.__name__, staticmethod(Path.validate_file))
+
         return obj
 
     def reachable(self) -> bool:
@@ -96,7 +100,7 @@ class Path(pl.Path):
             raise ValueError("Validation failed: None is not accepted as path.")
 
         # Validate
-        path = Path(path=path)
+        path = Path(path)
         if reachable and not path.reachable():
             raise FileNotFoundError(f"Validation failed: {path} is not reachable.")
         if must_exist and not path.exists():

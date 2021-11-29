@@ -21,6 +21,9 @@ import typing as tp
 TPAny       = tp.TypeVar("TPAny")
 
 #: TyPe definition. Path sources.
+TPByte      = tp.TypeVar("TPByte", bytes, bytearray)
+
+#: TyPe definition. Path sources.
 TPText      = tp.TypeVar("TPText", bytes, bytearray, str)
 
 #: TyPe definition. Path sources.
