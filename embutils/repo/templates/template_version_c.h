@@ -4,15 +4,15 @@
   * @author  {author}
   * @date    {date}
   * @brief   Version definition.
-  * @note    {note}
+  * @note    Generated automatically. DO NOT EDIT.
   *****************************************************************************
   */
-#ifndef _VERSION_H
-#define _VERSION_H
+#ifndef {guard}
+#define {guard}
 
 #define VERSION_MAJOR   {major}
 #define VERSION_MINOR   {minor}
 #define VERSION_BUILD   {build}
-#define VERSION_STRING  {version}
+#define VERSION_STRING  "{version}"
 
-#endif /* _VERSION_H */
+#endif /* {guard} */

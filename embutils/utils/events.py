@@ -25,7 +25,7 @@ class EventHook:
         *   All the callbacks subscribed to a hook need to handle the same arguments.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         This class don't require any input from the user to be initialized.
         """

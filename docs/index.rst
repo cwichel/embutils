@@ -7,7 +7,7 @@ Welcome to embutils's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 5
    :caption: Contents:
 
    _source/modules

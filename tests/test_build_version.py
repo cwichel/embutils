@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: ascii -*-
 """
-Version definition testing.
+Version repository definition testing.
 
 :date:      2021
 :author:    Christian Wiche
@@ -12,12 +12,17 @@ Version definition testing.
 import pytest
 import unittest
 
-from pathlib import Path
+import copy as cp
 
-from embutils.repo import VersionGit, version_export_c
+from embutils.repo import (VersionHandler, GitBuildVersionUpdater, CCppVersionExporter, SimpleVersionStorage)
+from embutils.utils import Path, FileTypeError
 
 
 # -->> Definitions <<------------------
+#: Uninitialized version definition
+ver_error = VersionHandler()
+#: Initialized version definition
+ver_init = VersionHandler(updater=GitBuildVersionUpdater(), storage=SimpleVersionStorage(), exporter=CCppVersionExporter())
 
 
 # -->> Test API <<---------------------
@@ -27,67 +32,85 @@ class TestVersion(unittest.TestCase):
     """
     def test_01_fail(self):
         """
-        Test failure cases.
+        Common test failure cases.
         """
-        ver  = VersionGit()
-        file = Path("this/is/not/reachable.txt")
+        path = Path("this/is/not/reachable.txt")
+
+        # Uninitialized handlers
+        for func in [ver_error.load, ver_error.save, ver_error.export, ver_error.update]:
+            with pytest.raises(RuntimeError):
+                func()
 
         # Unable to reach path to save version file
-        with pytest.raises(ValueError):
-            ver.save(path=file)
+        with pytest.raises(FileNotFoundError):
+            ver_init.save(path=path)
 
         # Unable to find version file to load
-        with pytest.raises(ValueError):
-            ver.load(path=file)
+        with pytest.raises(FileNotFoundError):
+            ver_init.load(path=path)
 
         # Unable to find path to generate version header
-        with pytest.raises(ValueError):
-            version_export_c(ver=ver, author="Test", note="None", path=file.parent)
+        with pytest.raises(FileNotFoundError):
+            ver_init.export(author="Test", path=path.parent)
 
-    def test_02_git_build(self):
+    def test_02_storage_simple(self):
         """
-        Test Git build value retrieve operations.
+        Test simple version storage operations.
         """
-        ver = VersionGit()
-        path = Path("C:/")
+        path = Path("version.txt")
 
-        # Check initial build value
-        assert ver.build == ver.UVER_BUILD
+        # Version storage
+        ver_init.save(path=path)
+        assert path.exists() and path.is_file()
 
-        # Get build from non-git directory
-        ver.update_build(path=path)
-        assert ver.build == ver.UVER_BUILD
+        # Version load
+        ver_test = cp.copy(ver_init)
+        ver_test.load(path=path)
 
-        # Get build from this repo...
-        ver.update_build()
-        assert ver.build != ver.UVER_BUILD
-
-    def test_03_git_storage(self):
-        """
-        Test version file load/save and C headers generation.
-        """
-        ver_file = Path("version.txt")
-        ver_head = Path("version.h")
-
-        # Generate and store version
-        ver_base = VersionGit()
-        ver_base.update_build()
-        ver_base.save(path=ver_file, store_build=True)
-
-        # Load and check version
-        ver_load = VersionGit.load(path=ver_file)
-        assert ver_base == ver_load
-
-        # Export version header
-        version_export_c(ver=ver_load, author="test", note="version header file", path=ver_head)
-        with ver_head.open('r') as f:
-            data = f.read()
-            assert ("test" in data) and ("version header file" in data)
-            assert f'"{ver_load.major}.{ver_load.minor}.{ver_load.build}"' in data
+        # Check
+        assert ver_test is not ver_init
+        assert ver_test == ver_init
 
         # Clean
-        ver_file.unlink()
-        ver_head.unlink()
+        path.unlink()
+
+    def test_03_update_git(self):
+        """
+        Test Git version update operations.
+        """
+        path = Path("C:/")
+
+        # Get build from non-git directory
+        ver_init.update(path=path)
+        assert ver_init.build == GitBuildVersionUpdater.NO_BUILD
+
+        # Get build from this repo...
+        ver_init.update()
+        assert ver_init.build != GitBuildVersionUpdater.NO_BUILD
+
+    def test_04_exporter_ccpp(self):
+        """
+        Test C/C++ version exporter operations.
+        """
+        path    = Path("version.h")
+        author  = "Test"
+
+        # Test suffix issue
+        with pytest.raises(FileTypeError):
+            ver_init.export(path=Path("version.c"), author=author)
+
+        # Export version header
+        ver_init.export(path=path, author=author)
+
+        # Check
+        data = path.open(mode="r").read()
+        assert path.exists() and path.is_file()
+        assert path.name in data
+        assert author in data
+        assert str(ver_init) in data
+
+        # Clean
+        path.unlink()
 
 
 # -->> Test Execution <<---------------

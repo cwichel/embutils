@@ -117,10 +117,10 @@ class ThreadWorker(th.Thread):
                         task.execute()
                     except Exception as ex:
                         SDK_LOG.info(
-                                    f"Caught exception while running task:\n"
-                                    f"> Task   : {task}\n"
-                                    f"> Raised : {ex.__class__.__name__} {ex}"
-                                    )
+                            f"Caught exception while running task:\n"
+                            f"> Task   : {task}\n"
+                            f"> Raised : {ex.__class__.__name__} {ex}"
+                            )
                     finally:
                         self._queue.task_done()
             except queue.Empty:
