@@ -39,7 +39,7 @@ def activate(venv: TPAny) -> None:
     script  = Path.validate_file(path=venv / "Scripts/activate_this.py", must_exist=True)
 
     # Activation
-    with script.open(mode="r") as file:
+    with script.open(mode="r", encoding="utf-8") as file:
         code = compile(file.read(), script, "exec")
         exec(code, dict(__file__=script))
 
