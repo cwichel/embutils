@@ -14,5 +14,5 @@ from .stream import StreamRedirect
 from .subprocess import execute
 from .threading import SDK_TP, AbstractThreadTask, SimpleThreadTask, ThreadPool, get_threads, sync
 from .time import Timer, timer
-from .venv import activate
+from .venv import activate, deactivate
 from .version import Version
