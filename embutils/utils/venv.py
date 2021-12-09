@@ -51,8 +51,6 @@ def activate(venv: TPAny) -> None:
     :raises FileNotFoundError:  Path cant be reached or doesnt exist.
     :raises EnvironmentError:   Virtualenv not active or it doesn't match target.
     """
-    global VENVS
-
     # Path Validation
     venv = Path.validate_dir(path=venv, must_exist=True)
     find = list(venv.rglob(pattern="python.exe"))
@@ -94,10 +92,8 @@ def deactivate() -> None:
     """
     Deactivates the current virtual environment.
 
-    :note: This function can only deactivate environments activated during execution (stored in VENVS). 
+    :note: This function can only deactivate environments activated during execution (stored in VENVS).
     """
-    global VENVS
-
     # Deactivate (only if we activated it)
     if VENVS:
         old_venv = VENVS.pop(-1)
