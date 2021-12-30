@@ -139,25 +139,12 @@ class COBSStreamFramingCodec(AbstractSerializedStreamCodec):
         Defines how to the serial device will be read to decode the desired
         serialized object.
         """
-        # Read a single byte and check...
-        recv = device.read(size=1)
+        # Read until COBS end (0x00)
+        recv = device.read_until(expected=b"\x00")
         if recv is None:
             raise ConnectionError(f"Connection error while reading from {device}")
         if len(recv) == 0:
             return None
 
-        # Are we reading contents?
-        byte = ord(recv)
-        if byte != 0x00:
-            # Yes -> Byte is not stuff... frame incoming
-            data = bytearray(recv)
-            recv = device.read_until(expected=b"\x00")
-            if recv is None:
-                raise ConnectionError(f"Connection error while reading from {device}")
-
-            # Process
-            data.extend(recv)
-            return SimplePacket.deserialize(data=COBS.decode(data=data))
-
-        # No -> Nothing to process
-        return None
+        # Process
+        return self._dtype.deserialize(data=COBS.decode(data=bytearray(recv)))
