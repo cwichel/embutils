@@ -118,7 +118,8 @@ class AbstractService(abc.ABC):
         """
         Wait until service is fully terminated.
         """
-        self._ended.wait()
+        while not self._ended.is_set():
+            time.sleep(self.TASK_DELAY_S)
 
     def _service(self) -> None:
         """
