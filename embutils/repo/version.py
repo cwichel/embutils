@@ -262,7 +262,7 @@ class GitBuildVersionUpdater(AbstractVersionUpdater):
         :param TPPath path:     Path in which the repository is initialized.
         """
         # Update the build number with the commit number
-        ret = execute(cmd="git rev-parse --short HEAD", cwd=f"{path}", pipe=False)
+        ret = execute(cmd="git rev-parse --short HEAD", cwd=path, pipe=False)
         ret = (ret.stderr + ret.stdout).lower().strip()
         version.build = self.NO_BUILD if ("not a git" in ret) else int(ret, 16)
 

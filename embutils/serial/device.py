@@ -271,10 +271,10 @@ class DeviceList(tp.List[Device]):
         """
         dev_list = self
         # Filter by port
-        if isinstance(port, str):
+        if port is not None:
             dev_list = DeviceList([dev for dev in dev_list if dev.port == port])
         # Filter by ID
-        if isinstance(dev_id, int):
+        if dev_id is not None:
             dev_list = DeviceList([dev for dev in dev_list if dev.id == dev_id])
         return dev_list
 

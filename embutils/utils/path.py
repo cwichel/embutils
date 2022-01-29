@@ -42,17 +42,14 @@ class Path(pl.Path):
 
         :raises TypeError:  Input type cant be converted to a path.
         """
-        tp_byte = getattr(TPByte, "__constraints__")
-        tp_path = getattr(TPPath, "__constraints__")
-
         # Avoid not compatible types
         path  = []
         for item in args:
             # Check type
-            if not isinstance(item, tp_path):
-                raise TypeError(f"Argument should be a compatible type ({tp_path}). {type(item)} is not supported.")
+            if not isinstance(item, getattr(TPPath, "__args__")):
+                raise TypeError(f"Argument should be a compatible type ({TPPath}). {type(item)} is not supported.")
             # Convert
-            if isinstance(item, tp_byte):
+            if isinstance(item, getattr(TPByte, "__args__")):
                 path.append(bytes(item).decode(errors="ignore"))
             else:
                 path.append(str(item))
