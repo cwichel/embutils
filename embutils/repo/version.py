@@ -8,6 +8,7 @@ Version handler class.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import abc
 import datetime as dt
@@ -20,6 +21,9 @@ from ..utils.math import closest_multi
 from ..utils.path import Path, FileTypeError
 from ..utils.subprocess import execute
 from ..utils.version import Version
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -149,6 +153,59 @@ class VersionHandler(Version):
         self.exporter.export(version=self, path=path, author=author)
 
 
+class CCppVersionExporter(AbstractVersionExporter):
+    """
+    C/C++ Version Exporter.
+    Implements the logic to export the version number to a C/C++ header file
+    """
+    #: Item print size.
+    ITEMSIZE = 20
+    #: Default exported version filename.
+    FILENAME = "version.h"
+    #: Supported header file extensions.
+    SUFFIXES = [".h", ".hpp"]
+    #: C/C++ header template.
+    TEMPLATE = PATH_TMPL / "template_version_c.h"
+
+    def export(self, version: Version, path: TPPath, author: str = "Unknown") -> None:
+        """
+        Exports the version number to a C/C++ header using a header template.
+
+        :param Version version: Version to be exported.
+        :param TPPath path:     Target file path.
+        :param str author:      Exported file owner.
+        """
+        # Check file
+        path = Path.validate_file(path=path, none_ok=False, default=self.FILENAME)
+        if path.suffix.lower() not in self.SUFFIXES:
+            raise FileTypeError(f"Header path doesnt have the right suffix ({self.SUFFIXES}): {path}.")
+
+        # Generate header
+        with path.open(mode="w", encoding="utf-8") as file:
+            tmpl = self.TEMPLATE.open(mode="r", encoding="utf-8").read()
+            file.write(tmpl.format(
+                file=path.name, author=author,
+                guard=f"_{path.stem}_H_".upper(),
+                date=f"{dt.datetime.now().strftime('%m/%d/%Y %H:%M:%S')}",
+                major=self._format(item=version.major),
+                minor=self._format(item=version.minor),
+                build=self._format(item=version.build),
+                version=f"{version}"
+                ))
+
+    def _format(self, item: int) -> str:
+        """
+        Formats the version number item.
+
+        :param int item: Version item value.
+
+        :return: Item entry.
+        :rtype: str
+        """
+        hexval = f"0x{item:0{closest_multi(ref=len(hex(item)[2:]), base=2)}X}U"
+        return f"{hexval:{self.ITEMSIZE}s}   /* DEC: {str(item):<{self.ITEMSIZE}s} */"
+
+
 class SimpleVersionStorage(AbstractVersionStorage):
     """
     Simple Version Storage.
@@ -210,54 +267,13 @@ class GitBuildVersionUpdater(AbstractVersionUpdater):
         version.build = self.NO_BUILD if ("not a git" in ret) else int(ret, 16)
 
 
-class CCppVersionExporter(AbstractVersionExporter):
-    """
-    C/C++ Version Exporter.
-    Implements the logic to export the version number to a C/C++ header file
-    """
-    #: Item print size.
-    ITEMSIZE = 20
-    #: Default exported version filename.
-    FILENAME = "version.h"
-    #: Supported header file extensions.
-    SUFFIXES = [".h", ".hpp"]
-    #: C/C++ header template.
-    TEMPLATE = PATH_TMPL / "template_version_c.h"
-
-    def export(self, version: Version, path: TPPath, author: str = "Unknown") -> None:
-        """
-        Exports the version number to a C/C++ header using a header template.
-
-        :param Version version: Version to be exported.
-        :param TPPath path:     Target file path.
-        :param str author:      Exported file owner.
-        """
-        # Check file
-        path = Path.validate_file(path=path, none_ok=False, default=self.FILENAME)
-        if path.suffix.lower() not in self.SUFFIXES:
-            raise FileTypeError(f"Header path doesnt have the right suffix ({self.SUFFIXES}): {path}.")
-
-        # Generate header
-        with path.open(mode="w", encoding="utf-8") as file:
-            tmpl = self.TEMPLATE.open(mode="r", encoding="utf-8").read()
-            file.write(tmpl.format(
-                file=path.name, author=author,
-                guard=f"_{path.stem}_H_".upper(),
-                date=f"{dt.datetime.now().strftime('%m/%d/%Y %H:%M:%S')}",
-                major=self._format(item=version.major),
-                minor=self._format(item=version.minor),
-                build=self._format(item=version.build),
-                version=f"{version}"
-                ))
-
-    def _format(self, item: int) -> str:
-        """
-        Formats the version number item.
-
-        :param int item: Version item value.
-
-        :return: Item entry.
-        :rtype: str
-        """
-        hexval = f"0x{item:0{closest_multi(ref=len(hex(item)[2:]), base=2)}X}U"
-        return f"{hexval:{self.ITEMSIZE}s}   /* DEC: {str(item):<{self.ITEMSIZE}s} */"
+# -->> Export <<-----------------------
+__all__ = [
+    "AbstractVersionExporter",
+    "AbstractVersionStorage",
+    "AbstractVersionUpdater",
+    "VersionHandler",
+    "CCppVersionExporter",
+    "SimpleVersionStorage",
+    "GitBuildVersionUpdater",
+    ]
