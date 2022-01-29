@@ -1,5 +1,5 @@
 [tool.poetry]
-version = "0.7.4"
+version = "0.7.5"
 name = "embutils"
 license = "MIT"
 readme = "README.md"
