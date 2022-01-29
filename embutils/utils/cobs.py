@@ -8,10 +8,14 @@ COBS encoding/decoding implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import typing as tp
 
 import attr
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -123,3 +127,9 @@ class COBS:
             if block.zero:
                 out.append(0x00)
         return out
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "COBS",
+    ]

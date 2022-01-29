@@ -8,7 +8,10 @@ Stream utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
+import contextlib as ctx
+import io
 import queue
 import threading as th
 import typing as tp
@@ -16,10 +19,24 @@ import typing as tp
 from .threading import SDK_TP, SimpleThreadTask
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
 # -->> API <<--------------------------
+@ctx.contextmanager
+def unclosable(file: io.IOBase):
+    """
+    Makes file unclosable during the context execution.
+    """
+    close = file.close
+    file.close = lambda: None
+    yield file
+    file.close = close
+
+
 class StreamRedirect:
     """
     Stream redirect utility implementation.
@@ -73,3 +90,10 @@ class StreamRedirect:
             self._queue.put(line.decode())
         self._queue.put(None)
         self._src.close()
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "unclosable",
+    "StreamRedirect",
+    ]

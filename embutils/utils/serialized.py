@@ -8,9 +8,13 @@ Serialized object abstract implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import abc
 import typing as tp
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -90,3 +94,10 @@ class AbstractSerializedCodec(abc.ABC):
         :returns: Deserialized object if able, None otherwise.
         :rtype: Optional[AbstractSerialized]
         """
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "AbstractSerialized",
+    "AbstractSerializedCodec",
+    ]

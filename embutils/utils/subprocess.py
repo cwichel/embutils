@@ -8,6 +8,7 @@ Subprocess execution utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import subprocess as sp
 import sys
@@ -15,6 +16,9 @@ import time
 
 from .path import TPPath, Path
 from .stream import StreamRedirect
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -73,3 +77,9 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
 
     # Return result
     return res
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "execute",
+    ]

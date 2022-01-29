@@ -8,6 +8,7 @@ Stream implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import abc
 import time
@@ -19,6 +20,9 @@ from ..utils.threading import SDK_TP, SimpleThreadTask
 from ..utils.serialized import AbstractSerialized, AbstractSerializedCodec
 from ..utils.service import AbstractService
 from .device import Device
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -242,3 +246,10 @@ class Stream(AbstractService):
         """
         action = "recv" if received else "sent"
         SDK_LOG.debug(f"Item {action}: {item}")
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "AbstractSerializedStreamCodec",
+    "Stream",
+    ]
