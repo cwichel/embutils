@@ -8,6 +8,7 @@ Threading utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import abc
 import functools as fc
@@ -17,6 +18,9 @@ import typing as tp
 
 from .common import TPAny, CBAny2Any, CBAny2None
 from .logger import SDK_LOG
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -269,3 +273,15 @@ class SimpleThreadTask(AbstractThreadTask):
 # -->> Instances <<--------------------
 #: Embutils internal thread pool
 SDK_TP = ThreadPool(size=10, name="EMBUTILS_Thread_")
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "sync",
+    "get_threads",
+    "AbstractThreadTask",
+    "ThreadWorker",
+    "ThreadPool",
+    "SimpleThreadTask",
+    "SDK_TP",
+    ]

@@ -8,12 +8,16 @@ Binary generation utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import typing as tp
 
 import intelhex
 
 from .path import TPPath, Path
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -92,3 +96,11 @@ def merge_hex(src: tp.List[TPPath], out: TPPath = None) -> intelhex.IntelHex:
     if out is not None:
         tmp.write_hex_file(f=f"{out}", byte_count=RECORD_BYTES)
     return tmp
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "bin_to_hex",
+    "merge_bin",
+    "merge_hex"
+    ]

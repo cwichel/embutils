@@ -8,10 +8,14 @@ CRC implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import typing as tp
 
 from .bytes import bitmask, reverse_bits
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -268,3 +272,9 @@ class CRC:
             # Store the value on the table
             out.append(self._mask & byte)
         return out
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "CRC",
+    ]

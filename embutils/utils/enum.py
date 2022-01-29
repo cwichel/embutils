@@ -8,8 +8,12 @@ Enumeration utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import enum
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -61,3 +65,9 @@ class IntEnum(enum.IntEnum):
         """
         # pylint: disable=E1101
         return value in getattr(cls, "_value2member_map_")
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "IntEnum",
+    ]

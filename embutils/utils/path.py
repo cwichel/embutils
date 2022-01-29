@@ -8,11 +8,15 @@ Path checking utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pathlib as pl
 import typing as tp
 
 from .common import TPAny, TPByte, TPPath
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -187,3 +191,10 @@ class Path(pl.Path):
             raise FileTypeError(f"Validation failed: {path} exists but is not a file.")
 
         return path
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "FileTypeError",
+    "Path",
+    ]

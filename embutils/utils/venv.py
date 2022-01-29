@@ -10,6 +10,7 @@ Virtual environment utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import os
 import site
@@ -20,6 +21,7 @@ import attr
 
 from .common import TPAny
 from .path import Path
+
 
 # -->> Tunables <<---------------------
 
@@ -109,3 +111,12 @@ def deactivate() -> None:
 
         # Restore system prefix
         sys.prefix = old_venv.sys_prefix
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "VENV",
+    "VENVS",
+    "activate",
+    "deactivate",
+    ]

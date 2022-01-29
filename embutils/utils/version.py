@@ -8,12 +8,14 @@ Version number implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import re
 
 import attr
 
 from ..utils.common import TPAny, TPText
+
 
 # -->> Tunables <<---------------------
 
@@ -94,3 +96,9 @@ class Version:
         ver = Version(hex_build=hex_build)
         ver.parse(text=text)
         return ver
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "Version",
+    ]
