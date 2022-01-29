@@ -8,11 +8,15 @@ SDK logger implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import collections as coll
 import logging as log
 
 from .enum import IntEnum
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -89,3 +93,10 @@ class Logger(log.Logger):
 # -->> Instances <<--------------------
 #: Embutils internal logger
 SDK_LOG = Logger(name="EMBUTILS")
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "Logger",
+    "SDK_LOG",
+    ]

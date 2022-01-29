@@ -8,6 +8,7 @@ Common SDK definitions.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pathlib as pl
 import typing as tp
@@ -18,16 +19,16 @@ import typing as tp
 
 # -->> Definitions <<------------------
 #: TyPe definition. Any value.
-TPAny       = tp.TypeVar("TPAny")
+TPAny       = tp.Any
 
 #: TyPe definition. Path sources.
-TPByte      = tp.TypeVar("TPByte", bytes, bytearray)
+TPByte      = tp.Union[bytes, bytearray]
 
 #: TyPe definition. Path sources.
-TPText      = tp.TypeVar("TPText", bytes, bytearray, str)
+TPText      = tp.Union[TPByte, str]
 
 #: TyPe definition. Path sources.
-TPPath      = tp.TypeVar("TPPath", bytes, bytearray, str, pl.Path)
+TPPath      = tp.Union[TPText, pl.Path]
 
 #: CallBack definition. Any -> Any
 CBAny2Any   = tp.Callable[..., TPAny]
@@ -40,3 +41,15 @@ CBNone2None = tp.Callable[[], None]
 
 
 # -->> API <<--------------------------
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "TPAny",
+    "TPByte",
+    "TPText",
+    "TPPath",
+    "CBAny2Any",
+    "CBAny2None",
+    "CBNone2None",
+    ]

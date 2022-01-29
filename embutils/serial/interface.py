@@ -10,6 +10,7 @@ applications commands.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import time
 import typing as tp
@@ -18,6 +19,9 @@ from ..utils.logger import SDK_LOG
 from ..utils.serialized import AbstractSerialized
 from ..utils.time import Timer
 from .stream import Stream
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -195,3 +199,10 @@ class Interface:
         state = "Received" if recv else "Timeout"
         SDK_LOG.debug(f"Item response: {state} after {tim.elapsed():.03f}[s]")
         return recv
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "CBSerialized2Bool",
+    "Interface",
+    ]

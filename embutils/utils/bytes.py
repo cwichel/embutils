@@ -8,6 +8,10 @@ Byte manipulation utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -60,3 +64,11 @@ def reverse_bytes(value: int, size: int = None) -> int:
     val = value & bitmask(bit=((8 * size) - 1), fill=True)
     aux = val.to_bytes(length=size, byteorder="big")
     return int.from_bytes(bytes=aux[::-1], byteorder="big")
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "bitmask",
+    "reverse_bits",
+    "reverse_bytes",
+    ]

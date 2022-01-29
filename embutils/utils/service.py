@@ -8,6 +8,7 @@ Service implementation.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import abc
 import threading as th
@@ -15,6 +16,9 @@ import time
 
 from .logger import SDK_LOG
 from .threading import SDK_TP, SimpleThreadTask
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -179,3 +183,9 @@ class AbstractService(abc.ABC):
         """
         Optional. Called upon service termination.
         """
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "AbstractService",
+    ]

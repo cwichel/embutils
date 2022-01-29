@@ -1,3 +1,14 @@
-from .device import Device, DeviceList, DeviceScanner
-from .stream import Stream, AbstractSerializedStreamCodec
-from .interface import Interface
+#!/usr/bin/python
+# -*- coding: ascii -*-
+"""
+Embutils serial utilities.
+
+:date:      2021
+:author:    Christian Wiche
+:contact:   cwichel@gmail.com
+:license:   The MIT License (MIT)
+"""
+# -------------------------------------
+from .device import *
+from .stream import *
+from .interface import *

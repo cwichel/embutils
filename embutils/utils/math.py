@@ -8,8 +8,12 @@ Math utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import math
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -49,3 +53,10 @@ def closest_pow(ref: float, base: float, force_next: bool = False) -> float:
     if (val < ref) or (force_next and (val == ref)):
         val = base ** (aux + 1)
     return val
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "closest_multi",
+    "closest_pow",
+    ]

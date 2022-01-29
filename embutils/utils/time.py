@@ -8,12 +8,16 @@ Timing utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import functools as fc
 import time
 import typing as tp
 
 from .common import TPAny, CBAny2Any
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -80,3 +84,10 @@ class Timer:
         if update:
             self._start = now
         return ret
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "timer",
+    "Timer",
+    ]

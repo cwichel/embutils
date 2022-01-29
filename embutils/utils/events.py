@@ -8,8 +8,12 @@ Event handling utilities.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 from .common import CBAny2None
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -105,3 +109,9 @@ class EventHook:
         """
         for callback in self._callbacks:
             callback(*args, **kwargs)
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "EventHook",
+    ]
