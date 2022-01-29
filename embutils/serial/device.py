@@ -8,6 +8,7 @@ Serial device implementation classes.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import threading as th
 import typing as tp
@@ -20,6 +21,9 @@ from ..utils.enum import IntEnum
 from ..utils.service import AbstractService
 from ..utils.threading import SDK_TP, SimpleThreadTask, sync
 from ..utils.time import Timer
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -444,3 +448,11 @@ class DeviceScanner(AbstractService):
             name=f"{self.__class__.__name__}.on_scan_period",
             task=self.on_scan_period.emit
             ))
+
+
+# -->> Export <<-----------------------
+__all__ = [
+    "Device",
+    "DeviceList",
+    "DeviceScanner",
+    ]
