@@ -14,7 +14,8 @@ import subprocess as sp
 import sys
 import time
 
-from .path import TPPath, Path
+from .common import TPPath
+from .path import Path
 from .stream import StreamRedirect
 
 

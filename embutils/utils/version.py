@@ -30,11 +30,11 @@ class Version:
     Simple version definition.
     """
     #: Regex version pattern.
-    REGEX_VER = re.compile(pattern=r"(([0-9]*\.){2,}([a-z0-9]{1,}))", flags=re.I)
+    REGEX_VER = re.compile(pattern=r"(([0-9]+\.){2}((x)|(0x[a-f0-9]+)|([a-f0-9]+)){1})", flags=re.I)
     #: Regex HEX pattern.
-    REGEX_HEX = re.compile(pattern=r"^((0x){0,1}([a-f0-9]{1,}))$", flags=re.I)
+    REGEX_HEX = re.compile(pattern=r"^(0x){0,1}([a-f0-9]+)$", flags=re.I)
     #: Regex INT pattern.
-    REGEX_INT = re.compile(pattern=r"^([0-9]{1,})$", flags=re.I)
+    REGEX_INT = re.compile(pattern=r"^([0-9]+)$", flags=re.I)
 
     #: Version major
     major:      int = attr.ib(default=99, converter=int)
@@ -75,8 +75,7 @@ class Version:
 
         # Parse: build
         base  = 16 if self.hex_build else 10
-        regex = self.REGEX_HEX if self.hex_build else self.REGEX_INT
-        match = regex.search(string=items[-1])
+        match = (self.REGEX_HEX if self.hex_build else self.REGEX_INT).search(string=items[-1])
         self.build = 0 if (match is None) else int(match.group(), base)
 
     @staticmethod
