@@ -131,8 +131,6 @@ class Path(pl.Path):
         :return: Verified path.
         :rtype: Path
 
-        :raises TypeError:          Input type cant be converted to a path.
-        :raises ValueError:         Provided path is not supported.
         :raises FileTypeError:      Path is not a directory.
         :raises FileNotFoundError:  Path cant be reached or doesnt exist.
         """
@@ -170,8 +168,6 @@ class Path(pl.Path):
         :return: Verified path.
         :rtype: Path
 
-        :raises TypeError:          Input type cant be converted to a path.
-        :raises ValueError:         Provided path is not supported.
         :raises FileTypeError:      Path is not a file.
         :raises FileSuffixError:    Path doesnt have the expected suffix.
         :raises FileNotFoundError:  Path cant be reached or doesnt exist.

@@ -16,6 +16,7 @@ Submodules
    embutils.utils.events
    embutils.utils.logger
    embutils.utils.math
+   embutils.utils.parsed
    embutils.utils.path
    embutils.utils.serialized
    embutils.utils.service

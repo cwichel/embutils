@@ -47,11 +47,7 @@ def activate(venv: TPAny) -> None:
 
     :param TPAny venv:          Path to virtualenv folder.
 
-    :raises TypeError:          Input type cant be converted to a path.
-    :raises ValueError:         Provided path is not supported.
-    :raises PathError:          Path is not a file.
-    :raises FileNotFoundError:  Path cant be reached or doesnt exist.
-    :raises EnvironmentError:   Virtualenv not active or it doesn't match target.
+    :raises EnvironmentError:   Virtualenv is not found or it doesn't match target.
     """
     # Path Validation
     venv = Path.validate_dir(path=venv, must_exist=True)

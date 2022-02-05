@@ -150,6 +150,8 @@ class ThreadPool:
                                 threads to terminate when terminate() is called.
         :param bool daemon:     Set to true if the threads should immediately terminate when the
                                 main thread exists.
+
+        :raises ValueError:     Minimum workers count is not met. Polling timeout needs to be a positive number.
         """
         # Input checking
         if size < 1:

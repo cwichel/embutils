@@ -88,8 +88,6 @@ class Version:
 
         :return: Version number.
         :rtype: Version
-
-        :raises ValueError: Input is not a string or contents don't match a version pattern.
         """
         ver = Version(hex_build=hex_build)
         ver.parse(text=text)
