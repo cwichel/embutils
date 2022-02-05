@@ -29,6 +29,12 @@ class FileTypeError(OSError):
     """
 
 
+class FileSuffixError(OSError):
+    """
+    File suffix is not the expected.
+    """
+
+
 class Path(pl.Path):
     """
     Path class extensions.
@@ -99,14 +105,12 @@ class Path(pl.Path):
             if none_ok:
                 return None
             raise ValueError("Validation failed: None is not accepted as path.")
-
         # Validate
         path = Path(path)
         if reachable and not path.reachable():
             raise FileNotFoundError(f"Validation failed: {path} is not reachable.")
         if must_exist and not path.exists():
             raise FileNotFoundError(f"Validation failed: {path} doesnt exist.")
-
         return path
 
     @staticmethod
@@ -129,24 +133,21 @@ class Path(pl.Path):
 
         :raises TypeError:          Input type cant be converted to a path.
         :raises ValueError:         Provided path is not supported.
-        :raises PathError:          Path is not a directory.
+        :raises FileTypeError:      Path is not a directory.
         :raises FileNotFoundError:  Path cant be reached or doesnt exist.
         """
         # Validate base path
         path = Path.validate(path=path, none_ok=none_ok, reachable=True)
         if path is None:
             return None
-
         # Create
         if create and not path.exists():
             path.mkdir()
-
         # Validate
         if must_exist and not path.exists():
             raise FileNotFoundError(f"Validation failed: {path} doesnt exist.")
         if path.exists() and not path.is_dir():
             raise FileTypeError(f"Validation failed: {path} exists but is not a directory.")
-
         return path
 
     @staticmethod
@@ -154,44 +155,49 @@ class Path(pl.Path):
             path:       TPAny = None,
             none_ok:    bool = False,
             must_exist: bool = False,
-            default:    str = None
+            default:    str = None,
+            suffixes:   tp.List[str] = None
             ) -> tp.Optional['Path']:
         """
         Validate the file path.
 
-        :param TPAny path:          Path to be converted / validated.
-        :param bool none_ok:        Allows None input.
-        :param bool must_exist:     Path must exist.
-        :param str default:         Filename to be used when the input is a directory.
+        :param TPAny path:              Path to be converted / validated.
+        :param bool none_ok:            Allows None input.
+        :param bool must_exist:         Path must exist.
+        :param str default:             Filename to be used when the input is a directory.
+        :param tp.List[str] suffixes:   List of supported suffixes.
 
         :return: Verified path.
         :rtype: Path
 
         :raises TypeError:          Input type cant be converted to a path.
         :raises ValueError:         Provided path is not supported.
-        :raises PathError:          Path is not a file.
+        :raises FileTypeError:      Path is not a file.
+        :raises FileSuffixError:    Path doesnt have the expected suffix.
         :raises FileNotFoundError:  Path cant be reached or doesnt exist.
         """
         # Validate base path
         path = Path.validate(path=path, none_ok=none_ok, reachable=True)
         if path is None:
             return None
-
         # Default
         if default and path.exists() and path.is_dir():
             path = path / default
-
         # Validate
         if must_exist and not path.exists():
             raise FileNotFoundError(f"Validation failed: {path} doesnt exist.")
         if path.exists() and not path.is_file():
             raise FileTypeError(f"Validation failed: {path} exists but is not a file.")
-
+        if suffixes:
+            suffixes = [item.lower() for item in suffixes]
+            if path.suffix.lower() not in suffixes:
+                raise FileSuffixError(f"Validation failed: {path} expected with suffix {suffixes} not {path.suffix.lower()}")
         return path
 
 
 # -->> Export <<-----------------------
 __all__ = [
     "FileTypeError",
+    "FileSuffixError",
     "Path",
     ]

@@ -55,6 +55,8 @@ class Device:
         :param str port:        Port name.
         :param bool looped:     Enables the test mode (looped serial).
         :param dict settings:   Serial device configuration.
+
+        :raises ValueError: Port is not provided or it doesnt exist.
         """
         # Device core
         self._lock   = th.RLock()

@@ -14,7 +14,7 @@ import re
 
 import attr
 
-from ..utils.common import ENCODE, TPAny, TPText
+from .common import ENCODE, TPAny, TPText
 
 
 # -->> Tunables <<---------------------

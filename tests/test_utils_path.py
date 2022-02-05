@@ -12,7 +12,7 @@ Path utility testing.
 import pytest
 import unittest
 
-from embutils.utils import Path, FileTypeError
+from embutils.utils import Path, FileTypeError, FileSuffixError
 
 
 # -->> Definitions <<------------------
@@ -44,15 +44,12 @@ class TestPath(unittest.TestCase):
             Path(1)
         with pytest.raises(TypeError):
             Path(3.256)
-
         # Error: None input
         with pytest.raises(ValueError):
             Path.validate(path=None, none_ok=False)
-
         # Error: Path not reachable
         with pytest.raises(FileNotFoundError):
             Path.validate(path=(self.TEST_DIR / "reach_issue"), reachable=True)
-
         # Error: Path dont exists
         with pytest.raises(FileNotFoundError):
             Path.validate(path=self.TEST_DIR, must_exist=True)
@@ -62,7 +59,7 @@ class TestPath(unittest.TestCase):
         Path and common validator tests.
         """
         # Supported types
-        assert Path() is not None                       # Default: ""
+        assert Path() is not None
         assert Path("test")
         assert Path(b"test")
         assert Path(bytearray(b"test"))
@@ -75,7 +72,6 @@ class TestPath(unittest.TestCase):
         self._clean()
         with pytest.raises(FileNotFoundError):
             Path.validate_dir(path=self.TEST_DIR, must_exist=True)
-
         # Error: Path is a file
         self._create_test_file()
         with pytest.raises(FileTypeError):
@@ -87,16 +83,12 @@ class TestPath(unittest.TestCase):
         """
         # Init
         self._clean()
-
         # Allowing None input
         assert Path.validate_dir(path=None, none_ok=True) is None
-
         # Path address is reachable (or exists)
         assert Path.validate_dir(path=self.TEST_DIR)
-
         # Path create
         assert Path.validate_dir(path=self.TEST_DIR, create=True)
-
         # Path exist
         assert Path.validate_dir(path=self.TEST_DIR, must_exist=True)
 
@@ -109,10 +101,13 @@ class TestPath(unittest.TestCase):
         self._create_test_dir()
         with pytest.raises(FileNotFoundError):
             Path.validate_file(path=self.TEST_FILE, must_exist=True)
-
         # Error: Path is a directory
         with pytest.raises(FileTypeError):
             Path.validate_file(path=self.TEST_DIR)
+        # Error: File suffixes
+        self._create_test_file()
+        with pytest.raises(FileSuffixError):
+            Path.validate_file(path=self.TEST_FILE, must_exist=True, suffixes=[".yaml", ".json"])
 
     def test_06_file(self):
         """
