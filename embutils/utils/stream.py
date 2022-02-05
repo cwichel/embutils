@@ -16,6 +16,7 @@ import queue
 import threading as th
 import typing as tp
 
+from .common import ENCODE
 from .threading import SDK_TP, SimpleThreadTask
 
 
@@ -87,7 +88,7 @@ class StreamRedirect:
         Parses and copies every line of the input stream.
         """
         for line in iter(self._src.readline, b""):
-            self._queue.put(line.decode())
+            self._queue.put(line.decode(encoding=ENCODE, errors="ignore"))
         self._queue.put(None)
         self._src.close()
 

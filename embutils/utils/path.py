@@ -13,7 +13,7 @@ Path checking utilities.
 import pathlib as pl
 import typing as tp
 
-from .common import TPAny, TPByte, TPPath
+from .common import ENCODE, TPAny, TPByte, TPPath
 
 
 # -->> Tunables <<---------------------
@@ -50,7 +50,7 @@ class Path(pl.Path):
                 raise TypeError(f"Argument should be a compatible type ({TPPath}). {type(item)} is not supported.")
             # Convert
             if isinstance(item, getattr(TPByte, "__args__")):
-                path.append(bytes(item).decode(errors="ignore"))
+                path.append(bytes(item).decode(encoding=ENCODE, errors="ignore"))
             else:
                 path.append(str(item))
 

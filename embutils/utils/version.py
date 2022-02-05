@@ -14,7 +14,7 @@ import re
 
 import attr
 
-from ..utils.common import TPAny, TPText
+from ..utils.common import ENCODE, TPAny, TPText
 
 
 # -->> Tunables <<---------------------
@@ -64,7 +64,7 @@ class Version:
             raise ValueError(f"Parameter with value '{text}' can't be converted to text.")
 
         # Ensure format and search
-        text  = text if isinstance(text, str) else text.decode(errors="ignore")
+        text  = text if isinstance(text, str) else text.decode(encoding=ENCODE, errors="ignore")
         match = Version.REGEX_VER.search(string=text.strip())
         if match is None:
             raise ValueError(f"Unable to parse a valid version number from '{text}'.")

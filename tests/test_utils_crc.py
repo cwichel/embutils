@@ -11,7 +11,7 @@ CRC computation testing.
 
 import unittest
 
-from embutils.utils import CRC
+from embutils.utils import ENCODE, CRC
 
 
 # -->> Definitions <<------------------
@@ -23,7 +23,7 @@ class TestCRC(unittest.TestCase):
     Test CRC computation utility.
     """
     #: Test data
-    TEST_DATA = bytearray('123456789', encoding='utf-8')
+    TEST_DATA = bytearray('123456789', encoding=ENCODE)
 
     def test_01_crc(self):
         """

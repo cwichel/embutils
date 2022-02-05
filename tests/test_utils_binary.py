@@ -12,7 +12,7 @@ Binary file utilities testing.
 import intelhex
 import unittest
 
-from embutils.utils import Path, bin_to_hex, merge_bin, merge_hex
+from embutils.utils import ENCODE, Path, bin_to_hex, merge_bin, merge_hex
 
 
 # -->> Definitions <<------------------
@@ -50,7 +50,7 @@ class TestBinary(unittest.TestCase):
             fout = file.parent / f"{file.stem}.hex"
             fhex = bin_to_hex(src=file, off=0x20, out=fout)
             assert intelhex.IntelHex(source=f"{fout}").todict() == fhex.todict()
-            assert fhex.gets(addr=0x20, length=len(content)).decode() == content
+            assert fhex.gets(addr=0x20, length=len(content)).decode(encoding=ENCODE, errors="ignore") == content
 
     def test_02_multi_bin2hex(self):
         """
@@ -91,7 +91,7 @@ class TestBinary(unittest.TestCase):
         last = 0
         fhex = intelhex.IntelHex(source=f"{file}")
         for file, content in self.FILES:
-            assert fhex.gets(addr=(self.OFFSET + last), length=len(content)).decode() == content
+            assert fhex.gets(addr=(self.OFFSET + last), length=len(content)).decode(encoding=ENCODE, errors="ignore") == content
             last += len(content)
 
     def _generate(self):
@@ -100,7 +100,7 @@ class TestBinary(unittest.TestCase):
         """
         for file, content in self.FILES:
             with file.open(mode='wb') as f:
-                f.write(content.encode())
+                f.write(content.encode(encoding=ENCODE))
 
     def _clean(self):
         """
