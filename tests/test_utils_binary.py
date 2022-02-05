@@ -8,6 +8,7 @@ Binary file utilities testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import intelhex
 import unittest
@@ -15,10 +16,13 @@ import unittest
 from embutils.utils import ENCODE, Path, bin_to_hex, merge_bin, merge_hex
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestBinary(unittest.TestCase):
     """
     Test binary files utilities.
@@ -112,6 +116,6 @@ class TestBinary(unittest.TestCase):
             file.unlink(missing_ok=True)
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

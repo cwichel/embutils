@@ -8,6 +8,7 @@ Subprocess usage test.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import unittest
 
@@ -17,10 +18,13 @@ from unittest.mock import patch
 from embutils.utils import execute
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestSubprocess(unittest.TestCase):
     """
     Test subprocess utilities.
@@ -43,6 +47,6 @@ class TestSubprocess(unittest.TestCase):
             assert f"Executing:\n{cmd}\nOutput:\nPython" in fake_out.getvalue()
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

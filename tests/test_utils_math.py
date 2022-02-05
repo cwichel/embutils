@@ -8,16 +8,20 @@ Math utilities testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import unittest
 
 from embutils.utils import closest_pow, closest_multi
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestMath(unittest.TestCase):
     """
     Test math utilities.
@@ -38,6 +42,6 @@ class TestMath(unittest.TestCase):
         assert closest_pow(0.1, 10, True) == 1
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

@@ -8,16 +8,20 @@ Byte utilities testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import unittest
 
 from embutils.utils import bitmask, reverse_bits, reverse_bytes
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestBytes(unittest.TestCase):
     """
     Test byte utilities.
@@ -59,6 +63,6 @@ class TestBytes(unittest.TestCase):
         assert rev_bytes == 0x040302
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,7 @@ Interface usage test.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pytest
 import unittest
@@ -18,10 +19,13 @@ from embutils.serial import Interface, Stream, Device
 from embutils.utils import SDK_LOG
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestInterface(unittest.TestCase):
     """
     Basic interface tests using the SimplePacket example.
@@ -99,7 +103,7 @@ class TestInterface(unittest.TestCase):
         si.join()
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     SDK_LOG.enable()
     unittest.main()

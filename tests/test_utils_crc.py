@@ -8,16 +8,20 @@ CRC computation testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import unittest
 
 from embutils.utils import ENCODE, CRC
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestCRC(unittest.TestCase):
     """
     Test CRC computation utility.
@@ -120,6 +124,6 @@ class TestCRC(unittest.TestCase):
             assert test["exp"] == val
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

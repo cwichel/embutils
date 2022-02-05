@@ -8,6 +8,7 @@ Path utility testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pytest
 import unittest
@@ -15,10 +16,13 @@ import unittest
 from embutils.utils import Path, FileTypeError, FileSuffixError
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestPath(unittest.TestCase):
     """
     Test path utility.
@@ -155,6 +159,6 @@ class TestPath(unittest.TestCase):
             self.TEST_DIR.rmdir()
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

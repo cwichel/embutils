@@ -8,6 +8,7 @@ Serialized usage test.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import unittest
 
@@ -16,10 +17,13 @@ from examples.stream_setup import SimplePacket
 from embutils.utils import CRC
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestSerialized(unittest.TestCase):
     """
     Basic reference tests using the SimplePacket example.
@@ -71,6 +75,6 @@ class TestSerialized(unittest.TestCase):
         assert item_1.serialize() != item_3.serialize()
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

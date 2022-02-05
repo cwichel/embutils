@@ -8,6 +8,7 @@ Version repository definition testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pytest
 import unittest
@@ -18,6 +19,9 @@ from embutils.repo import (VersionHandler, GitBuildVersionUpdater, CCppVersionEx
 from embutils.utils import Path, FileTypeError
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 #: Uninitialized version definition
 ver_error = VersionHandler()
@@ -25,7 +29,7 @@ ver_error = VersionHandler()
 ver_init = VersionHandler(updater=GitBuildVersionUpdater(), storage=SimpleVersionStorage(), exporter=CCppVersionExporter())
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestVersion(unittest.TestCase):
     """
     Test version utilities.
@@ -113,6 +117,6 @@ class TestVersion(unittest.TestCase):
         path.unlink()
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()
