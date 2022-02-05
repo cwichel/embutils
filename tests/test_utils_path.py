@@ -27,8 +27,8 @@ class TestPath(unittest.TestCase):
     """
     Test path utility.
     """
-    TEST_DIR    = Path("test_dir")
-    TEST_FILE   = TEST_DIR / "test_file.txt"
+    TEST_DIR    = Path("tmp")
+    TEST_FILE   = TEST_DIR / "test.txt"
 
     def __del__(self):
         """

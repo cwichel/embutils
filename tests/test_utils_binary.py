@@ -10,6 +10,8 @@ Binary file utilities testing.
 """
 # -------------------------------------
 
+import shutil
+
 import intelhex
 import unittest
 
@@ -27,10 +29,11 @@ class TestBinary(unittest.TestCase):
     """
     Test binary files utilities.
     """
-    OFFSET = 0x20
-    FILES  = [
-        (Path('base1.bin'), 'This is a test'),
-        (Path('base2.bin'), 'This is yet another test')
+    OFFSET      = 0x20
+    TEST_PATH   = Path("tmp")
+    TEST_FILES  = [
+        (TEST_PATH / "base1.bin", "This is a test"),
+        (TEST_PATH / "base2.bin", "This is yet another test")
         ]
 
     def __init__(self, *args, **kwargs):
@@ -38,7 +41,7 @@ class TestBinary(unittest.TestCase):
         Generate base files used on the test.
         """
         super(TestBinary, self).__init__(*args, **kwargs)
-        self._generate()
+        self._create()
 
     def __del__(self):
         """
@@ -50,7 +53,7 @@ class TestBinary(unittest.TestCase):
         """
         Test bin > hex file conversion.
         """
-        for file, content in self.FILES:
+        for file, content in self.TEST_FILES:
             fout = file.parent / f"{file.stem}.hex"
             fhex = bin_to_hex(src=file, off=0x20, out=fout)
             assert intelhex.IntelHex(source=f"{fout}").todict() == fhex.todict()
@@ -62,12 +65,12 @@ class TestBinary(unittest.TestCase):
         """
         last = 0
         sources = []
-        for file, content in self.FILES:
+        for file, content in self.TEST_FILES:
             sources.append((file, (self.OFFSET + last)))
             last += len(content)
 
         # Generate hex and check
-        fhex = Path('test1.hex')
+        fhex = self.TEST_PATH / "test.hex"
         merge_bin(out=fhex, src=sources)
         self._check_merged(file=fhex)
 
@@ -77,16 +80,16 @@ class TestBinary(unittest.TestCase):
         """
         last = 0
         sources = []
-        for file, content in self.FILES:
+        for file, content in self.TEST_FILES:
             fhex = file.parent / f"{file.name}.hex"
             bin_to_hex(src=file, off=(self.OFFSET + last)).write_hex_file(fhex)
             sources.append(fhex)
             last += len(content)
 
         # Generate hex
-        f3 = Path('test3.hex')
-        merge_hex(out=f3, src=sources)
-        self._check_merged(file=f3)
+        fhex = self.TEST_PATH / "test.hex"
+        merge_hex(out=fhex, src=sources)
+        self._check_merged(file=fhex)
 
     def _check_merged(self, file: Path):
         """
@@ -94,26 +97,24 @@ class TestBinary(unittest.TestCase):
         """
         last = 0
         fhex = intelhex.IntelHex(source=f"{file}")
-        for file, content in self.FILES:
+        for file, content in self.TEST_FILES:
             assert fhex.gets(addr=(self.OFFSET + last), length=len(content)).decode(encoding=ENCODE, errors="ignore") == content
             last += len(content)
 
-    def _generate(self):
+    def _create(self):
         """
-        Generate test files.
+        Create the test assets.
         """
-        for file, content in self.FILES:
+        self.TEST_PATH.mkdir(exist_ok=True)
+        for file, content in self.TEST_FILES:
             with file.open(mode='wb') as f:
                 f.write(content.encode(encoding=ENCODE))
 
     def _clean(self):
         """
-        Clean generated test files.
+        Clean all test assets.
         """
-        path  = Path()
-        files = list(path.glob(pattern='*.hex')) + list(path.glob(pattern='*.bin'))
-        for file in files:
-            file.unlink(missing_ok=True)
+        shutil.rmtree(path=self.TEST_PATH)
 
 
 # -->> Execute <<----------------------
