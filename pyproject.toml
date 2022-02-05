@@ -33,6 +33,8 @@ python = "^3.7"
 pyserial = "^3.5"
 intelhex = "^2.3.0"
 attrs = "^21.2.0"
+cattrs = "^1.10.0"
+PyYAML = "^6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"
