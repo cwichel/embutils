@@ -11,6 +11,7 @@ In this context parse is converting data to/from text.
 """
 # -------------------------------------
 
+import binascii as ba
 import enum
 import functools as ft
 import json
@@ -20,7 +21,7 @@ import attr
 import cattr
 import yaml
 
-from .common import ENCODE, TPAny, TPPath, TPText
+from .common import ENCODE, TPAny, TPByte, TPPath, TPText
 from .path import Path
 
 # -->> Tunables <<---------------------
@@ -160,7 +161,7 @@ class ParseModel:
 
     @classmethod
     def parse_file(
-            cls, path: TPPath, encoding: str = ENCODE, protocol: ParseProtocol = None, exc_none: bool = True,
+            cls, path: TPPath, encoding: str = ENCODE, protocol: ParseProtocol = PROTOCOL, exc_none: bool = True,
             *args, **kwargs
             ) -> 'ParseModel':
         """
@@ -242,6 +243,15 @@ class ParseModel:
             return di
 
         return exc_dict(di=obj)
+
+
+# Converter adapters
+ParseModel.CONVERTER.register_structure_hook(TPByte, func=lambda x, _: bytearray(ba.a2b_base64(x)))
+ParseModel.CONVERTER.register_structure_hook(TPPath, func=lambda x, _: Path(x))
+ParseModel.CONVERTER.register_structure_hook(TPText, func=lambda x, _: x)
+ParseModel.CONVERTER.register_unstructure_hook(TPByte, func=lambda x: ba.b2a_base64(x).decode(encoding=ENCODE))
+ParseModel.CONVERTER.register_unstructure_hook(TPPath, func=lambda x: str(x.decode(encoding=ENCODE) if isinstance(x, getattr(TPByte, "__args__")) else x))
+ParseModel.CONVERTER.register_unstructure_hook(TPText, func=lambda x: str(x.decode(encoding=ENCODE) if isinstance(x, getattr(TPByte, "__args__")) else x))
 
 
 # -->> Export <<-----------------------
