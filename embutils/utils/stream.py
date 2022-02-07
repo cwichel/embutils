@@ -28,14 +28,20 @@ from .threading import SDK_TP, SimpleThreadTask
 
 # -->> API <<--------------------------
 @ctx.contextmanager
-def unclosable(file: io.IOBase):
+def unclosable(file: io.IOBase) -> tp.Iterator[io.IOBase]:
     """
     Makes file unclosable during the context execution.
+
+    :param io.IOBase file: File to protect during context.
     """
     close = file.close
-    file.close = lambda: None
-    yield file
-    file.close = close
+    try:
+        # Passthrough close function and use file
+        file.close = lambda: None
+        yield file
+    finally:
+        # Restore close function
+        file.close = close
 
 
 class StreamRedirect:

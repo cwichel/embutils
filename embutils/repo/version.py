@@ -202,8 +202,8 @@ class CCppVersionExporter(AbstractVersionExporter):
         :return: Item entry.
         :rtype: str
         """
-        hexval = f"0x{item:0{closest_multi(ref=len(hex(item)[2:]), base=2)}X}U"
-        return f"{hexval:{self.ITEMSIZE}s}   /* DEC: {str(item):<{self.ITEMSIZE}s} */"
+        tmp = f"0x{item:0{closest_multi(ref=len(hex(item)[2:]), base=2)}X}U"
+        return f"{tmp:{self.ITEMSIZE}s}   /* DEC: {str(item):<{self.ITEMSIZE}s} */"
 
 
 class SimpleVersionStorage(AbstractVersionStorage):
