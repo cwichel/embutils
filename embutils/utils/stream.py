@@ -34,14 +34,14 @@ def unclosable(file: io.IOBase) -> tp.Iterator[io.IOBase]:
 
     :param io.IOBase file: File to protect during context.
     """
-    close = file.close
+    close = getattr(file, "close")
     try:
         # Passthrough close function and use file
-        file.close = lambda: None
+        setattr(file, "close", lambda: None)
         yield file
     finally:
         # Restore close function
-        file.close = close
+        setattr(file, "close", close)
 
 
 class StreamRedirect:

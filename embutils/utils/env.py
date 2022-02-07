@@ -69,12 +69,12 @@ def env(*remove, **update) -> tp.Iterator[None]:
     try:
         # Update and execute
         cwe.update(update)
-        [cwe.pop(k, None) for k in remove]
+        _ = [cwe.pop(k, None) for k in remove]
         yield
     finally:
         # Restore
         cwe.update(update_after)
-        [cwe.pop(k) for k in remove_after]
+        _ = [cwe.pop(k) for k in remove_after]
 
 
 @ctx.contextmanager

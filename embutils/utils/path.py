@@ -66,7 +66,6 @@ class Path(pl.Path):
         setattr(obj.__class__, Path.validate.__name__, staticmethod(Path.validate))
         setattr(obj.__class__, Path.validate_dir.__name__, staticmethod(Path.validate_dir))
         setattr(obj.__class__, Path.validate_file.__name__, staticmethod(Path.validate_file))
-
         return obj
 
     def reachable(self) -> bool:
