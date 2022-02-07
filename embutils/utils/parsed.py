@@ -195,7 +195,9 @@ class ParseModel:
         """
         Dictionary exclusion utility.
 
-        :note: The exclusion is applied recursively.
+        :note:
+            - The exclusion is applied recursively only on dictionaries.
+            - If a list or tuple is encountered the filter will be applied only on dictionary items.
 
         :param dict obj:            Object to be filtered.
         :param tp.List[str] keys:   List of keys to exclude.
@@ -205,30 +207,41 @@ class ParseModel:
         :returns: Filtered dictionary.
         :rtype: dict
         """
+        tpl = tp.Union[list, tuple]
+
         # Check input
         if not exc_none and not keys and not values:
             return obj
-        # Prepare input
+        # Prepare settings
         keys   = keys if (keys is not None) else []
         values = values if (values is not None) else []
         if exc_none:
             values.append(None)
-        # Filter
-        tmp = obj.copy()
-        for key, item in tmp.items():
-            # Filter key
-            if key in keys:
-                del obj[key]
-                continue
-            # Filter internal dictionaries and lists
-            if isinstance(item, (list, tuple)):
-                obj[key] = type(item)(filter(lambda x: x not in values, item))
-            elif isinstance(item, dict):
-                obj[key] = cls.obj_exclude(obj=item, keys=keys, values=values)
-            # Filter values
-            if item in values:
-                del obj[key]
-        return obj
+
+        def exc_list(li: tpl) -> tpl:
+            aux = list(li)
+            for idx, item in enumerate(aux):
+                if isinstance(item, getattr(tpl, "__args__")):
+                    aux[idx] = exc_list(li=item)
+                elif isinstance(item, dict):
+                    aux[idx] = exc_dict(di=item)
+            return type(li)(aux)
+
+        def exc_dict(di: dict) -> dict:
+            aux = di.copy()
+            for key, item in aux.items():
+                if key in keys:
+                    del di[key]
+                    continue
+                if isinstance(item, getattr(tpl, "__args__")):
+                    di[key] = exc_list(li=item)
+                elif isinstance(item, dict):
+                    di[key] = exc_dict(di=item)
+                elif item in values:
+                    del di[key]
+            return di
+
+        return exc_dict(di=obj)
 
 
 # -->> Export <<-----------------------
