@@ -13,6 +13,7 @@ Submodules
    embutils.utils.common
    embutils.utils.crc
    embutils.utils.enum
+   embutils.utils.env
    embutils.utils.events
    embutils.utils.logger
    embutils.utils.math
@@ -24,7 +25,6 @@ Submodules
    embutils.utils.subprocess
    embutils.utils.threading
    embutils.utils.time
-   embutils.utils.venv
    embutils.utils.version
 
 Module contents
