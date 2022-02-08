@@ -2,6 +2,7 @@
 # -*- coding: ascii -*-
 """
 Serialized object abstract implementation.
+In this context serialize is converting data to/from bytes.
 
 :date:      2021
 :author:    Christian Wiche

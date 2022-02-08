@@ -16,7 +16,7 @@ import sys
 import toml
 import typing as tp
 
-from embutils.utils import Path, execute
+from embutils.utils import ENCODE, Path, execute
 
 
 # -->> Definitions <<----------------------------------------------------------
@@ -53,7 +53,7 @@ def run_docs() -> None:
     # Update the requirements
     req_file = path_docs / "requirements.txt"
     req_data = _requirements_get(inc_dev=True)
-    with req_file.open(mode="w", encoding="utf-8") as file:
+    with req_file.open(mode="w", encoding=ENCODE) as file:
         file.write("\n".join(req_data))
 
     # Generate documentation sources

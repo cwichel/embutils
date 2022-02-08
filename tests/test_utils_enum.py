@@ -8,11 +8,15 @@ Enumeration testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pytest
 import unittest
 
 from embutils.utils import IntEnum
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -25,7 +29,7 @@ class EnumExample(IntEnum):
     THREE   = 3
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestEnum(unittest.TestCase):
     """
     Test Enum utility.
@@ -49,6 +53,6 @@ class TestEnum(unittest.TestCase):
         assert EnumExample.from_int(value=3) == EnumExample.THREE
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

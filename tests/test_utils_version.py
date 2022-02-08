@@ -8,6 +8,7 @@ Version implementation testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pytest
 import unittest
@@ -15,10 +16,13 @@ import unittest
 from embutils.utils import Version
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestVersion(unittest.TestCase):
     """
     Test version implementation.
@@ -55,6 +59,6 @@ class TestVersion(unittest.TestCase):
             assert f"{Version.from_str(text=item[0], hex_build=item[1])}" == item[2]
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

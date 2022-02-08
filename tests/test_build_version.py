@@ -8,14 +8,19 @@ Version repository definition testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
+
+import copy as cp
+import shutil
 
 import pytest
 import unittest
 
-import copy as cp
-
 from embutils.repo import (VersionHandler, GitBuildVersionUpdater, CCppVersionExporter, SimpleVersionStorage)
 from embutils.utils import Path, FileTypeError
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
@@ -25,11 +30,26 @@ ver_error = VersionHandler()
 ver_init = VersionHandler(updater=GitBuildVersionUpdater(), storage=SimpleVersionStorage(), exporter=CCppVersionExporter())
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestVersion(unittest.TestCase):
     """
     Test version utilities.
     """
+    TEST_PATH = Path("tmp")
+
+    def __init__(self, *args, **kwargs):
+        """
+        Generate base files used on the test.
+        """
+        super(TestVersion, self).__init__(*args, **kwargs)
+        self._create()
+
+    def __del__(self):
+        """
+        Remove test files after execution.
+        """
+        self._clean()
+
     def test_01_fail(self):
         """
         Common test failure cases.
@@ -57,7 +77,7 @@ class TestVersion(unittest.TestCase):
         """
         Test simple version storage operations.
         """
-        path = Path("version.txt")
+        path = self.TEST_PATH / "version.txt"
 
         # Version storage
         ver_init.save(path=path)
@@ -70,9 +90,6 @@ class TestVersion(unittest.TestCase):
         # Check
         assert ver_test is not ver_init
         assert ver_test == ver_init
-
-        # Clean
-        path.unlink()
 
     def test_03_update_git(self):
         """
@@ -92,7 +109,7 @@ class TestVersion(unittest.TestCase):
         """
         Test C/C++ version exporter operations.
         """
-        path    = Path("version.h")
+        path    = self.TEST_PATH / "version.h"
         author  = "Test"
 
         # Test suffix issue
@@ -109,10 +126,20 @@ class TestVersion(unittest.TestCase):
         assert author in data
         assert str(ver_init) in data
 
-        # Clean
-        path.unlink()
+    def _create(self):
+        """
+        Create the test assets.
+        """
+        self.TEST_PATH.mkdir(exist_ok=True)
+
+    def _clean(self):
+        """
+        Clean all test assets.
+        """
+        if self.TEST_PATH.exists():
+            shutil.rmtree(path=self.TEST_PATH)
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

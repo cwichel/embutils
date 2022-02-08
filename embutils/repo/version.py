@@ -16,7 +16,7 @@ import os
 
 import attr
 
-from ..utils.common import TPPath
+from ..utils.common import ENCODE, TPPath
 from ..utils.math import closest_multi
 from ..utils.path import Path, FileTypeError
 from ..utils.subprocess import execute
@@ -181,8 +181,8 @@ class CCppVersionExporter(AbstractVersionExporter):
             raise FileTypeError(f"Header path doesnt have the right suffix ({self.SUFFIXES}): {path}.")
 
         # Generate header
-        with path.open(mode="w", encoding="utf-8") as file:
-            tmpl = self.TEMPLATE.open(mode="r", encoding="utf-8").read()
+        with path.open(mode="w", encoding=ENCODE) as file:
+            tmpl = self.TEMPLATE.open(mode="r", encoding=ENCODE).read()
             file.write(tmpl.format(
                 file=path.name, author=author,
                 guard=f"_{path.stem}_H_".upper(),
@@ -202,8 +202,8 @@ class CCppVersionExporter(AbstractVersionExporter):
         :return: Item entry.
         :rtype: str
         """
-        hexval = f"0x{item:0{closest_multi(ref=len(hex(item)[2:]), base=2)}X}U"
-        return f"{hexval:{self.ITEMSIZE}s}   /* DEC: {str(item):<{self.ITEMSIZE}s} */"
+        tmp = f"0x{item:0{closest_multi(ref=len(hex(item)[2:]), base=2)}X}U"
+        return f"{tmp:{self.ITEMSIZE}s}   /* DEC: {str(item):<{self.ITEMSIZE}s} */"
 
 
 class SimpleVersionStorage(AbstractVersionStorage):
@@ -225,7 +225,7 @@ class SimpleVersionStorage(AbstractVersionStorage):
         path = Path.validate_file(path=path, none_ok=False, must_exist=True, default=self.FILENAME)
 
         # Load version from file
-        with path.open(mode="r", encoding="utf-8") as file:
+        with path.open(mode="r", encoding=ENCODE) as file:
             version.parse(text=file.read())
 
     def save(self, version: Version, path: TPPath) -> None:
@@ -241,7 +241,7 @@ class SimpleVersionStorage(AbstractVersionStorage):
         path = Path.validate_file(path=path, none_ok=False, default=self.FILENAME)
 
         # Store version string
-        with path.open(mode="w", encoding="utf-8") as file:
+        with path.open(mode="w", encoding=ENCODE) as file:
             file.write(f"{version}")
 
 

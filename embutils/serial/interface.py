@@ -101,6 +101,8 @@ class Interface:
         Message response timeout setter.
 
         :param float timeout: Timeout in seconds.
+
+        :raises ValueError: Timeout value needs to be greater than zero.
         """
         if timeout <= 0.0:
             raise ValueError("The response timeout needs to be greater than zero.")

@@ -8,23 +8,29 @@ Path utility testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
+
+import shutil
 
 import pytest
 import unittest
 
-from embutils.utils import Path, FileTypeError
+from embutils.utils import Path, FileTypeError, FileSuffixError
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestPath(unittest.TestCase):
     """
     Test path utility.
     """
-    TEST_DIR    = Path("test_dir")
-    TEST_FILE   = TEST_DIR / "test_file.txt"
+    TEST_PATH = Path("tmp")
+    TEST_FILE = TEST_PATH / "test.txt"
 
     def __del__(self):
         """
@@ -44,25 +50,22 @@ class TestPath(unittest.TestCase):
             Path(1)
         with pytest.raises(TypeError):
             Path(3.256)
-
         # Error: None input
         with pytest.raises(ValueError):
             Path.validate(path=None, none_ok=False)
-
         # Error: Path not reachable
         with pytest.raises(FileNotFoundError):
-            Path.validate(path=(self.TEST_DIR / "reach_issue"), reachable=True)
-
+            Path.validate(path=(self.TEST_PATH / "reach_issue"), reachable=True)
         # Error: Path dont exists
         with pytest.raises(FileNotFoundError):
-            Path.validate(path=self.TEST_DIR, must_exist=True)
+            Path.validate(path=self.TEST_PATH, must_exist=True)
 
     def test_01_path(self):
         """
         Path and common validator tests.
         """
         # Supported types
-        assert Path() is not None                       # Default: ""
+        assert Path() is not None
         assert Path("test")
         assert Path(b"test")
         assert Path(bytearray(b"test"))
@@ -74,8 +77,7 @@ class TestPath(unittest.TestCase):
         # Error: Directory dont exist
         self._clean()
         with pytest.raises(FileNotFoundError):
-            Path.validate_dir(path=self.TEST_DIR, must_exist=True)
-
+            Path.validate_dir(path=self.TEST_PATH, must_exist=True)
         # Error: Path is a file
         self._create_test_file()
         with pytest.raises(FileTypeError):
@@ -87,18 +89,14 @@ class TestPath(unittest.TestCase):
         """
         # Init
         self._clean()
-
         # Allowing None input
         assert Path.validate_dir(path=None, none_ok=True) is None
-
         # Path address is reachable (or exists)
-        assert Path.validate_dir(path=self.TEST_DIR)
-
+        assert Path.validate_dir(path=self.TEST_PATH)
         # Path create
-        assert Path.validate_dir(path=self.TEST_DIR, create=True)
-
+        assert Path.validate_dir(path=self.TEST_PATH, create=True)
         # Path exist
-        assert Path.validate_dir(path=self.TEST_DIR, must_exist=True)
+        assert Path.validate_dir(path=self.TEST_PATH, must_exist=True)
 
     def test_05_file_error(self):
         """
@@ -109,10 +107,13 @@ class TestPath(unittest.TestCase):
         self._create_test_dir()
         with pytest.raises(FileNotFoundError):
             Path.validate_file(path=self.TEST_FILE, must_exist=True)
-
         # Error: Path is a directory
         with pytest.raises(FileTypeError):
-            Path.validate_file(path=self.TEST_DIR)
+            Path.validate_file(path=self.TEST_PATH)
+        # Error: File suffixes
+        self._create_test_file()
+        with pytest.raises(FileSuffixError):
+            Path.validate_file(path=self.TEST_FILE, must_exist=True, suffixes=[".yaml", ".json"])
 
     def test_06_file(self):
         """
@@ -129,7 +130,7 @@ class TestPath(unittest.TestCase):
         assert Path.validate_file(path=self.TEST_FILE)
 
         # Path address is reachable (or exists) when testing with default file name
-        assert Path.validate_file(path=self.TEST_DIR, default=self.TEST_FILE.name)
+        assert Path.validate_file(path=self.TEST_PATH, default=self.TEST_FILE.name)
 
         # Path exist
         self._create_test_file()
@@ -139,8 +140,8 @@ class TestPath(unittest.TestCase):
         """
         Create the test directory.
         """
-        if not self.TEST_DIR.exists():
-            self.TEST_DIR.mkdir()
+        if not self.TEST_PATH.exists():
+            self.TEST_PATH.mkdir()
 
     def _create_test_file(self) -> None:
         """
@@ -154,12 +155,10 @@ class TestPath(unittest.TestCase):
         """
         Clean all test assets.
         """
-        if self.TEST_FILE.exists():
-            self.TEST_FILE.unlink()
-        if self.TEST_DIR.exists():
-            self.TEST_DIR.rmdir()
+        if self.TEST_PATH.exists():
+            shutil.rmtree(path=self.TEST_PATH)
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()
