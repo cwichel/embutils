@@ -70,48 +70,60 @@ class ParseModel:
     #: Class to object converter
     CONVERTER = cattr.Converter(unstruct_strat=cattr.UnstructureStrategy.AS_DICT)
 
-    def dict(self, exc_none: bool = True) -> dict:
+    def dict(
+            self, exc_none: bool = True, exc_empty: bool = True
+            ) -> dict:
         """
         Generate a dictionary representation of the model.
 
         :param bool exc_none:       True to exclude None values.
+        :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
         :return: Object as dictionary.
         :rtype: dict
         """
         # Export, filter and return
         obj = self.CONVERTER.unstructure(obj=self)
-        obj = self.obj_exclude(obj=obj, exc_none=exc_none)
+        obj = self.obj_exclude(obj=obj, exc_none=exc_none, exc_empty=exc_empty)
         return obj
 
-    def export(self, path: TPAny = None, protocol: ParseProtocol = PROTOCOL, exc_none: bool = True, **kwargs) -> str:
+    def export(
+            self, path: TPAny = None, protocol: ParseProtocol = PROTOCOL,
+            exc_none: bool = True, exc_empty: bool = True,
+            **kwargs) -> str:
         """
         Export the model to a text/file using a protocolized representation.
 
         :param TPAny path:              Path to store the exported object.
         :param ParseProtocol protocol:  Representation protocol.
-        :param bool exc_none:           True to exclude None values.
+        :param bool exc_none:       True to exclude None values.
+        :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
         :return: Object converted to protocol.
         :rtype: str
         """
         # Convert data
-        data = protocol.value.export(obj=self.dict(exc_none=exc_none), **kwargs)
+        data = protocol.value.export(obj=self.dict(exc_none=exc_none, exc_empty=exc_empty), **kwargs)
+
         # Save to file if required
         path = Path.validate_file(path=path, none_ok=True, suffixes=protocol.value.suffixes)
         if path is not None:
-            with path.open(mode="r", encoding=ENCODE) as file:
+            with path.open(mode="w", encoding=ENCODE) as file:
                 file.write(data)
+
         # Return converted
         return data
 
     @classmethod
-    def parse_obj(cls, obj: TPAny, exc_none: bool = True) -> 'ParseModel':
+    def parse_obj(
+            cls, obj: TPAny, exc_none: bool = True, exc_empty: bool = True
+            ) -> 'ParseModel':
         """
         Parses the model from a dictionary-like object.
 
         :param TPAny obj:       Data to be parsed.
-        :param bool exc_none:   True to exclude None values.
+        :param bool exc_none:       True to exclude None values.
+        :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
         :returns: Parsed object.
         :rtype: ParseModel
@@ -124,15 +136,16 @@ class ParseModel:
                 obj = dict(obj)
             except (TypeError, ValueError) as ex:
                 raise ValueError(f"{cls.__name__} expected dict, not {obj.__class__.__name__}") from ex
-        obj = cls.obj_exclude(obj=obj, exc_none=exc_none)
+        obj = cls.obj_exclude(obj=obj, exc_none=exc_none, exc_empty=exc_empty)
+
         # Apply conversion and return
         data = cls.CONVERTER.structure(obj=obj, cl=cls)
         return data
 
     @classmethod
     def parse_raw(
-            cls, data: TPText, encoding: str = ENCODE,
-            protocol: ParseProtocol = PROTOCOL, exc_none: bool = True,
+            cls, data: TPText, encoding: str = ENCODE, protocol: ParseProtocol = PROTOCOL,
+            exc_none: bool = True, exc_empty: bool = True,
             **kwargs
             ) -> 'ParseModel':
         """
@@ -141,7 +154,8 @@ class ParseModel:
         :param TPText data:             Data to be parsed.
         :param str encoding:            Data encoding.
         :param ParseProtocol protocol:  Representation protocol.
-        :param bool exc_none:           True to exclude None values.
+        :param bool exc_none:       True to exclude None values.
+        :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
         :returns: Parsed object.
         :rtype: ParseModel
@@ -150,12 +164,12 @@ class ParseModel:
         """
         # Format, covert and parse
         data = data.decode(encoding=encoding) if not isinstance(data, str) else str(data)
-        return cls.parse_obj(obj=protocol.value.parse(s=data, **kwargs), exc_none=exc_none)
+        return cls.parse_obj(obj=protocol.value.parse(s=data, **kwargs), exc_none=exc_none, exc_empty=exc_empty)
 
     @classmethod
     def parse_file(
-            cls, path: TPAny, encoding: str = ENCODE,
-            protocol: ParseProtocol = PROTOCOL, exc_none: bool = True,
+            cls, path: TPAny, encoding: str = ENCODE, protocol: ParseProtocol = None,
+            exc_none: bool = True, exc_empty: bool = True,
             **kwargs
             ) -> 'ParseModel':
         """
@@ -164,26 +178,31 @@ class ParseModel:
         :param TPAny path:              Path to source file.
         :param str encoding:            Data encoding.
         :param ParseProtocol protocol:  Representation protocol.
-        :param bool exc_none:           True to exclude None values.
+        :param bool exc_none:       True to exclude None values.
+        :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
         :returns: Parsed object.
         :rtype: ParseModel
 
         :raises ValueError: Provided path has an unsupported type.
         """
-        # Process
+        # Get protocol if not provided
+        if protocol is None:
+            aux = [proto for proto in ParseProtocol if path.suffix in proto.value.suffixes]
+            if not aux:
+                raise ValueError(f"Unable to extract protocol from filename {path}")
+            protocol = aux.pop(0)
+
+        # Parse data
         path = Path.validate_file(path=path, must_exist=True, suffixes=protocol.value.suffixes)
         data = path.read_bytes()
-        if protocol is None:
-            for item in ParseProtocol:
-                if path.suffix in item.value.suffix:
-                    protocol = item
-                    break
-        # Parse data
-        return cls.parse_raw(data=data, encoding=encoding, protocol=protocol, exc_none=exc_none, **kwargs)
+        return cls.parse_raw(data=data, encoding=encoding, protocol=protocol, exc_none=exc_none, exc_empty=exc_empty, **kwargs)
 
     @classmethod
-    def obj_exclude(cls, obj: dict, keys: tp.List[str] = None, values: tp.List[TPAny] = None, exc_none: bool = True) -> dict:
+    def obj_exclude(
+            cls, obj: dict, keys: tp.List[str] = None, values: tp.List[TPAny] = None,
+            exc_none: bool = True, exc_empty: bool = True
+            ) -> dict:
         """
         Dictionary exclusion utility.
 
@@ -195,6 +214,7 @@ class ParseModel:
         :param tp.List[str] keys:   List of keys to exclude.
         :param tp.List[str] values: List of values to exclude.
         :param bool exc_none:       True to exclude None values.
+        :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
         :returns: Filtered dictionary.
         :rtype: dict
@@ -202,35 +222,45 @@ class ParseModel:
         tpl = tp.Union[list, tuple]
 
         # Check input
-        if not exc_none and not keys and not values:
+        if not any([keys, values, exc_none, exc_empty]):
             return obj
+
         # Prepare settings
         keys   = keys if (keys is not None) else []
         values = values if (values is not None) else []
         if exc_none:
             values.append(None)
+        if exc_empty:
+            values.extend(["", [], {}])
+
+        def check(base: tp.Union[list, dict], ref: tp.Union[int, str], item: TPAny) -> None:
+            """
+            Check if the item is a list or dictionary. Check recursively if its the case.
+            """
+            if isinstance(item, getattr(tpl, "__args__")):
+                base[ref] = exc_list(src=item)
+            elif isinstance(item, dict):
+                base[ref] = exc_dict(src=item)
 
         def exc_list(src: tpl) -> tpl:
+            """
+            Check list items. Only process dictionaries.
+            """
             aux = list(src)
             for idx, item in enumerate(aux):
-                if isinstance(item, getattr(tpl, "__args__")):
-                    aux[idx] = exc_list(src=item)
-                elif isinstance(item, dict):
-                    aux[idx] = exc_dict(src=item)
+                check(base=aux, ref=idx, item=item)
             return type(src)(aux)
 
         def exc_dict(src: dict) -> dict:
-            aux = src.copy()
-            for key, item in aux.items():
-                if key in keys:
-                    del src[key]
-                    continue
-                if isinstance(item, getattr(tpl, "__args__")):
-                    src[key] = exc_list(src=item)
-                elif isinstance(item, dict):
-                    src[key] = exc_dict(src=item)
-                elif item in values:
-                    del src[key]
+            """
+            Check dictionaries. Remove selected keys or entries with given value.
+            """
+            _ = [src.pop(key) for key in keys]
+            tmp = src.copy()
+            for key, item in tmp.items():
+                check(base=src, ref=key, item=item)
+                if src[key] in values:
+                    src.pop(key)
             return src
 
         return exc_dict(src=obj)
@@ -240,9 +270,9 @@ class ParseModel:
 ParseModel.CONVERTER.register_structure_hook(TPByte,    func=lambda x, _: bytearray(ba.a2b_base64(x)))
 ParseModel.CONVERTER.register_structure_hook(TPPath,    func=lambda x, _: Path(x))
 ParseModel.CONVERTER.register_structure_hook(TPText,    func=lambda x, _: str(x))
-ParseModel.CONVERTER.register_unstructure_hook(TPByte,  func=lambda x: ba.b2a_base64(x).decode(encoding=ENCODE))
-ParseModel.CONVERTER.register_unstructure_hook(TPPath,  func=lambda x: str(x.decode(encoding=ENCODE) if isinstance(x, getattr(TPByte, "__args__")) else x))
-ParseModel.CONVERTER.register_unstructure_hook(TPText,  func=lambda x: str(x.decode(encoding=ENCODE) if isinstance(x, getattr(TPByte, "__args__")) else x))
+ParseModel.CONVERTER.register_unstructure_hook(TPByte,  func=lambda x: ba.b2a_base64(x).decode(encoding=ENCODE) if x else None)
+ParseModel.CONVERTER.register_unstructure_hook(TPPath,  func=lambda x: str(x) if x else None)
+ParseModel.CONVERTER.register_unstructure_hook(TPText,  func=lambda x: str(x) if x else None)
 
 
 # -->> Export <<-----------------------

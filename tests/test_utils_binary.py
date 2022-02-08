@@ -114,7 +114,8 @@ class TestBinary(unittest.TestCase):
         """
         Clean all test assets.
         """
-        shutil.rmtree(path=self.TEST_PATH)
+        if self.TEST_PATH.exists():
+            shutil.rmtree(path=self.TEST_PATH)
 
 
 # -->> Execute <<----------------------
