@@ -8,6 +8,7 @@ COBS encode/decode testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import pytest
 import unittest
@@ -15,10 +16,13 @@ import unittest
 from embutils.utils import COBS
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestCOBS(unittest.TestCase):
     """
     Test COBS utilities.
@@ -99,6 +103,6 @@ class TestCOBS(unittest.TestCase):
         return data == decode
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

@@ -14,7 +14,8 @@ import typing as tp
 
 import intelhex
 
-from .path import TPPath, Path
+from .common import TPPath
+from .path import Path
 
 
 # -->> Tunables <<---------------------

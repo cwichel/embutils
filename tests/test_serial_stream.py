@@ -8,6 +8,7 @@ Serialized objects stream test.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import time
 import unittest
@@ -18,10 +19,13 @@ from embutils.serial import Device, Stream
 from embutils.utils import SDK_LOG, Timer
 
 
+# -->> Tunables <<---------------------
+
+
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestStream(unittest.TestCase):
     """
     Basic stream tests using the SimplePacket example.
@@ -79,7 +83,7 @@ class TestStream(unittest.TestCase):
             time.sleep(0.1)
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     SDK_LOG.enable()
     unittest.main()

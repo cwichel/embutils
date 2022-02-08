@@ -8,22 +8,26 @@ CRC computation testing.
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
+# -------------------------------------
 
 import unittest
 
-from embutils.utils import CRC
+from embutils.utils import ENCODE, CRC
+
+
+# -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
 
 
-# -->> Test API <<---------------------
+# -->> API <<--------------------------
 class TestCRC(unittest.TestCase):
     """
     Test CRC computation utility.
     """
     #: Test data
-    TEST_DATA = bytearray('123456789', encoding='utf-8')
+    TEST_DATA = bytearray('123456789', encoding=ENCODE)
 
     def test_01_crc(self):
         """
@@ -120,6 +124,6 @@ class TestCRC(unittest.TestCase):
             assert test["exp"] == val
 
 
-# -->> Test Execution <<---------------
+# -->> Execute <<----------------------
 if __name__ == '__main__':
     unittest.main()

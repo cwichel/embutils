@@ -16,6 +16,7 @@ import queue
 import threading as th
 import typing as tp
 
+from .common import ENCODE
 from .threading import SDK_TP, SimpleThreadTask
 
 
@@ -27,14 +28,20 @@ from .threading import SDK_TP, SimpleThreadTask
 
 # -->> API <<--------------------------
 @ctx.contextmanager
-def unclosable(file: io.IOBase):
+def unclosable(file: io.IOBase) -> tp.Iterator[io.IOBase]:
     """
     Makes file unclosable during the context execution.
+
+    :param io.IOBase file: File to protect during context.
     """
-    close = file.close
-    file.close = lambda: None
-    yield file
-    file.close = close
+    close = getattr(file, "close")
+    try:
+        # Passthrough close function and use file
+        setattr(file, "close", lambda: None)
+        yield file
+    finally:
+        # Restore close function
+        setattr(file, "close", close)
 
 
 class StreamRedirect:
@@ -87,7 +94,7 @@ class StreamRedirect:
         Parses and copies every line of the input stream.
         """
         for line in iter(self._src.readline, b""):
-            self._queue.put(line.decode())
+            self._queue.put(line.decode(encoding=ENCODE, errors="ignore"))
         self._queue.put(None)
         self._src.close()
 

@@ -18,6 +18,9 @@ import typing as tp
 
 
 # -->> Definitions <<------------------
+#: Default message encoding
+ENCODE      = "utf-8"
+
 #: TyPe definition. Any value.
 TPAny       = tp.Any
 
@@ -45,6 +48,7 @@ CBNone2None = tp.Callable[[], None]
 
 # -->> Export <<-----------------------
 __all__ = [
+    "ENCODE",
     "TPAny",
     "TPByte",
     "TPText",
