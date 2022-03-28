@@ -9,7 +9,7 @@ htmlcov/
 .coverage
 
 # Poetry
-poetry.lock 
+poetry.lock
 
 # Project
 .[Oo]ut/
@@ -38,14 +38,10 @@ __pycache__/
 *$py.class
 
 # Environments
-ENV/
-env/
-.env
-env.bak/
-VENV/
-venv/
-.venv
-venv.bak/
+[eE][nN][vV]*/
+.[eE][nN][vV]*/
+[vV][eE][nN][vV]*/
+.[vV][eE][nN][vV]*/
 
 # pyenv
 .python-version

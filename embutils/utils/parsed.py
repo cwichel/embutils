@@ -36,10 +36,10 @@ class ParseProtocolItem:
     """
     Parse protocol item.
     """
-    #: Parsing method
-    parse:      tp.Callable[[str, ...], dict] = attr.ib()
-    #: Exporting method
-    export:     tp.Callable[[dict, ...], str] = attr.ib()
+    #: Parsing method (string to dict...)
+    parse:      tp.Callable[..., dict] = attr.ib()
+    #: Exporting method (dict to string...)
+    export:     tp.Callable[..., str] = attr.ib()
     #: Allowed file suffixes
     suffixes:   tp.List[str] = attr.ib()
 
