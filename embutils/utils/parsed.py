@@ -164,7 +164,7 @@ class ParseModel:
         :raises ValueError: Provided data has an unsupported type.
         """
         # Format, covert and parse
-        protocol = protocol if protocol else self.PROTOCOL
+        protocol = protocol if protocol else cls.PROTOCOL
         data = data.decode(encoding=encoding) if not isinstance(data, str) else str(data)
         return cls.parse_obj(obj=protocol.value.parse(s=data, **kwargs), exc_none=exc_none, exc_empty=exc_empty)
 
