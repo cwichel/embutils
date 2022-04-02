@@ -88,7 +88,7 @@ class ParseModel:
         return obj
 
     def export(
-            self, path: TPAny = None, protocol: ParseProtocol = PROTOCOL,
+            self, path: TPAny = None, protocol: ParseProtocol = None,
             exc_none: bool = True, exc_empty: bool = True,
             **kwargs) -> str:
         """
@@ -103,6 +103,7 @@ class ParseModel:
         :rtype: str
         """
         # Convert data
+        protocol = protocol if protocol else self.PROTOCOL
         data = protocol.value.export(obj=self.dict(exc_none=exc_none, exc_empty=exc_empty), **kwargs)
 
         # Save to file if required
@@ -144,7 +145,7 @@ class ParseModel:
 
     @classmethod
     def parse_raw(
-            cls, data: TPText, encoding: str = ENCODE, protocol: ParseProtocol = PROTOCOL,
+            cls, data: TPText, encoding: str = ENCODE, protocol: ParseProtocol = None,
             exc_none: bool = True, exc_empty: bool = True,
             **kwargs
             ) -> 'ParseModel':
@@ -163,6 +164,7 @@ class ParseModel:
         :raises ValueError: Provided data has an unsupported type.
         """
         # Format, covert and parse
+        protocol = protocol if protocol else self.PROTOCOL
         data = data.decode(encoding=encoding) if not isinstance(data, str) else str(data)
         return cls.parse_obj(obj=protocol.value.parse(s=data, **kwargs), exc_none=exc_none, exc_empty=exc_empty)
 
