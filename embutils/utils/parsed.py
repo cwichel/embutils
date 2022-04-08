@@ -96,8 +96,8 @@ class ParseModel:
 
         :param TPAny path:              Path to store the exported object.
         :param ParseProtocol protocol:  Representation protocol.
-        :param bool exc_none:       True to exclude None values.
-        :param bool exc_empty:      True to exclude empty values: "", [], {}.
+        :param bool exc_none:           True to exclude None values.
+        :param bool exc_empty:          True to exclude empty values: "", [], {}.
 
         :return: Object converted to protocol.
         :rtype: str
@@ -122,7 +122,7 @@ class ParseModel:
         """
         Parses the model from a dictionary-like object.
 
-        :param TPAny obj:       Data to be parsed.
+        :param TPAny obj:           Data to be parsed.
         :param bool exc_none:       True to exclude None values.
         :param bool exc_empty:      True to exclude empty values: "", [], {}.
 
@@ -180,8 +180,8 @@ class ParseModel:
         :param TPAny path:              Path to source file.
         :param str encoding:            Data encoding.
         :param ParseProtocol protocol:  Representation protocol.
-        :param bool exc_none:       True to exclude None values.
-        :param bool exc_empty:      True to exclude empty values: "", [], {}.
+        :param bool exc_none:           True to exclude None values.
+        :param bool exc_empty:          True to exclude empty values: "", [], {}.
 
         :returns: Parsed object.
         :rtype: ParseModel
@@ -189,6 +189,7 @@ class ParseModel:
         :raises ValueError: Provided path has an unsupported type.
         """
         # Get protocol if not provided
+        path = Path(path)
         if protocol is None:
             aux = [proto for proto in ParseProtocol if path.suffix in proto.value.suffixes]
             if not aux:
