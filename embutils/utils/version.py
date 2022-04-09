@@ -24,7 +24,7 @@ from .common import ENCODE, TPAny, TPText
 
 
 # -->> API <<--------------------------
-@attr.s
+@attr.define
 class Version:
     """
     Simple version definition.
@@ -37,13 +37,13 @@ class Version:
     REGEX_INT = re.compile(pattern=r"^([0-9]+)$", flags=re.I)
 
     #: Version major
-    major:      int = attr.ib(default=99, converter=int)
+    major:      int = attr.field(default=99, converter=int)
     #: Version minor
-    minor:      int = attr.ib(default=0, converter=int)
+    minor:      int = attr.field(default=0, converter=int)
     #: Version build
-    build:      int = attr.ib(default=0, converter=int)
+    build:      int = attr.field(default=0, converter=int)
     #: Flag. If enabled the build is parsed/printed as HEX.
-    hex_build:  bool = attr.ib(default=False, converter=bool)
+    hex_build:  bool = attr.field(default=False, converter=bool)
 
     def __str__(self) -> str:
         """

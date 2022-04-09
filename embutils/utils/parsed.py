@@ -31,17 +31,17 @@ from .path import Path
 
 
 # -->> API <<--------------------------
-@attr.s
+@attr.define
 class ParseProtocolItem:
     """
     Parse protocol item.
     """
     #: Parsing method (string to dict...)
-    parse:      tp.Callable[..., dict] = attr.ib()
+    parse:      tp.Callable[..., dict] = attr.field()
     #: Exporting method (dict to string...)
-    export:     tp.Callable[..., str] = attr.ib()
+    export:     tp.Callable[..., str] = attr.field()
     #: Allowed file suffixes
-    suffixes:   tp.List[str] = attr.ib()
+    suffixes:   tp.List[str] = attr.field()
 
 
 class ParseProtocol(enum.Enum):
