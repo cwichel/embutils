@@ -9,4 +9,4 @@ Embutils module.
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
-__version__ = '0.8.2'
+__version__ = '0.8.3'
