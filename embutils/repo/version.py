@@ -89,7 +89,7 @@ class AbstractVersionStorage(abc.ABC):
         """
 
 
-@attr.s
+@attr.define
 class VersionHandler(Version):
     """
     Version handler implementation.
@@ -97,11 +97,11 @@ class VersionHandler(Version):
     Yse this class to perform operations over the version number.
     """
     #: Handler used to export the version number.
-    exporter:   AbstractVersionExporter = attr.ib(default=None)
+    exporter:   AbstractVersionExporter = attr.field(default=None)
     #: Handler used to save/load the version number.
-    storage:    AbstractVersionStorage  = attr.ib(default=None)
+    storage:    AbstractVersionStorage  = attr.field(default=None)
     #: Handler used to update the version number.
-    updater:    AbstractVersionUpdater  = attr.ib(default=None)
+    updater:    AbstractVersionUpdater  = attr.field(default=None)
 
     def save(self, path: TPPath = os.getcwd()) -> None:
         """

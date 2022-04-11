@@ -28,13 +28,13 @@ from .path import Path
 
 
 # -->> Definitions <<------------------
-@attr.s
+@attr.define
 class VENV:
     """
     Virtual environment info.
     """
-    os_venv:    str = attr.ib(default="")
-    sys_prefix: str = attr.ib(default=None)
+    os_venv:    str = attr.field(default="")
+    sys_prefix: str = attr.field(default=None)
 
 
 #: History of activated environments
