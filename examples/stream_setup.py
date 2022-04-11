@@ -32,7 +32,7 @@ from embutils.serial import AbstractSerializedStreamCodec, Device
 
 
 # -->> API <<--------------------------
-@attr.s
+@attr.define
 class SimplePacket(AbstractSerialized):
     """
     Simple packet implementation.
@@ -46,11 +46,11 @@ class SimplePacket(AbstractSerialized):
     #: CRC model
     CRC16 = CRC()
     #: Message source
-    source:         int = attr.ib(converter=int)
+    source:         int = attr.field(converter=int)
     #: Message destination
-    destination:    int = attr.ib(converter=int)
+    destination:    int = attr.field(converter=int)
     #: Message payload
-    payload:        bytearray = attr.ib(converter=bytearray)
+    payload:        bytearray = attr.field(converter=bytearray)
 
     @property
     def crc(self) -> int:

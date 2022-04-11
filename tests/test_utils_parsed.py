@@ -25,21 +25,21 @@ from embutils.utils import Path, ParseModel, ParseProtocol, TPByte, TPPath, TPTe
 
 
 # -->> Definitions <<------------------
-@attr.s
+@attr.define
 class ItemConv(ParseModel):
-    b:      TPByte  = attr.ib(factory=bytearray)
-    p:      TPPath  = attr.ib(default=None)
-    t:      TPText  = attr.ib(default=None)
+    b:      TPByte  = attr.field(factory=bytearray)
+    p:      TPPath  = attr.field(default=None)
+    t:      TPText  = attr.field(default=None)
 
 
-@attr.s
+@attr.define
 class Item(ParseModel):
-    s:      str     = attr.ib()
+    s:      str     = attr.field()
 
 
-@attr.s
+@attr.define
 class Container(ParseModel):
-    items:  tp.List[Item] = attr.ib()
+    items:  tp.List[Item] = attr.field()
 
 
 # -->> API <<--------------------------

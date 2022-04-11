@@ -31,17 +31,17 @@ class COBS:
         COBS decoding exception.
         """
 
-    @attr.s
+    @attr.define
     class Block:
         """
         COBS encoding block.
         """
         #: Block code
-        code: int       = attr.ib(converter=int)
+        code: int       = attr.field(converter=int)
         #: Block data array
-        data: bytearray = attr.ib(converter=bytearray)
+        data: bytearray = attr.field(converter=bytearray)
         #: Flag. Defines if is required to add a zero at the end.
-        zero: bool      = attr.ib(converter=bool, default=False)
+        zero: bool      = attr.field(converter=bool, default=False)
 
     @staticmethod
     def encode(data: bytearray = bytearray()) -> bytearray:
