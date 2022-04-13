@@ -8,7 +8,6 @@ Submodules
    :maxdepth: 4
 
    embutils.repo.build
-   embutils.repo.version
 
 Module contents
 ---------------
