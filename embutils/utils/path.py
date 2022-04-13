@@ -11,6 +11,7 @@ Path checking utilities.
 # -------------------------------------
 
 import pathlib as pl
+import shutil as su
 import typing as tp
 
 from .common import ENCODE, TPAny, TPByte, TPPath
@@ -63,6 +64,7 @@ class Path(pl.Path):
         # Generate object and add extra functionalities
         obj = pl.Path(*tuple(path))
         setattr(obj.__class__, Path.reachable.__name__, Path.reachable)
+        setattr(obj.__class__, Path.which.__name__, staticmethod(Path.which))
         setattr(obj.__class__, Path.validate.__name__, staticmethod(Path.validate))
         setattr(obj.__class__, Path.validate_dir.__name__, staticmethod(Path.validate_dir))
         setattr(obj.__class__, Path.validate_file.__name__, staticmethod(Path.validate_file))
@@ -76,6 +78,23 @@ class Path(pl.Path):
         :rtype: bool
         """
         return self.exists() or self.parent.exists()
+
+    @staticmethod
+    def which(name: str) -> "Path":
+        """
+        Get executable path.
+
+        :param str name:    Executable name.
+
+        :return: Executable path.
+        :rtype: Path
+
+        :raises FileNotFoundError:  Executable not found in PATH.
+        """
+        find = su.which(name)
+        if find is None:
+            raise FileNotFoundError(f"Unable to find {name} executable on PATH!")
+        return Path(find)
 
     @staticmethod
     def validate(
