@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Embutils repository utilities.
 
@@ -10,4 +10,3 @@ Embutils repository utilities.
 """
 # -------------------------------------
 from .build import *
-from .version import *

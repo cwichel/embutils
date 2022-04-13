@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Subprocess usage test.
 
@@ -10,6 +10,7 @@ Subprocess usage test.
 """
 # -------------------------------------
 
+import os
 import unittest
 
 from io import StringIO
@@ -44,7 +45,7 @@ class TestSubprocess(unittest.TestCase):
 
         with patch('sys.stdout', new=StringIO()) as fake_out:
             execute(cmd=cmd, pipe=True)
-            assert f"Executing:\n{cmd}\nOutput:\nPython" in fake_out.getvalue()
+            assert f"Executing:\nCWD: {os.getcwd()}\nCMD: {cmd}\nOutput:" in fake_out.getvalue()
 
 
 # -->> Execute <<----------------------

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Serialized object abstract implementation.
 In this context serialize is converting data to/from bytes.

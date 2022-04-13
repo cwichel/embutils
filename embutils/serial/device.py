@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Serial device implementation classes.
 
@@ -56,7 +56,7 @@ class Device:
         :param bool looped:     Enables the test mode (looped serial).
         :param dict settings:   Serial device configuration.
 
-        :raises ValueError: Port is not provided or it doesnt exist.
+        :raises ValueError: Port is not provided, or it doesnt exist.
         """
         # Device core
         self._lock   = th.RLock()
@@ -202,7 +202,7 @@ class Device:
     def read_until(self, expected: bytes = b"\n", size: int = None) -> tp.Optional[bytearray]:
         """
         Reads bytes from the serial buffer until the expected sequence is found,
-        the received bytes exceed the specified limit or a timeout is reached.
+        the received bytes exceed the specified limit, or a timeout is reached.
 
         :param bytes expected:  Stop read condition.
         :param int size:        Read array size limit.

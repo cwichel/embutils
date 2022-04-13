@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Math utilities.
 
@@ -22,7 +22,7 @@ import math
 # -->> API <<--------------------------
 def closest_multi(ref: float, base: float, force_next: bool = False) -> float:
     """
-    Computes the closest multiple of base based on a given reference.
+    Computes the closest multiple of 'base' based on a given reference.
 
     :param float ref:       Reference.
     :param float base:      Multiple base.
@@ -39,7 +39,7 @@ def closest_multi(ref: float, base: float, force_next: bool = False) -> float:
 
 def closest_pow(ref: float, base: float, force_next: bool = False) -> float:
     """
-    Computes the closest power of base based on a given reference.
+    Computes the closest power of 'base' based on a given reference.
 
     :param float ref:       Reference
     :param float base:      Exponential base
