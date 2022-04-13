@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Serial interface implementation. This class represents the closer point to the
 user. Here the developer needs to complete the interface with the specific
