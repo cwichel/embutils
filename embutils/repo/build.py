@@ -10,7 +10,6 @@ Project build utilities.
 """
 # -------------------------------------
 
-import shutil as su
 import subprocess as sp
 
 from ..utils.common import TPPath
@@ -25,23 +24,6 @@ from ..utils.subprocess import execute
 
 
 # -->> API <<--------------------------
-def get_exec(name: str) -> Path:
-    """
-    Get executable path.
-
-    :param str name:    Executable name.
-
-    :return: Executable path.
-    :rtype: Path
-
-    :raises FileNotFoundError:  Executable not found in PATH.
-    """
-    find = su.which(name)
-    if find is None:
-        raise FileNotFoundError(f"Unable to find {name} executable on PATH!")
-    return Path(find)
-
-
 def build_cubeide(
         name: str, config: str, project: TPPath, workspace: TPPath, indexer: bool = False, clean: bool = True,
         log: TPPath = None, pipe: bool = False, cwd: TPPath = None
@@ -73,7 +55,7 @@ def build_cubeide(
     prj = Path.validate_dir(path=project, must_exist=True)
     log = Path.validate_dir(path=log, none_ok=True)
     # Prepare
-    exe = get_exec(name="stm32cubeidec")
+    exe = Path.which(name="stm32cubeidec")
     idx = "" if indexer else "-no-indexer"
     bld = "-cleanBuild" if clean else "-build"
     # Execute
@@ -113,7 +95,7 @@ def build_iar(
     # Prepare
     bld = "-build" if clean else "-make"
     # Execute
-    exe = get_exec(name="IarBuild")
+    exe = Path.which(name="IarBuild")
     cmd = f"{exe} \"{prj}\" {bld} \"{config}\""
     res = execute(cmd=cmd, pipe=pipe, log=log, cwd=cwd)
     if not pipe and res.returncode:
@@ -123,7 +105,6 @@ def build_iar(
 
 # -->> Export <<-----------------------
 __all__ = [
-    "get_exec",
     "build_cubeide",
     "build_iar",
     ]
