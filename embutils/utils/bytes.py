@@ -37,7 +37,7 @@ def reverse_bits(value: int, size: int = None) -> int:
     Reverse the bits of the input value.
 
     :param int value:   Value to be reversed.
-    :param int size:    Size of the input in bits. By default it computes the minimum number of bits.
+    :param int size:    Size of the input in bits. By default, it computes the minimum number of bits.
 
     :returns: Reversed value.
     :rtype: int
@@ -54,7 +54,7 @@ def reverse_bytes(value: int, size: int = None) -> int:
     Reverse the bytes of the input value.
 
     :param int value:   Value to be reversed.
-    :param int size:    Size of the input in bytes. By default it computes the minimum number of bytes.
+    :param int size:    Size of the input in bytes. By default, it computes the minimum number of bytes.
 
     :returns: Reversed value.
     :rtype: int

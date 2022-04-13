@@ -238,7 +238,7 @@ class ParseModel:
 
         def check(base: tp.Union[list, dict], ref: tp.Union[int, str], item: TPAny) -> None:
             """
-            Check if the item is a list or dictionary. Check recursively if its the case.
+            Check if the item is a list or dictionary. Check recursively if it's the case.
             """
             if isinstance(item, getattr(tpl, "__args__")):
                 base[ref] = exc_list(src=item)

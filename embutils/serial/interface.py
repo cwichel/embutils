@@ -113,7 +113,7 @@ class Interface:
                  logic: tp.Optional[CBSerialized2Bool] = None,
                  timeout: float = None) -> tp.Optional[AbstractSerialized]:
         """
-        Send a item and, if required, wait for a response that complies with
+        Send an item and, if required, wait for a response that complies with
         the defined logic.
 
         The response detection logic should have the following syntax::
@@ -124,7 +124,7 @@ class Interface:
 
         :param AbstractSerialized send:     Packet to be sent.
         :param CBSerialized2Bool logic:     Response logic. Defines if a response is detected. If none then only sends.
-        :param float timeout:               Response timeout. By default the interface setting.
+        :param float timeout:               Response timeout. By default, the interface setting.
 
         :returns: None if timeout or no response is detected, response item otherwise.
         :rtype: Optional[AbstractSerialized]
@@ -168,7 +168,7 @@ class Interface:
 
         :param AbstractSerialized send:     Item to be sent.
         :param CBSerialized2Bool logic:     Response logic. Defines if a response is detected. If none then only sends.
-        :param float timeout:               Response timeout. By default the interface setting.
+        :param float timeout:               Response timeout. By default, the interface setting.
 
         :returns: None if timeout or no response is detected, response item otherwise.
         :rtype: Optional[AbstractSerialized]

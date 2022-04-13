@@ -47,7 +47,7 @@ def unclosable(file: io.IOBase) -> tp.Iterator[io.IOBase]:
 class StreamRedirect:
     """
     Stream redirect utility implementation.
-    Allows to store and redirect a given stream.
+    Allows storing and redirect a given stream.
     """
     def __init__(self, name: str, stream_in: tp.IO[tp.AnyStr], stream_out: tp.IO[tp.AnyStr]) -> None:
         """

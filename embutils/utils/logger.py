@@ -65,9 +65,9 @@ class Logger(log.Logger):
 
         # Configure format
         fmt  = log.Formatter(fmt=fmt.pattern, style=fmt.style)
-        hdlr = log.StreamHandler()
-        hdlr.setFormatter(fmt=fmt)
-        self.addHandler(hdlr=hdlr)
+        hdl = log.StreamHandler()
+        hdl.setFormatter(fmt=fmt)
+        self.addHandler(hdlr=hdl)
 
     def enable(self) -> None:
         """
