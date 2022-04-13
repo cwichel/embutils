@@ -10,6 +10,9 @@ Project build utilities.
 """
 # -------------------------------------
 
+import shutil as su
+import subprocess as sp
+
 from ..utils.common import TPPath
 from ..utils.path import Path
 from ..utils.subprocess import execute
@@ -22,10 +25,27 @@ from ..utils.subprocess import execute
 
 
 # -->> API <<--------------------------
+def get_exec(name: str) -> Path:
+    """
+    Get executable path.
+
+    :param str name:    Executable name.
+
+    :return: Executable path.
+    :rtype: Path
+
+    :raises FileNotFoundError:  Executable not found in PATH.
+    """
+    find = su.which(name)
+    if find is None:
+        raise FileNotFoundError(f"Unable to find {name} executable on PATH!")
+    return Path(find)
+
+
 def build_cubeide(
         name: str, config: str, project: TPPath, workspace: TPPath, indexer: bool = False, clean: bool = True,
         log: TPPath = None, pipe: bool = False, cwd: TPPath = None
-        ) -> None:
+        ) -> sp.CompletedProcess:
     """
     Calls the STM32 CubeIDE headless builder on the specified project.
 
@@ -44,27 +64,31 @@ def build_cubeide(
     :param TPPath log:          Path to store the build logs.
     :param bool pipe:           Enable pipe output to terminal.
     :param TPPath cwd:          Execution CWD.
+
+    :return: Execution results.
+    :rtype: sp.CompletedProcess
     """
     # Validate paths
-    workspace   = Path.validate_dir(path=workspace)
-    project     = Path.validate_dir(path=project, must_exist=True)
-    log         = Path.validate_dir(path=log, none_ok=True)
+    wsp = Path.validate_dir(path=workspace)
+    prj = Path.validate_dir(path=project, must_exist=True)
+    log = Path.validate_dir(path=log, none_ok=True)
     # Prepare
-    index = "" if indexer else "-no-indexer"
-    build = "-cleanBuild" if clean else "-build"
+    exe = get_exec(name="stm32cubeidec")
+    idx = "" if indexer else "-no-indexer"
+    bld = "-cleanBuild" if clean else "-build"
     # Execute
-    cmd = f"stm32cubeidec --launcher.suppressErrors " \
-          f"-nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild " \
-          f"-data \"{workspace}\" -import \"{project}\" {build} \"{name}/{config}\" {index}"
+    cmd = f"{exe} --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild " \
+          f"-data \"{wsp}\" -import \"{prj}\" {bld} \"{name}/{config}\" {idx}"
     res = execute(cmd=cmd, pipe=pipe, log=log, cwd=cwd)
     if not pipe and res.returncode:
         print(f"Command:\n{cmd}\nFailed with error:\n{res.stderr}")
+    return res
 
 
 def build_iar(
         config: str, project: TPPath, clean: bool = True,
         log: TPPath = None, pipe: bool = False, cwd: TPPath = None
-        ) -> None:
+        ) -> sp.CompletedProcess:
     """
     Calls the IAR headless builder on the specified project.
 
@@ -78,22 +102,28 @@ def build_iar(
     :param bool clean:          Performs a clean build.
     :param TPPath log:          Path to store the build logs.
     :param bool pipe:           Enable pipe output to terminal.
-    :param TPPath cwd:          Execution CWD
+    :param TPPath cwd:          Execution CWD.
+
+    :return: Execution results.
+    :rtype: sp.CompletedProcess
     """
     # Validate paths
-    project = Path.validate_dir(path=project, must_exist=True)
+    prj = Path.validate_file(path=project, must_exist=True)
     log = Path.validate_dir(path=log, none_ok=True)
     # Prepare
-    build = "-build" if clean else "-make"
+    bld = "-build" if clean else "-make"
     # Execute
-    cmd = f"IarBuild \"{project}\" {build} \"{config}\""
+    exe = get_exec(name="IarBuild")
+    cmd = f"{exe} \"{prj}\" {bld} \"{config}\""
     res = execute(cmd=cmd, pipe=pipe, log=log, cwd=cwd)
     if not pipe and res.returncode:
         print(f"Command:\n{cmd}\nFailed with error:\n{res.stderr}")
+    return res
 
 
 # -->> Export <<-----------------------
 __all__ = [
+    "get_exec",
     "build_cubeide",
     "build_iar",
     ]

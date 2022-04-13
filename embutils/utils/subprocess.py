@@ -34,6 +34,9 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
     :param TPPath cwd:  Command working directory.
     :param TPPath log:  File to store the execution logs.
     :param bool pipe:   Enable pipe output to terminal.
+
+    :return: Execution results.
+    :rtype: sp.CompletedProcess
     """
     # Check paths
     cwd = Path.validate_dir(path=cwd, none_ok=True)
