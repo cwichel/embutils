@@ -10,4 +10,3 @@ Embutils repository utilities.
 """
 # -------------------------------------
 from .build import *
-from .version import *
