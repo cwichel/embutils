@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Embutils module.
 
@@ -9,4 +9,4 @@ Embutils module.
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
-__version__ = '0.8.4'
+__version__ = '0.8.5'

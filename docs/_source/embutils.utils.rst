@@ -25,7 +25,6 @@ Submodules
    embutils.utils.subprocess
    embutils.utils.threading
    embutils.utils.time
-   embutils.utils.version
 
 Module contents
 ---------------

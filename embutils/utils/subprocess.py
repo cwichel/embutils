@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Subprocess execution utilities.
 
@@ -9,7 +9,7 @@ Subprocess execution utilities.
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
-
+import os
 import subprocess as sp
 import sys
 import time
@@ -34,18 +34,20 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
     :param TPPath cwd:  Command working directory.
     :param TPPath log:  File to store the execution logs.
     :param bool pipe:   Enable pipe output to terminal.
+
+    :return: Execution results.
+    :rtype: sp.CompletedProcess
     """
     # Check paths
     cwd = Path.validate_dir(path=cwd, none_ok=True)
     log = Path.validate_dir(path=log, none_ok=True)
-
     # Prepare
     with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
         # Execute
         if pipe:
             # Piping needed...
             # Print header
-            print(f"Executing:\n{cmd}\nOutput:")
+            print(f"Executing:\nCWD: {cwd if cwd else os.getcwd()}\nCMD: {cmd}\nOutput:")
             # Set piping...
             s_err = StreamRedirect(name="stderr", stream_in=proc.stderr, stream_out=sys.stderr)
             s_out = StreamRedirect(name="stdout", stream_in=proc.stdout, stream_out=sys.stdout)
@@ -56,16 +58,13 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
             # Get buffers
             err = s_err.buffer
             out = s_out.buffer
-
         else:
             # Not piping needed...
             out, err = proc.communicate()
             out = "" if (out is None) else out.decode(encoding=ENCODE, errors="ignore")
             err = "" if (err is None) else err.decode(encoding=ENCODE, errors="ignore")
-
         # Retrieve execution result
         res = sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
-
     # Store logs (if required)
     if log is not None:
         with log.open(mode="w", encoding=ENCODE) as file:
@@ -75,7 +74,6 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
                        f"RET : {res.returncode}\n"
                        f"LOG : \n{out}\n{err}"
                        )
-
     # Return result
     return res
 

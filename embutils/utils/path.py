@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Path checking utilities.
 
@@ -125,7 +125,7 @@ class Path(pl.Path):
         :param TPAny path:          Path to be converted / validated.
         :param bool none_ok:        Allows None input.
         :param bool must_exist:     Path must exist.
-        :param bool create:         create directory if doesn't exist.
+        :param bool create:         Create directory if it doesn't exist.
 
         :return: Verified path.
         :rtype: Path

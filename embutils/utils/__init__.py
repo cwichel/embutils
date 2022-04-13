@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Embutils general utilities.
 
@@ -27,4 +27,3 @@ from .stream import *
 from .subprocess import *
 from .threading import *
 from .time import *
-from .version import *

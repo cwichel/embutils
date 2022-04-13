@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 """
 Event handling utilities.
 
@@ -23,7 +23,7 @@ from .common import CBAny2None
 class EventHook:
     """
     Simple event hook implementation.
-    This utility allows to emit events to several callbacks in a simple fashion.
+    This utility allows emitting events to several callbacks in a simple fashion.
 
     .. note::
         *   All the callbacks subscribed to a hook need to handle the same arguments.
