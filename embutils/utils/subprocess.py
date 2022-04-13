@@ -26,7 +26,7 @@ from .stream import StreamRedirect
 
 
 # -->> API <<--------------------------
-def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True) -> sp.CompletedProcess:
+def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True, **kwargs) -> sp.CompletedProcess:
     """
     Execute the given command as a subprocess.
 
@@ -42,7 +42,7 @@ def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True)
     cwd = Path.validate_dir(path=cwd, none_ok=True)
     log = Path.validate_dir(path=log, none_ok=True)
     # Prepare
-    with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
+    with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE, **kwargs) as proc:
         # Execute
         if pipe:
             # Piping needed...
