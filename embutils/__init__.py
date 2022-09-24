@@ -1,12 +1,32 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Embutils module.
+"""Embutils main module.
 
-:date:      2021
+This is the entry point for the Embutils module.
+
+:date:      2022
 :author:    Christian Wiche
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
-__version__ = '0.8.6'
+__version__ = "2022.9.00"
+# --------------------------------------
+
+
+# -->> Tunables <<---------------------
+
+
+# -->> Definitions <<------------------
+def some_function(arg1, arg2):
+    return arg1 + arg2
+
+
+# -->> API <<--------------------------
+def version() -> str:
+    """Embutils version string.
+
+    :return: version
+    :rtype: str
+    """
+    return __version__

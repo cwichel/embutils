@@ -1,217 +1,179 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Path checking utilities.
+"""Path manipulation utilities.
 
-:date:      2021
+:date:      2022
 :author:    Christian Wiche
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
 
+# Built-in
+import itertools as it
 import pathlib as pl
-import shutil as su
+import re
+import shutil as sh
 import typing as tp
-
-from .common import ENCODE, TPAny, TPByte, TPPath
 
 
 # -->> Tunables <<---------------------
 
 
 # -->> Definitions <<------------------
+_PATTERN_SPLIT_RE = r";|:|\|"
+"""str: Pattern used to split search patterns."""
 
 
 # -->> API <<--------------------------
 class FileTypeError(OSError):
-    """
-    File type is not the expected.
-    """
+    """File type is not the expected/supported."""
 
 
 class FileSuffixError(OSError):
+    """File suffix is not the expected/supported."""
+
+
+def validate_path(
+    path: tp.Optional[tp.Union[str, pl.Path]],
+    none_ok: bool = False,
+    reachable: bool = False,
+    must_exist: bool = False,
+) -> tp.Optional[pl.Path]:
+    """Validate the provided path.
+
+    :param tp.Optional[tp.Union[str, pl.Path]] path:    Path to validate
+    :param bool none_ok:                                Allows None input
+    :param bool reachable:                              Path must be reachable
+    :param bool must_exist:                             Path must exist
+
+    :return: Validated path.
+    :rtype: pl.Path
     """
-    File suffix is not the expected.
-    """
-
-
-class Path(pl.Path):
-    """
-    Path class extensions.
-    """
-    def __new__(cls, *args, **kwargs) -> 'Path':
-        """
-        Extends the Path initialization to new supported types.
-
-        :return: Path object.
-        :rtype: pl.Path
-
-        :raises TypeError:  Input type cant be converted to a path.
-        """
-        # Avoid not compatible types
-        path  = []
-        for item in args:
-            # Check type
-            if not isinstance(item, getattr(TPPath, "__args__")):
-                raise TypeError(f"Argument should be a compatible type ({TPPath}). {type(item)} is not supported.")
-            # Convert
-            if isinstance(item, getattr(TPByte, "__args__")):
-                path.append(bytes(item).decode(encoding=ENCODE, errors="ignore"))
-            else:
-                path.append(str(item))
-
-        # Generate object and add extra functionalities
-        obj = pl.Path(*tuple(path))
-        setattr(obj.__class__, Path.reachable.__name__, Path.reachable)
-        setattr(obj.__class__, Path.which.__name__, staticmethod(Path.which))
-        setattr(obj.__class__, Path.validate.__name__, staticmethod(Path.validate))
-        setattr(obj.__class__, Path.validate_dir.__name__, staticmethod(Path.validate_dir))
-        setattr(obj.__class__, Path.validate_file.__name__, staticmethod(Path.validate_file))
-        return obj
-
-    def reachable(self) -> bool:
-        """
-        Checks if the path is reachable.
-
-        :returns: True if reachable, false otherwise.
-        :rtype: bool
-        """
-        return self.exists() or self.parent.exists()
-
-    @staticmethod
-    def which(name: str) -> "Path":
-        """
-        Get executable path.
-
-        :param str name:    Executable name.
-
-        :return: Executable path.
-        :rtype: Path
-
-        :raises FileNotFoundError:  Executable not found in PATH.
-        """
-        find = su.which(name)
-        if find is None:
-            raise FileNotFoundError(f"Unable to find {name} executable on PATH!")
-        return Path(find)
-
-    @staticmethod
-    def validate(
-            path:       TPAny = None,
-            none_ok:    bool = False,
-            reachable:  bool = False,
-            must_exist: bool = False
-            ) -> tp.Optional['Path']:
-        """
-        Validates the provided input.
-
-        :param TPAny path:          Path to be converted / validated.
-        :param bool none_ok:        Allows None input.
-        :param bool reachable:      Path must be reachable.
-        :param bool must_exist:     Path must exist.
-
-        :return: Verified path.
-        :rtype: Path
-
-        :raises TypeError:          Input type cant be converted to a path.
-        :raises ValueError:         Provided path is not supported.
-        :raises FileNotFoundError:  Path cant be reached or doesnt exist.
-        """
-        # Check if input is none
-        if path is None:
-            if none_ok:
-                return None
-            raise ValueError("Validation failed: None is not accepted as path.")
-        # Validate
-        path = Path(path)
-        if reachable and not path.reachable():
-            raise FileNotFoundError(f"Validation failed: {path} is not reachable.")
-        if must_exist and not path.exists():
-            raise FileNotFoundError(f"Validation failed: {path} doesnt exist.")
-        return path
-
-    @staticmethod
-    def validate_dir(
-            path:       TPAny = None,
-            none_ok:    bool = False,
-            must_exist: bool = False,
-            create:     bool = False,
-            ) -> tp.Optional['Path']:
-        """
-        Validate the directory path.
-
-        :param TPAny path:          Path to be converted / validated.
-        :param bool none_ok:        Allows None input.
-        :param bool must_exist:     Path must exist.
-        :param bool create:         Create directory if it doesn't exist.
-
-        :return: Verified path.
-        :rtype: Path
-
-        :raises FileTypeError:      Path is not a directory.
-        :raises FileNotFoundError:  Path cant be reached or doesnt exist.
-        """
-        # Validate base path
-        path = Path.validate(path=path, none_ok=none_ok, reachable=True)
-        if path is None:
+    if path is None:
+        if none_ok:
             return None
-        # Create
-        if create and not path.exists():
-            path.mkdir()
-        # Validate
-        if must_exist and not path.exists():
-            raise FileNotFoundError(f"Validation failed: {path} doesnt exist.")
-        if path.exists() and not path.is_dir():
-            raise FileTypeError(f"Validation failed: {path} exists but is not a directory.")
+        raise ValueError("None is not a valid path!")
+    path = pl.Path(path)
+    if reachable and not path.parent.exists():
+        raise FileNotFoundError(f'Path is not reachable: "{path}"')
+    if must_exist and not path.exists():
+        raise FileExistsError(f'Path doesnt exist: "{path}"')
+    return path
+
+
+def validate_file(
+    path: tp.Optional[tp.Union[str, pl.Path]],
+    none_ok: bool = False,
+    must_exist: bool = False,
+    suffixes: tp.List[str] = None,
+) -> tp.Optional[pl.Path]:
+    """Validate the provided file path.
+
+    :param tp.Optional[tp.Union[str, pl.Path]] path:    Path to validate
+    :param bool none_ok:                                Allows None input
+    :param bool must_exist:                             File must exist
+    :param tp.List[str] suffixes:                       List of supported file suffixes
+
+    :return: Validated path.
+    :rtype: pl.Path
+    """
+    path = validate_path(
+        path=path,
+        none_ok=(none_ok and not must_exist),
+        must_exist=must_exist,
+        reachable=True,
+    )
+    if path is None:
         return path
+    if path.exists() and not path.is_file():
+        raise FileTypeError(f'Path is not a file: "{path}"')
+    if suffixes and (path.suffix.lower() not in [item.lower() for item in suffixes]):
+        raise FileSuffixError(f'Suffix not supported for "{path}": expected {suffixes} but got {path.suffix.lower()}')
+    return path
 
-    @staticmethod
-    def validate_file(
-            path:       TPAny = None,
-            none_ok:    bool = False,
-            must_exist: bool = False,
-            default:    str = None,
-            suffixes:   tp.List[str] = None
-            ) -> tp.Optional['Path']:
-        """
-        Validate the file path.
 
-        :param TPAny path:              Path to be converted / validated.
-        :param bool none_ok:            Allows None input.
-        :param bool must_exist:         Path must exist.
-        :param str default:             Filename to be used when the input is a directory.
-        :param tp.List[str] suffixes:   List of supported suffixes.
+def validate_dir(
+    path: tp.Optional[tp.Union[str, pl.Path]],
+    none_ok: bool = False,
+    must_exist: bool = False,
+    create: bool = False,
+) -> tp.Optional[pl.Path]:
+    """Validate the provided directory path.
 
-        :return: Verified path.
-        :rtype: Path
+    :param tp.Optional[tp.Union[str, pl.Path]] path:    Path to validate
+    :param bool none_ok:                                Allows None input
+    :param bool must_exist:                             Directory must exist
+    :param bool create:                                 Create if it doesn't exist
 
-        :raises FileTypeError:      Path is not a file.
-        :raises FileSuffixError:    Path doesnt have the expected suffix.
-        :raises FileNotFoundError:  Path cant be reached or doesnt exist.
-        """
-        # Validate base path
-        path = Path.validate(path=path, none_ok=none_ok, reachable=True)
-        if path is None:
-            return None
-        # Default
-        if default and path.exists() and path.is_dir():
-            path = path / default
-        # Validate
-        if must_exist and not path.exists():
-            raise FileNotFoundError(f"Validation failed: {path} doesnt exist.")
-        if path.exists() and not path.is_file():
-            raise FileTypeError(f"Validation failed: {path} exists but is not a file.")
-        if suffixes:
-            suffixes = [item.lower() for item in suffixes]
-            if path.suffix.lower() not in suffixes:
-                raise FileSuffixError(f"Validation failed: {path} expected with suffix {suffixes} not {path.suffix.lower()}")
+    :return: Validated path.
+    :rtype: pl.Path
+    """
+    path = validate_path(
+        path=path,
+        none_ok=(none_ok and not must_exist),
+        must_exist=(must_exist and not create),
+        reachable=True,
+    )
+    if path is None:
         return path
+    if create and not path.exists():
+        path.mkdir()
+    if path.exists() and not path.is_dir():
+        raise FileTypeError(f"Path is not a dir: {path}")
+    return path
+
+
+def find_in_path(
+    path: tp.Optional[tp.Union[str, pl.Path]],
+    pattern: tp.Union[str, tp.List[str]],
+    rglob: bool = False,
+) -> tp.List[pl.Path]:
+    """Search the provided path for multiple patterns.
+    The patterns should be separated by ":", ";" or "|" characters.
+
+    :param tp.Optional[tp.Union[str, pl.Path]] path:    Path to search in
+    :param tp.Union[str, tp.List[str]] pattern:         Pattern(s) to search for
+    :param bool rglob:                                  Enable recursive search on path
+
+    :return: List of paths that match the provided patterns.
+    :rtype: tp.List[pl.Path]
+    """
+    path = validate_dir(path=path, must_exist=True)
+    find = path.rglob if rglob else path.glob
+    items = re.split(pattern=_PATTERN_SPLIT_RE, string=pattern) if isinstance(pattern, str) else pattern
+    match = list(map(lambda x: find(pattern=x.strip()), items))
+    return list(it.chain(*match))
+
+
+def which(
+    pattern: tp.Union[str, tp.List[str]],
+    required: bool = True,
+) -> tp.List[pl.Path]:
+    """Search the system PATH for multiple patterns.
+    The patterns should be separated by ":", ";" or "|" characters.
+
+    :param tp.Union[str, tp.List[str]] pattern: Pattern(s) to search for
+    :param bool required:                       Raises an exception if no item is found
+
+    :return: List of paths that match the provided patterns.
+    :rtype: tp.List[pl.Path]
+    """
+    items = re.split(pattern=_PATTERN_SPLIT_RE, string=pattern) if isinstance(pattern, str) else pattern
+    match = [pl.Path(item) for item in list(map(lambda x: sh.which(cmd=x.strip()), items)) if item is not None]
+    if required and not match:
+        raise FileNotFoundError(f"Unable to find {pattern} on PATH")
+    return match
 
 
 # -->> Export <<-----------------------
+#: Filter to module imports
 __all__ = [
-    "FileTypeError",
     "FileSuffixError",
-    "Path",
-    ]
+    "FileTypeError",
+    "validate_path",
+    "validate_file",
+    "validate_dir",
+    "find_in_path",
+    "which",
+]

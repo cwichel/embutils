@@ -1,0 +1,22 @@
+# Pre-commit hooks
+repos:
+# Execute external scripts
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+# Execute local scripts
+-   repo: local
+    hooks:
+    -   id: run-formatter
+        name: Run Formatters
+        entry: poetry run inv run-formatter
+        language: system
+        pass_filenames: false
+    -   id: run-linter
+        name: Run Linters
+        entry: poetry run inv run-linter
+        language: system
+        pass_filenames: false

@@ -1,22 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Subprocess execution utilities.
+"""Subprocess execution utilities.
 
-:date:      2021
+:date:      2022
 :author:    Christian Wiche
 :contact:   cwichel@gmail.com
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
-import os
+
+# Built-in
+import io
+import pathlib as pl
 import subprocess as sp
 import sys
 import time
+import typing as tp
 
-from .common import ENCODE, TPPath
-from .path import Path
-from .stream import StreamRedirect
+# External
+import attr
+
+# App
+from .path import validate_dir, validate_file
 
 
 # -->> Tunables <<---------------------
@@ -26,59 +31,85 @@ from .stream import StreamRedirect
 
 
 # -->> API <<--------------------------
-def execute(cmd: str, cwd: TPPath = None, log: TPPath = None, pipe: bool = True, **kwargs) -> sp.CompletedProcess:
-    """
-    Execute the given command as a subprocess.
+@attr.define
+class _StreamPipe:
+    """Subprocess piping helper class."""
 
-    :param TPPath cmd:  Command to be executed.
-    :param TPPath cwd:  Command working directory.
-    :param TPPath log:  File to store the execution logs.
-    :param bool pipe:   Enable pipe output to terminal.
+    #: Target pipe name
+    name: str = attr.field()
+    #: Subprocess object
+    proc: sp.Popen = attr.field()
+    #: Auxiliary buffer
+    buff: io.BytesIO = attr.field(factory=io.BytesIO)
 
-    :return: Execution results.
+    def __del__(self):
+        """Ensure to close the auxiliary buffer on delete."""
+        self.buff.close()
+
+    def redirect(self) -> bool:
+        """Redirect the stream until the process is ready."""
+        line = getattr(self.proc, self.name).readline()
+        if (line == b"") and (self.proc.poll() is not None):
+            return True
+        self.buff.write(line)
+        getattr(sys, self.name).buffer.write(line)
+        return False
+
+
+def execute(
+    args: tp.Union[str, list],
+    cwd: tp.Union[str, pl.Path] = None,
+    log: tp.Union[str, pl.Path] = None,
+    shell: bool = False,
+    capture: tp.Literal["NONE", "MIRROR", "FULL"] = "NONE",
+) -> sp.CompletedProcess:
+    """Execute a child program in a new process.
+
+    :param tp.Union[str, list] args:    A string, or a sequence of program arguments
+    :param tp.Union[str, pl.Path] cwd:  Sets the current directory before the child is executed
+    :param tp.Union[str, pl.Path] log:  If provided, the command and outputs will be saved to a file
+    :param bool shell:                  If true, the command will be executed through the shell
+    :param bool capture:                Output capture method: FULL (app only), MIRROR (both), NONE (terminal only).
+
+    :return: Subprocess execution results.
     :rtype: sp.CompletedProcess
     """
-    # Check paths
-    cwd = Path.validate_dir(path=cwd, none_ok=True)
-    log = Path.validate_dir(path=log, none_ok=True)
-    # Prepare
-    with sp.Popen(cmd, cwd=cwd, shell=True, close_fds=True, stdout=sp.PIPE, stderr=sp.PIPE, **kwargs) as proc:
-        # Execute
-        if pipe:
-            # Piping needed...
-            # Print header
-            print(f"Executing:\nCWD: {cwd if cwd else os.getcwd()}\nCMD: {cmd}\nOutput:")
-            # Set piping...
-            s_err = StreamRedirect(name="stderr", stream_in=proc.stderr, stream_out=sys.stderr)
-            s_out = StreamRedirect(name="stdout", stream_in=proc.stdout, stream_out=sys.stdout)
-            # Wait for process and get data
-            proc.wait()
-            s_err.join()
-            s_out.join()
-            # Get buffers
-            err = s_err.buffer
-            out = s_out.buffer
-        else:
-            # Not piping needed...
-            out, err = proc.communicate()
-            out = "" if (out is None) else out.decode(encoding=ENCODE, errors="ignore")
-            err = "" if (err is None) else err.decode(encoding=ENCODE, errors="ignore")
-        # Retrieve execution result
-        res = sp.CompletedProcess(args=proc.args, returncode=proc.returncode, stdout=out, stderr=err)
-    # Store logs (if required)
+    # Prepare execution
+    cwd = validate_dir(path=cwd, none_ok=True)
+    log = validate_file(path=log, none_ok=True)
+    pipe = sp.PIPE if (capture != "NONE") else None
+    with sp.Popen(args, cwd=cwd, shell=shell, stdout=pipe, stderr=pipe) as proc:
+        # Enable output capture
+        if capture == "MIRROR":
+            out = _StreamPipe(name="stdout", proc=proc)
+            err = _StreamPipe(name="stderr", proc=proc)
+            while not (out.redirect() and err.redirect()):
+                continue
+        # Wait for results
+        proc.wait()
+        ret = sp.CompletedProcess(args=proc.args, returncode=proc.returncode)
+        if capture == "FULL":
+            ret.stdout = proc.stdout.read()
+            ret.stderr = proc.stderr.read()
+        elif capture == "MIRROR":
+            ret.stdout = out.buff.getvalue().decode()
+            ret.stderr = err.buff.getvalue().decode()
+    # Save execution log (if required)
     if log is not None:
-        with log.open(mode="w", encoding=ENCODE) as file:
-            file.write(f"Date: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}\n"
-                       f"CWD : {cwd}\n"
-                       f"CMD : {cmd}\n"
-                       f"RET : {res.returncode}\n"
-                       f"LOG : \n{out}\n{err}"
-                       )
-    # Return result
-    return res
+        with log.open(mode="w", encoding="utf-8") as file:
+            file.write(
+                f"DATE: {time.strftime('%Y/%m/%d - %H:%M:%S', time.localtime())}\n"
+                f"CWD : {cwd}\n"
+                f"CMD : {args}\n"
+                f"RET : {ret.returncode}\n"
+                f"OUT :\n{ret.stdout}\n"
+                f"ERR :\n{ret.stderr}\n"
+            )
+    return ret
 
 
 # -->> Export <<-----------------------
+#: Filter to module imports
 __all__ = [
     "execute",
-    ]
+]

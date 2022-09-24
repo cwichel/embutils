@@ -1,5 +1,5 @@
-embutils.serial package
-=======================
+embutils.utils package
+======================
 
 Submodules
 ----------
@@ -7,14 +7,14 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   embutils.serial.device
-   embutils.serial.interface
-   embutils.serial.stream
+   embutils.utils.enum
+   embutils.utils.path
+   embutils.utils.subprocess
 
 Module contents
 ---------------
 
-.. automodule:: embutils.serial
+.. automodule:: embutils.utils
    :members:
    :undoc-members:
    :show-inheritance:
