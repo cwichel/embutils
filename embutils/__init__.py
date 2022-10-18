@@ -10,7 +10,7 @@ This is the entry point for the Embutils module.
 :license:   The MIT License (MIT)
 """
 # -------------------------------------
-__version__ = "2022.9.00"
+__version__ = "2022.10.18"
 # --------------------------------------
 
 

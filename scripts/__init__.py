@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Embutils testing scripts.
+"""Embutils utility scripts.
 
 :date:      2022
 :author:    Christian Wiche

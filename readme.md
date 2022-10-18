@@ -25,7 +25,8 @@ git clone git@github.com:cwichel/embutils.git
 - Interpreter: Python3.8+
 - Modules:
    ```requirements.txt
-   poetry >= 1.2
+   poetry                     >= 1.2
+   poethepoet[poetry_plugin]  >= 0.16
    ```
 
 #### Install process
@@ -44,13 +45,13 @@ git clone git@github.com:cwichel/embutils.git
 ### Running development tasks
 1. Check available tasks:
    ```shell
-   poetry run inv --list
+   poetry poe
    ```
 2. Execute a task using:
    ```shell
-   poetry run inv <task-name>
+   poetry poe <task-name>
    ```
    For example, running the project linters:
    ```shell
-   poetry run inv run-linter
+   poetry poe run-linters
    ```

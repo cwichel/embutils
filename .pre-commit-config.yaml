@@ -12,11 +12,11 @@ repos:
     hooks:
     -   id: run-formatter
         name: Run Formatters
-        entry: poetry run inv run-formatter
+        entry: poetry poe run-formatter
         language: system
         pass_filenames: false
     -   id: run-linter
         name: Run Linters
-        entry: poetry run inv run-linter
+        entry: poetry poe run-linters
         language: system
         pass_filenames: false

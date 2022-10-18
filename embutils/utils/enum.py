@@ -77,7 +77,8 @@ class IntEnum(enum.IntEnum):
 
 
 # -->> Export <<-----------------------
-#: Filter to module imports
 __all__ = [
+    # Classes
     "IntEnum",
 ]
+"""tp.List[str]: Module available definitions"""

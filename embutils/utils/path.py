@@ -167,13 +167,15 @@ def which(
 
 
 # -->> Export <<-----------------------
-#: Filter to module imports
 __all__ = [
+    # Classes
     "FileSuffixError",
     "FileTypeError",
+    # Methods
     "validate_path",
     "validate_file",
     "validate_dir",
     "find_in_path",
     "which",
 ]
+"""tp.List[str]: Module available definitions"""

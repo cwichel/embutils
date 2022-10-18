@@ -111,5 +111,7 @@ def execute(
 # -->> Export <<-----------------------
 #: Filter to module imports
 __all__ = [
+    # Methods
     "execute",
 ]
+"""tp.List[str]: Module available definitions"""

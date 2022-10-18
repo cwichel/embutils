@@ -1,22 +1,22 @@
 #-->> System <<--------------------------------------------
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires            = ["poetry-core>=1.2.0"]
+build-backend       = "poetry.core.masonry.api"
 
 #-->> Metadata <<------------------------------------------
 [tool.poetry]
-name        = "embutils"
-version     = "2022.9.00"
-description = "Python utilities for embedded projects"
-authors     = [
+name                = "embutils"
+version             = "2022.10.18"
+description         = "Python utilities for embedded projects"
+authors             = [
     "Christian Wiche <cwichel@gmail.com>"
 ]
-license     = "MIT"
-readme      = "readme.md"
-keywords    = ["python", "embedded", "utilities"]
-homepage    = "https://github.com/cwichel/embutils"
-repository  = "https://github.com/cwichel/embutils"
-classifiers = [
+license             = "MIT"
+readme              = "readme.md"
+keywords            = ["python", "embedded", "utilities"]
+homepage            = "https://github.com/cwichel/embutils"
+repository          = "https://github.com/cwichel/embutils"
+classifiers         = [
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Intended Audience :: Developers",
@@ -42,7 +42,6 @@ pyyaml              = ">=6.0"
 # Development (common)
 [tool.poetry.dev-dependencies]
 pre-commit          = "*"
-invoke              = "*"
 toml                = "*"
 
 # Documentation
@@ -76,6 +75,17 @@ optional = true
 coverage            = {extras = ["toml"], version = "*"}
 parametrize         = "*"
 pytest-cov          = "*"
+
+#-->> Scripts <<-------------------------------------------
+[tool.poe.tasks]
+run-formatter       = {"script" = "scripts.develop:run_formatter"}
+run-html            = {"script" = "scripts.develop:run_html"}
+run-linters         = {"script" = "scripts.develop:run_linters"}
+run-tests           = {"script" = "scripts.develop:run_tests"}
+run-typing          = {"script" = "scripts.develop:run_typing"}
+update-docs         = {"script" = "scripts.develop:update_docs"}
+update-version      = {"script" = "scripts.develop:update_version"}
+
 
 #-->> Configuration <<-------------------------------------
 [tool.autoflake]
@@ -127,8 +137,11 @@ pyflakes                    = ["-F403"]
 [tool.flakeheaven.exceptions."embutils/utils/subprocess.py"]
 flake8-bandit               = ["-S602"]
 
+[tool.flakeheaven.exceptions."scripts/develop.py"]
+flake8-bandit               = ["-S603", "-S607"]
+
 [tool.mypy]
-files                       = ["embutils/**/*.py", "tests/**/*.py"]
+files                       = ["embutils/**/*.py", "scripts/**/*.py", "tests/**/*.py"]
 enable_error_code           = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 install_types               = true
 ignore_missing_imports      = true

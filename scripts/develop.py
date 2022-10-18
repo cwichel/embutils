@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Repository development tasks and utilities.
+"""Development scripts.
 
 :date:      2022
 :author:    Christian Wiche
@@ -10,38 +10,42 @@
 # -------------------------------------
 
 # Built-in
+import argparse as ap
 import datetime as dt
 import importlib.metadata as ilm
 import pathlib as pl
 import re
+import subprocess as sp
 import sys
 import typing as tp
 
 # External
-import invoke as inv
 import toml
-
-# Project
-import embutils.utils as embu
 
 
 # -->> Definitions <<------------------
-REPOSITORY_PATH = pl.Path(__file__).parent
+SCRIPTS_PATH = pl.Path(__file__).parent
+"""pl.Path: Scripts path"""
+REPOSITORY_PATH = SCRIPTS_PATH.parents[0]
 """pl.Path: Repository ROOT path"""
+
 PROJECT_FILE = REPOSITORY_PATH / "pyproject.toml"
-"""pl.Path: Project file"""
+"""pl.Path: Project file path"""
 PROJECT_NAME = toml.loads(PROJECT_FILE.open(mode="r").read())["tool"]["poetry"]["name"]
 """str: Project name"""
+PROJECT_PATH = REPOSITORY_PATH / PROJECT_NAME
+"""pl.Path: Project sources path"""
 
 
 # -->> Tunables <<---------------------
-COVERAGE_THRESHOLD = 90
-"""int: Coverage failure threshold"""
-SOURCES = [
+PROJECT_COV_THS = 90
+"""int: Coverage threshold"""
+
+PROJECT_SOURCES = [
     PROJECT_NAME,
+    "scripts",
     "tests",
     "docs/conf.py",
-    "tasks.py",
 ]
 """tp.List[str]: List of sources to which run formatters/linters onto"""
 
@@ -49,13 +53,19 @@ SOURCES = [
 # -->> API <<--------------------------
 def run_commands(
     cmds: tp.Dict[str, list],
+    cwd: pl.Path = REPOSITORY_PATH,
     fail_fast: bool = False,
 ) -> None:
-    """Run several successive commands"""
+    """Run several successive commands
+
+    :param tp.Dict[str, list] cmds: Command dictionary with execution arguments
+    :param pl.Path cwd:             Commands current working directory.
+    :param bool fail_fast:          Flag. If enabled the commands execution will stop on the first fail return
+    """
     fail = False
     for key, args in cmds.items():
         print(f"Running {key}...")
-        ret = embu.execute(args=args, cwd=REPOSITORY_PATH)
+        ret = sp.run(args, cwd=cwd)
         if ret.returncode != 0:
             print(f"Process exited with error code {ret.returncode}")
             fail |= True
@@ -64,38 +74,45 @@ def run_commands(
     sys.exit(1 if fail else 0)
 
 
-# -->> Tasks <<------------------------
-@inv.task
-def run_formatter(context):
+def run_formatter() -> None:
     """Run formatters over the code."""
     # Setup commands
     cmds = {
-        "autoflake": ["poetry", "run", "pautoflake", *SOURCES],
-        "isort": ["poetry", "run", "isort", *SOURCES],
-        "black": ["poetry", "run", "black", *SOURCES],
+        "autoflake": ["poetry", "run", "pautoflake", *PROJECT_SOURCES],
+        "isort": ["poetry", "run", "isort", *PROJECT_SOURCES],
+        "black": ["poetry", "run", "black", *PROJECT_SOURCES],
     }
     # Execute
     run_commands(cmds=cmds, fail_fast=True)
 
 
-@inv.task
-def run_linter(context):
-    """Run linter and typing checks over the code."""
+def run_html() -> None:
+    """Run a local HTML server to check coverage reports or generated documentation."""
+    # Parse arguments
+    parser = ap.ArgumentParser()
+    parser.add_argument("-c", "--coverage", action="store_true", help="Starts the coverage html server.")
+    args = parser.parse_args(args=sys.argv[1:])
+    # Run HTML server
+    target = "htmlcov" if args.coverage else "docs/_build/html"
+    sp.run(["python", "-m", "http.server", "-d", f"{REPOSITORY_PATH / target}"], cwd=REPOSITORY_PATH)
+
+
+def run_linters() -> None:
+    """Run linters and typing checks over the code."""
     # Setup commands
     cmds = {
-        "flakeheaven": ["poetry", "run", "flakeheaven", "lint", *SOURCES],
+        "flakeheaven": ["poetry", "run", "flakeheaven", "lint", *PROJECT_SOURCES],
     }
     # Execute
     run_commands(cmds=cmds, fail_fast=True)
 
 
-@inv.task
-def run_tests(contex):
-    """Run the repository code tests and compute coverage."""
+def run_tests() -> None:
+    """Run tests over the code and check coverage level."""
     # Setup commands
     cmds = {
-        "tests": ["poetry", "run", "pytest", "--cov", PROJECT_NAME, "--cov-config", PROJECT_FILE],
-        "coverage": ["poetry", "run", "coverage", "report", "--fail-under", str(COVERAGE_THRESHOLD)],
+        "tests": ["poetry", "run", "pytest", "--cov", PROJECT_PATH, "--cov-config", PROJECT_FILE],
+        "coverage": ["poetry", "run", "coverage", "report", "--fail-under", str(PROJECT_COV_THS)],
     }
     # Adjust coverage output
     cmds["tests"].extend(["--cov-report", "html:.covhtml"])
@@ -103,38 +120,16 @@ def run_tests(contex):
     run_commands(cmds=cmds, fail_fast=True)
 
 
-@inv.task
-def run_typing(context):
-    """Perform typing checks. This might not be required fos commit/publish."""
+def run_typing() -> None:
+    """Run static typing checks over the code."""
     cmds = {
         "mypy": ["poetry", "run", "mypy"],
     }
     run_commands(cmds=cmds, fail_fast=True)
 
 
-@inv.task
-def start_html_coverage(context):
-    """Starts an HTML service to review the coverage reports."""
-    try:
-        docs = embu.validate_dir(path=REPOSITORY_PATH / ".covhtml", must_exist=True)
-        embu.execute(args=["python", "-m", "http.server", "-d", docs], cwd=REPOSITORY_PATH)
-    except (FileNotFoundError, FileExistsError) as ex:
-        print(ex)
-
-
-@inv.task
-def start_html_documentation(context):
-    """Starts an HTML service to browse the compiled documentation."""
-    try:
-        docs = embu.validate_dir(path=REPOSITORY_PATH / "docs/_build/html", must_exist=True)
-        embu.execute(args=["python", "-m", "http.server", "-d", docs], cwd=REPOSITORY_PATH)
-    except (FileNotFoundError, FileExistsError) as ex:
-        print(ex)
-
-
-@inv.task
-def update_documentation(context):
-    """Update and build the module documentation."""
+def update_docs() -> None:
+    """Updates and build the documentation for the code"""
     # Update requirements
     with PROJECT_FILE.open(mode="r") as file:
         config = toml.loads(file.read())
@@ -151,16 +146,15 @@ def update_documentation(context):
     run_commands(cmds=cmds, fail_fast=True)
 
 
-@inv.task
-def update_version(context):
+def update_version() -> None:
     """Update both poetry and module __init__ version string."""
     ver_str = dt.datetime.now().strftime("%Y.%m.%d").replace(".0", ".")
     # Update poetry version
-    embu.execute(args=["poetry", "version", ver_str], cwd=REPOSITORY_PATH)
+    sp.run(args=["poetry", "version", ver_str], cwd=REPOSITORY_PATH)
     # Update sources version
     ver_re = re.compile(pattern="^__ver.*", flags=re.I)
     ver_str = f'__version__ = "{ver_str}"'
-    ver_file = REPOSITORY_PATH / f"{PROJECT_NAME}/__init__.py"
+    ver_file = PROJECT_PATH / "__init__.py"
     with ver_file.open(mode="r") as file:
         lines = file.read().splitlines()
         for idx, line in enumerate(lines):
@@ -171,14 +165,15 @@ def update_version(context):
         file.write("\n".join(lines) + "\n")
 
 
-# -->> Invoke Namespace <<-------------
-inv_ns = inv.Collection(
-    run_formatter,
-    run_linter,
-    run_tests,
-    start_html_coverage,
-    start_html_documentation,
-    update_documentation,
-    update_version,
-)
-"""inv.Collection: User exposed tasks"""
+# -->> Export <<-----------------------
+__all__ = [
+    # Methods
+    "run_linters",
+    "run_formatter",
+    "run_html",
+    "run_tests",
+    "run_typing",
+    "update_docs",
+    "update_version",
+]
+"""tp.List[str]: Module available definitions"""
