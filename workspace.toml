@@ -1,0 +1,15 @@
+[tool.polylith]
+namespace = "embutils"
+
+[tool.polylith.structure]
+theme = "loose"
+
+[tool.polylith.tag.patterns]
+stable = "stable-*"
+release = "v[0-9]-*"
+
+[tool.polylith.resources]
+brick_docs_enabled = false
+
+[tool.polylith.test]
+enabled = true

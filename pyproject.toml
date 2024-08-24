@@ -1,50 +1,141 @@
-[tool.poetry]
-version = "0.8.6"
-name = "embutils"
-license = "MIT"
-readme = "README.md"
-homepage = "https://github.com/cwichel/embutils"
-description = "Python utilities for embedded projects"
-authors = ["Christian Wiche <cwichel@gmail.com>"]
-keywords = [
-    'python',
-    'embedded',
-    'utilities'
-    ]
-classifiers = [
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Topic :: Utilities',
-    ]
-
-[tool.poetry.scripts]
-docs            = 'scripts.poetry:run_docs'
-html            = 'scripts.poetry:run_html'
-test            = 'scripts.poetry:run_test'
-version         = 'scripts.poetry:run_version'
-check_coverage  = 'scripts.poetry:run_check_coverage'
-check_linter    = 'scripts.poetry:run_check_linter'
-check_types     = 'scripts.poetry:run_check_types'
-
-[tool.poetry.dependencies]
-python = "^3.7"
-pyserial = "^3.5"
-intelhex = "^2.3.0"
-attrs = "^21.2.0"
-cattrs = "^1.10.0"
-PyYAML = "^6.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "^6.0.0"
-toml = "^0.10.2"
-Sphinx = "^4.0.2"
-sphinx-rtd-theme = "^1.0.0"
-coverage = "^6.0.0"
-pylint = "^2.10.2"
-mypy = "^0.910"
-
+#-->> System <<-----------------------------------
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires        = ["poetry-core>=1.3.0"]
+build-backend   = "poetry.core.masonry.api"
+
+#-->> Metadata <<---------------------------------
+[tool.poetry]
+name            = "embutils.monorepo"
+license         = "MIT"
+version         = "0.1.0"
+authors         = ["Christian Wiche <cwichel@gmail.com>"]
+homepage        = "https://github.com/cwichel/embutils"
+repository      = "https://github.com/cwichel/embutils"
+description     = "Python utilities for embedded development"
+
+#-->> Packages <<---------------------------------
+packages = [
+    {from = "components", include = "embutils/core"},
+    {from = "components", include = "embutils/extras"},
+    {from = "components", include = "embutils/schema"},
+    {include = "development"},
+]
+
+#-->> Dependencies <<-----------------------------
+# Main dependencies (required by application)
+[tool.poetry.dependencies]
+python              = "^3.10"
+pydantic            = "*"
+pyserial            = "*"
+
+# Development (common)
+[tool.poetry.dev-dependencies]
+pre-commit          = "*"
+
+# Formatting
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+flakeheaven         = "*"
+flake8              = "^4.0.1"
+flake8-bandit       = "*"
+flake8-black        = "*"
+flake8-isort        = "*"
+mypy                = "*"
+pylint              = "*"
+pyproject-autoflake = "*"
+
+# Testing dependencies
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+coverage            = {extras = ["toml"], version = "*"}
+parametrize         = "*"
+pytest-cov          = "*"
+
+#-->> Scripts <<----------------------------------
+[tool.poetry.scripts]
+builder             = "scripts.develop:builder"
+formatters          = "scripts.develop:formatters"
+linters             = "scripts.develop:linters"
+tests               = "scripts.develop:tests"
+tests-report        = "scripts.develop:tests_report"
+type-checks         = "scripts.develop:type_checks"
+
+#-->> Configuration <<----------------------------
+[tool.autoflake]
+check                       = false
+in-place                    = true
+ignore-init-module-imports  = true
+remove-all-unused-imports   = true
+remove-unused-variables     = true
+recursive                   = true
+
+[tool.black]
+line-length                 = 140
+target-version              = ["py38", "py39", "py310", "py311"]
+preview                     = true
+
+[tool.coverage.run]
+branch                      = true
+omit                        = ["*test*"]
+
+[tool.coverage.report]
+show_missing                = true
+exclude_lines               = ["pragma: no cover", "@overload"]
+
+[tool.isort]
+profile                     = "black"
+line_length                 = 140
+lines_after_imports         = 2
+multi_line_output           = 3
+import_heading_stdlib       = "Built-in"
+import_heading_thirdparty   = "External"
+import_heading_firstparty   = "Project"
+import_heading_localfolder  = "App"
+
+[tool.flakeheaven]
+max-line-length             = 140
+max-complexity              = 30
+exclude                     = ["**/.venv", "**/dist"]
+
+[tool.flakeheaven.plugins]
+flake8-bandit               = ["+*", "-S404"]
+flake8-black                = ["+*"]
+flake8-isort                = ["+*"]
+pycodestyle                 = ["+*", "-E203", "-W503", "-W504"]
+pyflakes                    = ["+*", "-F401"]
+pylint                      = ["+F*", "+E*", "-E0237", "-E1101", "-E1123","-E1133", "-E1135", "-E1136", "-E1137"]
+
+[tool.flakeheaven.exceptions."**/__init__.py"]
+pyflakes                    = ["-F403", "-F405"]
+
+[tool.flakeheaven.exceptions."components/embutils/core/execute.py"]
+flake8-bandit               = ["-S602"]
+
+[tool.flakeheaven.exceptions."development/*.py"]
+flake8-bandit               = ["-S311"]
+
+[tool.flakeheaven.exceptions."scripts/develop.py"]
+flake8-bandit               = ["-S603", "-S607"]
+
+[tool.flakeheaven.exceptions."test/**/*.py"]
+flake8-bandit               = ["-S311"]
+
+[tool.mypy]
+files                       = ["bases/**/*.py", "components/**/*.py", "development/**/*.py", "projects/**/*.py", "scripts/**/*.py", "test/**/*.py"]
+exclude                     = ["**/.venv", "**/dist"]
+enable_error_code           = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+install_types               = true
+ignore_missing_imports      = true
+show_error_codes            = true
+show_error_context          = true
+warn_unreachable            = true
+pretty                      = true
+
+[tool.pytest.ini_options]
+addopts                     = [ "-ra", "--strict-markers", "--strict-config" ]
+testpaths                   = [ "test" ]
+xfail_strict                = true

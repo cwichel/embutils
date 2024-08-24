@@ -1,0 +1,28 @@
+#-->> System <<-----------------------------------
+[build-system]
+requires        = ["poetry-core>=1.3.0"]
+build-backend   = "poetry.core.masonry.api"
+
+#-->> Metadata <<---------------------------------
+[tool.poetry]
+name            = "embutils"
+license         = "MIT"
+version         = "1.0.0"
+authors         = ["Christian Wiche <cwichel@gmail.com>"]
+homepage        = "https://github.com/cwichel/embutils"
+repository      = "https://github.com/cwichel/embutils"
+description     = "Python utilities for embedded development"
+
+#-->> Packages <<---------------------------------
+packages = [
+  {from = "../../components", include = "embutils/core"},
+  {from = "../../components", include = "embutils/extras"},
+  {from = "../../components", include = "embutils/schema"},
+]
+
+#-->> Dependencies <<-----------------------------
+# Main dependencies (required by application)
+[tool.poetry.dependencies]
+python              = "^3.10"
+pydantic            = "*"
+pyserial            = "*"
