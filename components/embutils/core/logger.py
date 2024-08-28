@@ -25,14 +25,6 @@ import typing as tp
 
 
 # -->> Tunables <<----------------------
-LOGGER_NAME: str = "EMBUTILS"
-"""Default logger name."""
-
-LOGGER_LEVEL: int = log.DEBUG
-"""Default logger level."""
-
-LOGGER_FILE: pl.Path = pl.Path(os.getcwd()) / f".logs/{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-"""Default logger dump file path."""
 
 
 # -->> Definitions <<-------------------
@@ -42,14 +34,13 @@ class LoggerSettings:
 
     :param name: Logger name.
     :param level: Logger level.
-    :param dump: Enable log dump.
-    :param file: Dump file path.
+    :param use_file: Enable log dump.
     """
 
-    name: str = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_NAME", LOGGER_NAME))
-    level: int = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_LEVEL", LOGGER_LEVEL))
-    dump: bool = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_DUMP", False))
-    file: tp.Union[str, pl.Path] = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_FILE", LOGGER_FILE))
+    name: str = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_NAME", "EMBUTILS"))
+    level: int = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_LEVEL", log.DEBUG))
+    use_file: bool = dc.field(default_factory=ft.partial(os.environ.get, "EMBUTILS_LOGGER_USE_FILE", False))
+    file: pl.Path = dc.field(init=False, default=None)
 
     formatters = {
         "standard": {
@@ -62,7 +53,7 @@ class LoggerSettings:
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "standard",
-            "level": LOGGER_LEVEL,
+            "level": log.DEBUG,
             "stream": "ext://sys.stdout",
         },
     }
@@ -74,8 +65,7 @@ class LoggerSettings:
         """Initialize the logger settings."""
         # Format settings
         self.level = int(self.level)
-        self.file = pl.Path(self.file)
-        self.dump = bool(int(self.dump))
+        self.use_file = bool(int(self.use_file))
         # Configure logger
         self.loggers[self.name] = {
             "level": self.level,
@@ -84,7 +74,8 @@ class LoggerSettings:
         }
         self.handlers["console"]["level"] = self.level
         # Configure dump file
-        if self.dump:
+        if self.use_file:
+            self.file = pl.Path.home() / f".logs/{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
             self.loggers[self.name]["handlers"].append("file")
             self.handlers["file"] = {
                 "class": "logging.handlers.RotatingFileHandler",

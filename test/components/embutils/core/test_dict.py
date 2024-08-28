@@ -41,6 +41,15 @@ class DictAliasTestSuite(ut.TestCase):
         self.assertEqual(id(self.dict["key"]), id(self.dict["alias"]))
         self.assertEqual(id(self.dict.get("key")), id(self.dict.get("alias")))
 
+    def test_deleteAlias(
+        self,
+    ) -> None:
+        """Test alias deletion."""
+        self.dict.del_alias(alias="alias")
+        self.assertTrue(len(self.dict) == 1)
+        self.assertTrue(self.dict.get("key") is not None)
+        self.assertTrue(self.dict.get("alias", None) is None)
+
     def test_entryUpdatedByKeyOrAlias(
         self,
     ) -> None:
@@ -57,10 +66,20 @@ class DictAliasTestSuite(ut.TestCase):
         self.assertTrue(len(self.dict) == 1)
         self.assertEqual(id(self.dict["key"]), id(self.dict["alias"]))
 
+        self.dict.update(m={"key": "variant4"})
+        self.assertTrue(len(self.dict) == 1)
+        self.assertEqual(id(self.dict["key"]), id(self.dict["alias"]))
+
     def test_entryDeletedByKeyOrAlias(
         self,
     ) -> None:
         """Test entry deletion."""
+
+        def _del(
+            key: str,
+        ) -> None:
+            """Delete entry."""
+            del self.dict[key]
 
         def _test(
             pop_func: callable,
@@ -74,6 +93,8 @@ class DictAliasTestSuite(ut.TestCase):
             self.assertTrue(self.dict.get("alias") is None)
             self.assertTrue(self.dict.get_alias("key") == [])
 
+        _test(pop_func=lambda: _del("key"))
+        _test(pop_func=lambda: _del("alias"))
         _test(pop_func=lambda: self.dict.pop("key"))
         _test(pop_func=lambda: self.dict.pop("alias"))
         _test(pop_func=lambda: self.dict.popitem())

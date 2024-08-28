@@ -53,7 +53,6 @@ __all__ = [
     "EnumUtils",
     # event.py
     "EventTarget",
-    "EventException",
     "EventSlot",
     "Events",
     # execute.py

@@ -93,6 +93,8 @@ class SerialDevice:
 
         :return: Number of bytes in the input buffer.
         """
+        if not (isinstance(self._io, ser.SerialBase) and self.io.is_open):
+            return 0
         return getattr(self._io, "in_waiting", 0)
 
     def clear(

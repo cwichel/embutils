@@ -80,7 +80,7 @@ preview                     = true
 
 [tool.coverage.run]
 branch                      = true
-omit                        = ["*test*"]
+omit                        = ["./development/*", "./scripts/*", "./test/*", "*__init__.py"]
 
 [tool.coverage.report]
 show_missing                = true

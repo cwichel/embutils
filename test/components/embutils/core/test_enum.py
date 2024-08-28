@@ -52,6 +52,12 @@ class EnumTestSuite(ut.TestCase):
         self,
     ) -> None:
         """Test the from_value method."""
+
+        class OtherEnum(en.IntEnum):
+            """Other enumeration."""
+
+            C = 2
+
         # Test valid cases
         self.assertEqual(EnumTestItem.from_value(value=0), EnumTestItem.A)
         self.assertEqual(EnumTestItem.from_value(value=1), EnumTestItem.B)
@@ -62,6 +68,7 @@ class EnumTestSuite(ut.TestCase):
         # Test invalid cases
         self.assertIsNone(EnumTestItem.from_value(value=2))
         self.assertIsNone(EnumTestItem.from_value(value="C"))
+        self.assertIsNone(EnumTestItem.from_value(value=OtherEnum.C))
 
 
 # -->> API <<---------------------------

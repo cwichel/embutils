@@ -36,15 +36,12 @@ class EventTarget(tp.Protocol):
 
         :param args: Event arguments.
         :param kwargs: Event keyword arguments.
+        :return: Any value.
         """
 
 
-class EventException(Exception):
-    """Base class for exceptions in this module."""
-
-
 class EventSlot:
-    """Define a single event.
+    """Event slot. Allows to propagate events to multiple targets.
 
     :param name: Name of the event.
     """
@@ -53,20 +50,20 @@ class EventSlot:
         self,
         name: str,
     ) -> None:
-        """Initialize the event."""
+        """Class constructor."""
         self.targets: tp.List[EventTarget] = []
         self.__name__ = name
 
     def __repr__(
         self,
     ) -> str:
-        """Return a string representation of the event."""
+        """Object representation."""
         return f"{self.__class__.__name__}(name={self.__name__!r})"
 
     def __len__(
         self,
     ) -> int:
-        """Return the number of targets."""
+        """Number of targets."""
         return len(self.targets)
 
     def __call__(
@@ -74,7 +71,7 @@ class EventSlot:
         *args,
         **kwargs,
     ) -> None:
-        """Fire the event.
+        """Emits the event.
 
         :param args: Event arguments.
         :param kwargs: Event keyword arguments.
@@ -85,7 +82,7 @@ class EventSlot:
     def __iter__(
         self,
     ) -> tp.Iterator[EventTarget]:
-        """Return an iterator over the event targets."""
+        """Iterable with event targets."""
         for target in self.targets:
             yield target
 
@@ -93,18 +90,19 @@ class EventSlot:
         self,
         target: EventTarget,
     ) -> "EventSlot":
-        """Add a target to the event.
+        """Attach a new target to the event.
 
         :param target: Event target.
         """
-        self.targets.append(target)
+        if target not in self.targets:
+            self.targets.append(target)
         return self
 
     def __isub__(
         self,
         target: EventTarget,
     ) -> "EventSlot":
-        """Remove all targets with the given callable from the event.
+        """Detach a target from the event.
 
         :param target: Event target.
         """
@@ -121,14 +119,12 @@ class Events:
 
     .. note::
 
-        - Event slots are created/added automatically, so there is no need to
-          declare/create them beforehand (Note that `__events__` is optional
-          and should be used primarily to avoid misspelling).
+        - Event slots are created/added automatically, so there is no need to declare/create them beforehand.
         - Main goal of this class is to avoid the redundancy in calls like::
 
             <class>.on_change = EventSlot("on_change")
 
-    :param events: List of events.
+    :param events: List of events. The class can't have more events than the ones declared here.
     :param etype: Event type used to create new slots.
     """
 
@@ -137,60 +133,68 @@ class Events:
         events: tp.List[str] = None,
         etype: tp.Type[EventSlot] = EventSlot,
     ) -> None:
-        self.etype = etype
+        """Class constructor."""
+        if etype is None or not issubclass(etype, EventSlot):
+            raise AttributeError("Invalid event type. Please validate that is a subclass of EventSlot.")
+        # Prepare
+        self.__etype__ = etype
+        # Initialize
         if events is not None:
-            try:
-                self.__events__ = [etype(name=str(event)) for event in events]
-            except Exception:
+            if not (isinstance(events, tp.Iterable) and all(isinstance(event, str) for event in events)):
                 raise AttributeError("Invalid events. Please validate that is an iterable with event names.")
+            self.__events__ = events
 
     def __repr__(
         self,
     ) -> str:
-        """Return a string representation of the events."""
-        return f"{self.__class__.__name__}(etype={self.etype.__name__})"
+        """Object representation."""
+        return f"{self.__class__.__name__}(etype={self.__etype__.__name__})"
 
     def __len__(
         self,
     ) -> int:
-        """Return the number of events."""
+        """Number of event slots."""
         return len(list(self.__iter__()))
 
     def __iter__(
         self,
     ) -> tp.Iterator[EventSlot]:
-        """Return an iterator over the events."""
-        for _, item in self.__dict__.items():
-            if isinstance(item, EventSlot):
-                yield item
+        """Iterable with event slots."""
+        for _, value in self.__dict__.items():
+            if isinstance(value, EventSlot):
+                yield value
 
     def __getattr__(
         self,
         item: str,
     ) -> EventSlot:
-        """Return the event with the given name.
+        """Get an attribute using dot notation: "object.item" when "item" is not found by __getattribute__.
 
-        :param item: Event name.
+        :param item: Attribute to get.
+
+        :return: Attribute value.
         """
+        # No events with private names
         if item.startswith("__"):
-            raise AttributeError(f"{self.__class__.__name__} has no attribute {item}.")
-        if hasattr(self, "__events__") and (item not in self.__events__):
-            raise EventException(f"Event {item} is not declared.")
-        if item not in self.__dict__:
-            self.__dict__[item] = self.etype(name=item)
-        return self.__dict__[item]
+            raise AttributeError(f"Has no attribute '{item}'.")
+        # Check if events are limited
+        if hasattr(self, "__events__") and item not in self.__events__:
+            raise AttributeError(f"Event '{item}' is not declared.")
+        # Create/get event
+        self.__dict__[item] = event = self.__etype__(item)
+        return event
 
     def __getitem__(
         self,
         item: str,
     ) -> EventSlot:
-        """Return the event with the given name.
+        """Get an attribute using indexing: "object["item"]"
 
-        :param item: Event name.
+        :param item: Attribute to get.
+
+        :return: Attribute value.
         """
-        if item not in self.__dict__:
-            return self.__getattr__(item=item)
-        return self.__dict__[item]
+        return self.__getattr__(item=item)
 
     __str__ = __repr__
     """Ensure a readable string representation of the event."""
@@ -202,7 +206,6 @@ class Events:
 # -->> Export <<------------------------
 __all__ = [
     "EventTarget",
-    "EventException",
     "EventSlot",
     "Events",
 ]

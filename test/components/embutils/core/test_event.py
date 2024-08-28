@@ -17,19 +17,25 @@ __version__ = "ALPHA"
 import unittest as ut
 
 # External
-from embutils.core import EventException, Events, EventSlot
+from embutils.core import Events, EventSlot
 
 
 # -->> Tunables <<----------------------
 
 
 # -->> Definitions <<-------------------
-def test_callback1():
-    """Test callback."""
+TEST_CALLS = []
+"""Test calls."""
 
 
-def test_callback2():
+def callback1():
     """Test callback."""
+    TEST_CALLS.append(1)
+
+
+def callback2():
+    """Test callback."""
+    TEST_CALLS.append(2)
 
 
 class EventSlotTestSuite(ut.TestCase):
@@ -37,72 +43,107 @@ class EventSlotTestSuite(ut.TestCase):
         self,
     ) -> None:
         """Set up the test suite."""
-        self.slot1 = EventSlot(name="on_change")
-        self.slot1 += test_callback1
-        self.slot1 += test_callback2
-        self.slot2 = EventSlot(name="on_edit")
-        self.slot2 += test_callback1
+        global TEST_CALLS
+        TEST_CALLS = []
+        self.slot1 = EventSlot(name="on_edit")
+        self.slot2 = EventSlot(name="on_change")
+        self.slot2 += callback1
+        self.slot2 += callback2
 
     def test_type(
         self,
     ) -> None:
         """Test the type of the event."""
         self.assertIsInstance(self.slot1, EventSlot)
-        self.assertEqual(self.slot1.__name__, "on_change")
+        self.assertEqual(self.slot1.__name__, "on_edit")
+        self.assertIsInstance(self.slot2, EventSlot)
+        self.assertEqual(self.slot2.__name__, "on_change")
 
     def test_len(
         self,
     ) -> None:
         """Test the length of the event."""
-        self.assertEqual(len(self.slot1), 2)
-        self.assertEqual(len(self.slot2), 1)
+        self.assertEqual(len(self.slot1), 0)
+        self.assertEqual(len(self.slot2), 2)
 
     def test_repr(
         self,
     ) -> None:
         """Test the representation of the event."""
-        self.assertEqual(repr(self.slot1), "EventSlot(name='on_change')")
-        self.assertEqual(repr(self.slot2), "EventSlot(name='on_edit')")
+        self.assertEqual(repr(self.slot1), "EventSlot(name='on_edit')")
+        self.assertEqual(repr(self.slot2), "EventSlot(name='on_change')")
 
     def test_iter(
         self,
     ) -> None:
         """Test the iteration of the event."""
-        idx = 0
-        for target in self.slot1:
-            self.assertEqual(target.__name__, f"test_callback{idx + 1}")
-            idx += 1
+        targets = list(self.slot2)
+        self.assertEqual(len(targets), 2)
+        self.assertIn(callback1, targets)
+        self.assertIn(callback2, targets)
+
+    def test_iadd(
+        self,
+    ) -> None:
+        """Test the subscription of the event."""
+        # Subscribe to new items
+        self.slot1 += callback1
+        self.assertEqual(len(self.slot1), 1)
+        self.slot1 += callback2
+        self.assertEqual(len(self.slot1), 2)
+        # Subscribe to existing items
+        self.slot1 += callback1
+        self.assertEqual(len(self.slot1), 2)
 
     def test_isub(
         self,
     ) -> None:
         """Test the unsubscription of the event."""
-        self.slot1 -= test_callback1
-        self.assertEqual(len(self.slot1), 1)
-        self.slot1 -= test_callback2
-        self.assertEqual(len(self.slot1), 0)
-        self.slot1 -= test_callback2
-        self.assertEqual(len(self.slot1), 0)
+        # Test unsubscribing from existing items
+        self.slot2 -= callback1
+        self.assertEqual(len(self.slot2), 1)
+        self.slot2 -= callback2
+        self.assertEqual(len(self.slot2), 0)
+        # Test unsubscribing from non-existing items
+        self.slot2 -= callback2
+        self.assertEqual(len(self.slot2), 0)
+
+    def test_runTargets(
+        self,
+    ) -> None:
+        """Test the execution of the event."""
+        global TEST_CALLS
+        self.assertEqual(TEST_CALLS, [])
+        self.slot2()
+        self.assertEqual(TEST_CALLS, [1, 2])
 
 
 class EventTestSuite(ut.TestCase):
-    def test_type(
+    def test_init(
         self,
     ) -> None:
-        """Test the type of the event."""
+        """Test event handler initialization."""
 
         class TestEventSlot(EventSlot):
             pass
 
-        events = Events()
-        events.on_change += test_callback1
-        self.assertEqual(events.etype, EventSlot)
-        self.assertIsInstance(events.on_change, EventSlot)
-
         events = Events(etype=TestEventSlot)
-        events.on_change += test_callback1
-        self.assertEqual(events.etype, TestEventSlot)
+        events.on_change += callback1
+        self.assertEqual(events.__etype__, TestEventSlot)
         self.assertIsInstance(events.on_change, TestEventSlot)
+
+        events = Events(events=["on_change", "on_edit"])
+        self.assertIsInstance(events.on_edit, EventSlot)
+        self.assertIsInstance(events["on_change"], EventSlot)
+        with self.assertRaises(AttributeError):
+            events.__on_private += callback1
+        with self.assertRaises(AttributeError):
+            events.on_delete += callback1
+
+        with self.assertRaises(AttributeError):
+            Events(etype=None)
+        with self.assertRaises(AttributeError):
+            Events(events=[1, 2, 3])
 
     def test_len(
         self,
@@ -110,32 +151,21 @@ class EventTestSuite(ut.TestCase):
         """Test the length of the event."""
         events = Events()
         self.assertEqual(len(events), 0)
-        events.on_change += test_callback1
+        events.on_change += callback1
         self.assertEqual(len(events), 1)
-        events.on_change += test_callback2
+        events.on_change += callback2
         self.assertEqual(len(events), 1)
-        events.on_edit += test_callback1
+        events.on_edit += callback1
         self.assertEqual(len(events), 2)
-
-    def test_getAttr(
-        self,
-    ) -> None:
-        """Test the attribute access of the event."""
-
-        class TestEvents(Events):
-            __events__ = ["on_change"]
-
-        with self.assertRaises(EventException):
-            TestEvents().on_delete += test_callback1
 
     def test_iter(
         self,
     ) -> None:
         """Test the iteration of the event."""
         events = Events()
-        events.on_change += test_callback1
-        events.on_change += test_callback2
-        events.on_edit += test_callback1
+        events.on_change += callback1
+        events.on_change += callback2
+        events.on_edit += callback1
         idx = 0
         for event in events:
             self.assertIsInstance(event, EventSlot)

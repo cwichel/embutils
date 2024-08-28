@@ -37,19 +37,20 @@ class LoggerTestSuite(ut.TestCase):
             {
                 "EMBUTILS_LOGGER_NAME": "TEST",
                 "EMBUTILS_LOGGER_LEVEL": str(log.DEBUG),
-                "EMBUTILS_LOGGER_DUMP": str(int(True)),
-                "EMBUTILS_LOGGER_FILE": "test.log",
+                "EMBUTILS_LOGGER_USE_FILE": str(int(True)),
             }
         )
         settings = LoggerSettings()
         # Validate settings against environment variables
         self.assertEqual(settings.name, os.environ["EMBUTILS_LOGGER_NAME"])
         self.assertEqual(settings.level, int(os.environ["EMBUTILS_LOGGER_LEVEL"]))
-        self.assertEqual(settings.dump, bool(int(os.environ["EMBUTILS_LOGGER_DUMP"])))
-        self.assertEqual(settings.file, pl.Path(os.environ["EMBUTILS_LOGGER_FILE"]))
+        self.assertEqual(settings.use_file, bool(int(os.environ["EMBUTILS_LOGGER_USE_FILE"])))
         # Cleanup
-        if settings.file.exists():
-            settings.file.unlink()
+        logfile = settings.file
+        if logfile.exists():
+            logfile.unlink()
+        if not list(logfile.parent.iterdir()):
+            logfile.parent.rmdir()
 
     def test_fileDump(
         self,
@@ -65,8 +66,7 @@ class LoggerTestSuite(ut.TestCase):
             os.environ.update(
                 {
                     "EMBUTILS_LOGGER_LEVEL": str(level),
-                    "EMBUTILS_LOGGER_FILE": "test.log",
-                    "EMBUTILS_LOGGER_DUMP": str(int(True)),
+                    "EMBUTILS_LOGGER_USE_FILE": str(int(True)),
                 }
             )
             logger = create_logger()
@@ -77,13 +77,17 @@ class LoggerTestSuite(ut.TestCase):
             logger.error("This is an error message.")
             logger.critical("This is a critical message.")
             # Close log
-            file = pl.Path(os.environ["EMBUTILS_LOGGER_FILE"])
-            shutdown_logger(logger=logger, file_only=True)
+            shutdown_logger(logger=logger)
             # Validate and cleanup
-            with file.open("r") as f:
-                self.assertEqual(len(f.readlines()), count)
-            if file.exists():
-                file.unlink()
+            logfiles = [logfile for logfile in logger.handlers if isinstance(logfile, log.FileHandler)]
+            for logfile in logfiles:
+                item = pl.Path(logfile.baseFilename)
+                with item.open(mode="r") as file:
+                    self.assertEqual(len(file.readlines()), count)
+                if item.exists():
+                    item.unlink()
+                if not list(item.parent.iterdir()):
+                    item.parent.rmdir()
 
 
 # -->> API <<---------------------------
