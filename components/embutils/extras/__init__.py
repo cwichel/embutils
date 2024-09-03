@@ -33,7 +33,9 @@ from .cobs import *
 # -->> Export <<------------------------
 __all__ = [
     # cobs.py
-    "COBS",
+    "cobs_encoded_max_size",
+    "cobs_decode",
+    "cobs_encode",
 ]
 
 

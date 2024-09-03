@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # --------------------------------------
-"""Consistent Overhead Byte Stuffing (COBS) implementation.
+"""COBS (Consistent Overhead Byte Stuffing) implementation.
 
 :date:      2024
 :author:    Christian Wiche
@@ -14,7 +14,7 @@ __version__ = "ALPHA"
 # --------------------------------------
 
 # Built-in
-import dataclasses as dc
+import itertools as it
 import typing as tp
 
 
@@ -22,111 +22,87 @@ import typing as tp
 
 
 # -->> Definitions <<-------------------
-class COBS:
-    """Consistent Overhead Byte Stuffing (COBS) encoding/decoding utilities"""
-
-    STUFFING_BYTE: bytes = b"\x00"
-    """COBS stuffing byte."""
-
-    class DecodeException(Exception):
-        """COBS decoding exception."""
-
-    @dc.dataclass
-    class Block:
-        """COBS encoding block.
-
-        :param code: Block code.
-        :param data: Block data.
-        :param zero: Requires zero ending.
-        """
-
-        code: int = dc.field()
-        data: bytearray = dc.field()
-        zero: bool = dc.field(default=False)
-
-    @staticmethod
-    def encode(
-        data: tp.Union[bytes, bytearray] = bytearray(),
-    ) -> bytearray:
-        """Encodes a data buffer using COBS.
-
-        :param data: Data to be encoded.
-
-        :returns: Encoded data.
-        """
-        # Prepare
-        blocks: tp.List[COBS.Block] = []
-        base = bytearray(data.copy())
-        base.append(0x00)
-        # Encode
-        while base:
-            idx = base.find(0x00)
-            code = (idx + 1) if (idx != -1) else len(base)
-            if code > 0xFE:
-                # Extended block:
-                blocks.append(COBS.Block(code=0xFF, data=base[0:0xFE]))
-                del base[0:0xFE]
-            else:
-                # Zero terminated block:
-                blocks.append(COBS.Block(code=code, data=base[0 : (code - 1)]))
-                del base[0:code]
-        # Build
-        out = bytearray()
-        for block in blocks:
-            out.append(block.code)
-            out.extend(block.data)
-        out.append(0x00)
-        return out
-
-    @staticmethod
-    def decode(
-        data: tp.Union[bytes, bytearray] = bytearray(),
-    ) -> bytearray:
-        """Decodes a data buffer using COBS.
-
-        :param data: Data to be decoded.
-
-        :returns: Decoded data.
-        """
-        # Prepare
-        blocks: tp.List[COBS.Block] = []
-        base = bytearray(data.copy())
-        # Decode
-        while base:
-            # Check if termination byte is received
-            code = base[0]
-            if code == 0x00:
-                break
-            # Add a zero to the last block, if needed
-            if blocks:
-                blocks[-1].zero = blocks[-1].code != 0xFF
-            # Get block and remove bytes
-            block = COBS.Block(code=code, data=base[1:code])
-            del base[0:code]
-            # Check block
-            if block.data.find(0x00) != -1:
-                raise COBS.DecodeException("Zero byte found in input!")
-            if len(block.data) != (block.code - 1):
-                raise COBS.DecodeException("Block don't have enough bytes to be processed!")
-            # Add block
-            blocks.append(block)
-        # Build
-        out = bytearray()
-        for block in blocks:
-            out.extend(block.data)
-            if block.zero:
-                out.append(0x00)
-        return out
+COBS_MAX_BLOCK_SIZE: int = 0xFE
+"""Maximum block size for COBS encoding."""
 
 
 # -->> API <<---------------------------
+def cobs_encoded_max_size(
+    size: int,
+) -> int:
+    """Calculate the maximum size of the encoded data."""
+    return (size + (size // COBS_MAX_BLOCK_SIZE) if (size != 0) else 0) + 2
+
+
+def cobs_encode(
+    data: tp.Union[bytes, bytearray],
+) -> bytearray:
+    """Encode data using COBS algorithm."""
+    # Special case: empty buffer
+    if len(data) == 0:
+        return bytearray([0x01, 0x00])
+
+    # General case
+    code = 1
+    code_idx = 0
+    add_code = True
+    encoded = bytearray([0x00])
+    for byte in data:
+        add_code = True
+        if byte != 0x00:
+            encoded.append(byte)
+            code += 1
+        if byte == 0x00 or code == (COBS_MAX_BLOCK_SIZE + 1):
+            if code == (COBS_MAX_BLOCK_SIZE + 1):
+                add_code = False
+            encoded[code_idx] = code
+            encoded.append(0x00)
+            code_idx = len(encoded) - 1
+            code = 1
+    if add_code:
+        encoded[code_idx] = code
+    if encoded[-1] != 0x00:
+        encoded.append(0x00)
+    return encoded
+
+
+def cobs_decode(
+    data: tp.Union[bytes, bytearray],
+) -> bytearray:
+    """Decode data using COBS algorithm."""
+    # Validate
+    if len(data) < cobs_encoded_max_size(0) or data[-1] != 0x00:
+        raise ValueError("Invalid COBS input.")
+
+    # Decode
+    code = 0xFF
+    block = 0
+    decoded = bytearray()
+    remaining = len(data) - 1
+    for byte in it.islice(data, remaining):
+        if byte == 0x00:
+            raise ValueError("Zero found in COBS data.")
+        if block:
+            decoded.append(byte)
+        else:
+            if code != 0xFF:
+                decoded.append(0x00)
+            block = code = byte
+            if block > remaining:
+                raise ValueError("Not enough bytes remaining.")
+            if code == 0x00:
+                break
+        block -= 1
+        remaining -= 1
+    return decoded
 
 
 # -->> Export <<------------------------
 __all__ = [
-    "COBS",
+    "cobs_encoded_max_size",
+    "cobs_encode",
+    "cobs_decode",
 ]
-
 
 # -->> Execute <<-----------------------
 # Meant as a package, not a script. No code will be executed.

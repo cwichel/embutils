@@ -17,7 +17,7 @@ __version__ = "ALPHA"
 import unittest as ut
 
 # External
-from embutils.extras import COBS
+from embutils.extras import cobs_decode, cobs_encode, cobs_encoded_max_size
 
 
 # -->> Tunables <<----------------------
@@ -29,12 +29,15 @@ class COBSTestSuite(ut.TestCase):
         self,
     ) -> None:
         """Test COBS failure scenarios."""
+        # Malformed data
+        with self.assertRaises(ValueError):
+            cobs_decode(data=bytearray([0x02]))
         # Not enough data
-        with self.assertRaises(COBS.DecodeException):
-            COBS.decode(data=bytearray([0x02]))
-        # Zero found in data
-        with self.assertRaises(COBS.DecodeException):
-            COBS.decode(data=bytearray([0x02, 0x00, 0x01]))
+        with self.assertRaises(ValueError):
+            cobs_decode(data=bytearray([0x02, 0x00]))
+        # Zero in the middle
+        with self.assertRaises(ValueError):
+            cobs_decode(data=bytearray([0x02, 0x00, 0x01]))
 
     def test_encodeDecodeMultiBlock(
         self,
@@ -74,8 +77,9 @@ class COBSTestSuite(ut.TestCase):
         data: bytearray,
     ) -> None:
         """Run a COBS test."""
-        encoded = COBS.encode(data=data)
-        decoded = COBS.decode(data=encoded)
+        encoded = cobs_encode(data=data)
+        decoded = cobs_decode(data=encoded)
+        self.assertLessEqual(len(encoded), cobs_encoded_max_size(size=len(data)))
         self.assertEqual(data, decoded)
 
 
